@@ -1,6 +1,6 @@
 FC=gfortran
 
-OPTS=-O3 -mcmodel=large -fbounds-check
+OPTS= -O3 -mcmodel=large -fbounds-check
 
 #Source files
 SRC=Global.f90 prec.f90 graph_search_mod.f90 parsechem.f90 main_redchem.f90 read_rates.f90 \
@@ -8,7 +8,7 @@ SRC=Global.f90 prec.f90 graph_search_mod.f90 parsechem.f90 main_redchem.f90 read
 
 OBJS=$(SRC:.f90=.o)
 
-goRedChem: $(OBJS) 
+exe_rc: $(OBJS) 
 	$(FC) $(OPTS) $(OBJS) -o $@
 
 %.o: %.f90
@@ -18,7 +18,7 @@ goRedChem: $(OBJS)
 clean: clean_src clean_output
 
 clean_src:
-	rm exe* *.o *.mod log* goRedChem
+	rm exe* *.o *.mod log*
 clean_output:
 	rm  output/*
 	mkdir output 

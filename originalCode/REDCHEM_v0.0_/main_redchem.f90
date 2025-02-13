@@ -49,19 +49,19 @@
                           SKELETAL_SPEC_KPP, &
                           DNUFILE
       !INPUT/OUTPUT DIRS
-      PARAMETER(INDIR='input_test/')
+      PARAMETER(INDIR='input/')
       PARAMETER(OUTDIR='output/')
       PARAMETER(RATEDIR=INDIR//'rates/')
       !INPUT FILES
       PARAMETER(TRGFILE="target.txt")        !TARGET SPEC
       PARAMETER(DNUFILE="DELTANU.dat")       !NUP-NUR FILE
-      PARAMETER(SPECFILE="species.txt")      !SPEC FILE
-      PARAMETER(CHEMFILE="reactions.txt")    !REAC FILE 
-      PARAMETER(RATEFILE="speciesRR.dat")         !RATES FILE
+      PARAMETER(SPECFILE="SPECIES.spc")      !SPEC FILE
+      PARAMETER(CHEMFILE="REACTIONS.eqn")    !REAC FILE 
+      PARAMETER(RATEFILE="RATESWIJ")         !RATES FILE
       PARAMETER(SPECFILE_KPP="SPEC_KPP.txt") !INPUT KPP SPEC FILE
       !OUTPUT FILES
-      PARAMETER(SKELETAL_CHEM_KPP=OUTDIR//'/'//'reactions_reduced.txt')
-      PARAMETER(SKELETAL_SPEC_KPP=OUTDIR//'/'//'species_reduced.txt')
+      PARAMETER(SKELETAL_CHEM_KPP=OUTDIR//'/'//'REACTIONS.eqn')
+      PARAMETER(SKELETAL_SPEC_KPP=OUTDIR//'/'//'SPECIES.spc')
 !
 !-----------------------------------------------------------------------
 !
@@ -97,7 +97,6 @@
                      NREAC,NSPEC)
 
       !WRITE(*,*) NSPEC,NREAC
-      STOP
 
       !READ IN DELTANU *SPEC NUMBERING AS IN SPEC_KPP.txt
       ALLOCATE( DELTANU(NSPEC,NREAC) )

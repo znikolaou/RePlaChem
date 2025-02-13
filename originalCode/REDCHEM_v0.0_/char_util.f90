@@ -64,21 +64,7 @@
 !
       END FUNCTION NOSTR
 !-----------------------------------------------------------------------
-      INTEGER FUNCTION INDX_SPACE(STRING)
-      IMPLICIT NONE
-      CHARACTER(LEN=*) STRING
-      INTEGER I
-
-      DO I=1,LEN(STRING)
-       !WRITE(*,*) I,STRING(I:I),STRING(I:I).EQ.''
-       IF(STRING(I:I).EQ.'') THEN
-        INDX_SPACE=I
-        EXIT
-       ENDIF
-      ENDDO
-
-      END FUNCTION
-      !-----------------------------------------------------------------      
+!
       INTEGER FUNCTION INDX_TXT(STRING,TEXT)
 !
 !     AUTHOR: ZACHARIAS M. NIKOLAOU     
@@ -246,22 +232,4 @@
       STRWRK(IS+1:)=STRING(IL:LSTR)
 !
       END SUBROUTINE
-      !------------------------------------------------------------------
-      LOGICAL FUNCTION ISEMPTY(STRING)
-      IMPLICIT NONE
-      CHARACTER(LEN=*) STRING
-       
-      ISEMPTY=STRING.EQ.' '
-
-      END FUNCTION
-      !-----------------------------------------------------------------
-      LOGICAL FUNCTION ISCOMMENT(STRING)
-      IMPLICIT NONE
-      CHARACTER(LEN=*) STRING
-
-      ISCOMMENT=STRING(1:1).EQ.'!'.OR.STRING(1:1).EQ.'#'
-
-      END FUNCTION
-      !-----------------------------------------------------------------
-
-
+!-----------------------------------------------------------------------
