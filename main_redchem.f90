@@ -96,7 +96,6 @@
                      CREACNM_F,CSPECNM_F, &
                      NREAC,NSPEC)
 
-      !WRITE(*,*) NSPEC,NREAC
       STOP
 
       !READ IN DELTANU *SPEC NUMBERING AS IN SPEC_KPP.txt
