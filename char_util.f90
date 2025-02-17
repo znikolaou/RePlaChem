@@ -263,5 +263,16 @@
 
       END FUNCTION
       !-----------------------------------------------------------------
+      SUBROUTINE SEPARATE_STRING(STRING,SEP,STRLIST)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: STRING,SEP,STRLIST(2)
+      INTEGER ISEPS,ISEPE
 
-
+      ISEPS=INDEX(STRING,SEP)
+      ISEPE=ISEPS+LEN(SEP)-1
+      STRLIST(1)=TRIM(ADJUSTL(STRING(1:ISEPS-1)))
+      STRLIST(2)=TRIM(ADJUSTL(STRING(ISEPE+1:)))
+      
+      RETURN
+      END
+      !-----------------------------------------------------------------

@@ -1,0 +1,13 @@
+      PROGRAM MAIN
+      IMPLICIT NONE
+      INTEGER NOTXT
+      CHARACTER(LEN=100) :: REAC,STRL,STRR
+      PARAMETER(REAC='CH4^++O2^+O2^++CH4^-+CH4^+=>CO2+CH4^+A+B+CH4^++CH4^-')
+
+      WRITE(*,*) NOTXT(REAC,'CH4^+')
+      WRITE(*,*) NOTXT(REAC,'CH4')
+      WRITE(*,*) NOTXT(REAC,'O2^+')
+      WRITE(*,*) NOTXT(REAC,'O2')
+
+      STOP
+      END

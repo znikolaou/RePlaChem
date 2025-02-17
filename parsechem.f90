@@ -1,7 +1,5 @@
       SUBROUTINE READ_CHEM(INDIR,RATEDIR,CHEMFILE,SPECFILE,DNUFILE, &
-                           CREAC_S,CSPEC_S, &
-                           CREAC_F,CSPEC_F, &
-                           NREAC,NSPEC)
+                           CREAC_S,CSPEC_S,CREAC_F,CSPEC_F,NREAC,NSPEC)
 !
 !     AUTHOR: ZACHARIAS M. NIKOLAOU
 ! 
@@ -36,7 +34,7 @@
       CHARACTER(LEN=*) :: INDIR,RATEDIR,CHEMFILE,SPECFILE,DNUFILE
       CHARACTER(LEN=NSTR_REMX) :: CREAC_S(NWRKC),CREAC_F(NWRKC)
       CHARACTER(LEN=NSTR_SPMX) :: CSPEC_S(NWRKC),CSPEC_F(NWRKC)
-      INTEGER I,NREAC,NSPEC,I_REAC(NWRKC,NWRKC),I_PROD(NWRKC,NWRKC)
+      INTEGER I,NREAC,NSPEC!,I_REAC(NWRKC,NWRKC),I_PROD(NWRKC,NWRKC)
 !
 
       !REMOVE TABS FROM INPUT FILES
@@ -48,6 +46,7 @@
 
       !PARSE REACTIONS: KPP FORMAT
       !CALL PARSE_CHEM(1,NSTR_REMX,NWRKC,NREAC,CREAC_S,CREAC_F)
+
       !PARSE REACTIONS: SIMPLE FORMAT
       CALL PARSE_INDEX_AND_STRING(1,NSTR_REMX,NWRKC,NREAC,CREAC_S)
       WRITE(*,*) 'PARSE_CHEM: REACTIONS:' 
@@ -63,16 +62,21 @@
       DO I=1,NSPEC
        WRITE(*,'(I5,X,A)') I,TRIM(ADJUSTL(CSPEC_S(I)))
       ENDDO 
-      STOP
       
       CLOSE(1)
       CLOSE(2)
-      
+       
       !REMOVE SPECIES APPEAR. ONLY AS PRODUCTS
-      CALL GET_REACPROD(NWRKC,NWRKC,NSTR_SPMX,NSTR_REMX, &
-                        CSPEC_S,CREAC_S,I_REAC,I_PROD)
+      !CALL GET_REACPROD(NWRKC,NWRKC,NSTR_SPMX,NSTR_REMX, &
+      !                  CSPEC_S,CREAC_S,I_REAC,I_PROD)
 
+      !SPEC_NU_MATRIX
+      !TODO
+      !CALL GET_SPEC_NU_MATRIX(NSPEC,NREAC,CSPEC_S,CREAC_S,SPEC_NU_MATRIX)
+      !SPEC_NU_MATRIX(NSPEC,NREAC,1) !REAC
+      !SPECI_NU_MATRIX(NSPEC,NREAC,2) !PROD
 
+      STOP
       RETURN
       END
       !-----------------------------------------------------------------
@@ -263,8 +267,8 @@
 !
 !-----------------------------------------------------------------------
 !
-      SUBROUTINE GET_RSPEC(NSPEC,NREAC,LCSPEC,LCREAC, &
-                           CSPECNM,CREACNM,RSPEC)
+      SUBROUTINE GET_SPEC_NU_MATRIX(NSPEC,NREAC,LCSPEC,LCREAC, &
+                           CSPECNM,CREACNM,SPEC_NU_MATRIX)
 !
 !     AUTHOR: ZACHARIAS M. NIKOLAOU
 !
@@ -276,28 +280,37 @@
       CHARACTER(LEN=LCSPEC), DIMENSION(NSPEC) :: CSPECNM
       CHARACTER(LEN=LCREAC), DIMENSION(NREAC) :: CREACNM      
 !
-      INTEGER :: I,J,K,A,ILEN_SPEC(NSPEC),RSPEC(NREAC,NSPEC)
-      INTEGER :: NOSTR
-!     
-      !EXTRACT SPECIES STRING LENGTH
-      !DO I=1,NSPEC
-      ! ILEN_SPEC(I)=INT(LEN(TRIM(CSPECNM(I))))
-      !ENDDO
+      INTEGER :: I,J,K,A,ILEN_SPEC(NSPEC),SPEC_NU_MATRIX(NREAC,NSPEC)
+      INTEGER :: NOSTR!     
      
       DO J=1,NSPEC
        DO I=1,NREAC
-        A=NOSTR(CREACNM(I),CSPECNM(J)) 
-        A=MIN(1,A)
-        RSPEC(I,J)=A
+        !CLEFT=GET_REACTANTS(NREAC,CREACNM(I))
+        !CRIGHT=GET_PRODUCTS(NREAC,CREACNM(I))
+        !NUL=NOSTR(CLEFT,CSPECNM(J))
+        !NUR=NOSTR(CRIGH,CSPECNM(J))
+        !SPEC_NU_MATRIX(I,J,1)=NUL
+        !SPEC_NU_MATRIX(I,J,2)=NUR
+        !SPEC_N_MATRIX(I,J,3)=NUR-NUL
        ENDDO
       ENDDO
 
       END SUBROUTINE
-!
-!-----------------------------------------------------------------------
- 
-     SUBROUTINE GET_REACPROD(NSPEC,NREAC,LCSPEC,LCREAC, &
-                             CSPECNM,CREACNM,I_REAC,I_PROD)
+      !-----------------------------------------------------------------
+      SUBROUTINE SEPARATE_REAC(CREAC,SEP,REAC,PROD)
+      IMPLICIT NONE
+      INTEGER ISEP
+      CHARACTER(LEN=*) CREAC,SEP,REAC,PROD
+
+      ISEP=INDEX(TRIM(ADJUSTL(CREAC)),SEP)
+      REAC=CREAC(1:ISEP)
+      PROD=CREAC(ISEP+1:)
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE GET_REACPROD(NSPEC,NREAC,LCSPEC,LCREAC, &
+                              CSPECNM,CREACNM,I_REAC,I_PROD)
 
 !     AUTHOR: ZACHARIAS M. NIKOLAOU
 !
@@ -323,7 +336,7 @@
 
         C=' '
         C=CREACNM(I)
-        II=INDEX(C,'=')
+        II=INDEX(C,'=>')
         IF(II.NE.0) THEN
 
          C(II:LCREAC)=' '
@@ -356,5 +369,24 @@
       !STOP
 
       END SUBROUTINE
-!
-!-----------------------------------------------------------------------
+      !-----------------------------------------------------------------
+      SUBROUTINE SEPARATE_REACTIONS(N,CREAC,REAC,PROD)
+      USE GLOBAL, ONLY : NSTR_REMX
+      IMPLICIT NONE
+      INTEGER :: N,I
+      CHARACTER(LEN=*) :: CREAC(N),REAC(N),PROD(N)
+      CHARACTER(LEN=NSTR_REMX) :: CLIST(2)
+
+      DO I=1,N
+       IF(INDEX(CREAC(I),'bolsig').EQ.0) THEN 
+        CALL SEPARATE_STRING(CREAC(I),'=>',CLIST)
+       ELSE
+        CALL SEPARATE_STRING(CREAC(I),'->',CLIST)
+       ENDIF
+        REAC(I)=CLIST(1)
+        PROD(I)=CLIST(2)
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
