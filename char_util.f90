@@ -256,6 +256,7 @@
       END FUNCTION
       !-----------------------------------------------------------------
       LOGICAL FUNCTION ISCOMMENT(STRING)
+      ! RETURNS TRUE IF FIRST CHAR IS ! OR #       
       IMPLICIT NONE
       CHARACTER(LEN=*) STRING
 
@@ -264,6 +265,7 @@
       END FUNCTION
       !-----------------------------------------------------------------
       SUBROUTINE SEPARATE_STRING(STRING,SEP,STRLIST)
+      !SEPARATES STRING WITH SINGLE SEPARATOR=SEP        
       IMPLICIT NONE
       CHARACTER(LEN=*) :: STRING,SEP,STRLIST(2)
       INTEGER ISEPS,ISEPE

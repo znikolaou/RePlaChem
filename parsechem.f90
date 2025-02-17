@@ -395,16 +395,57 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE GET_REACTION_SPECIES(NSPEC,NREAC,CSPEC,CREAC,REAC_SPEC)
+      SUBROUTINE GET_REACTION_SPECIES(NSPEC,NREAC,CSPEC,CREAC,CREAC_SPEC)
       USE GLOBAL, ONLY: NSTR_SPMX,NSTR_REMX
       IMPLICIT NONE
+      LOGICAL :: IS_SPEC_IN_REACTION
       INTEGER :: NSPEC,NREAC,I,J
       CHARACTER(LEN=*) :: CREAC(NREAC),CSPEC(NSPEC)
-      CHARACTER(LEN=NSTR_REMX) :: C,CWRK
-      INTEGER :: REAC_SPEC(NREAC,NSPEC)
+      CHARACTER(LEN=NSTR_SPMX) :: CREAC_SPEC(NREAC,NSPEC)
+
+      CREAC_SPEC(:,:)=' '
+      DO J=1,NSPEC
+       DO I=1,NREAC
+       !IF(IS_BOLSIG_REACTION) THEN
+       ! CREAC_SPEC
+        IF(IS_SPEC_IN_REACTION(CREAC(I),CSPEC(J))) THEN
+         CREAC_SPEC(I,J)=CSPEC(J)
+        ENDIF
+       ENDDO
+      ENDDO
 
       RETURN
       END
+      !-----------------------------------------------------------------
+      FUNCTION IS_BOLSIG_REACTION(REAC)
+      IMPLICIT NONE
+      LOGICAL :: IS_BOLSIG_REACTION
+      CHARACTER(LEN=*) :: REAC
+      CHARACTER(LEN=*) :: BOLSIG
+      PARAMETER(BOLSIG='bolsig')
+      
+      IF(INDEX(REAC,BOLSIG).GT.0) THEN
+       IS_BOLSIG_REACTION=.TRUE.
+      ELSE
+       IS_BOLSIG_REACTION=.FALSE.
+      ENDIF
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      FUNCTION IS_SPEC_IN_REACTION(REAC,SPEC)
+      IMPLICIT NONE
+      LOGICAL :: CASEA,CASEB,CASEC,IS_SPEC_IN_REACTION
+      CHARACTER(LEN=*) :: REAC,SPEC
+      CHARACTER(LEN=LEN(TRIM(ADJUSTL(SPEC)))+2) :: CA
+      
+      CA=' '//TRIM(ADJUSTL(SPEC))//' ' 
+      IF(INDEX(REAC,CA).GT.0) THEN
+       IS_SPEC_IN_REACTION=.TRUE.
+      ELSE
+       IS_SPEC_IN_REACTION=.FALSE.
+      ENDIF
+
+      END FUNCTION
       !-----------------------------------------------------------------
       SUBROUTINE GET_FORMATTED_REACTIONS(NREAC,CREAC,CREAC_F)
       !
@@ -448,7 +489,7 @@
        CALL RPLTXTE(C,'POS','+',CWRK,NSTR_REMX)
        C=CWRK
        CALL RPLTXTE(C,'NEG','-',CWRK,NSTR_REMX)
-       CREAC_F(I)=CWRK
+       CREAC_F(I)='$ '//TRIM(ADJUSTL(CWRK))//' $'
       ENDDO
       
       RETURN
