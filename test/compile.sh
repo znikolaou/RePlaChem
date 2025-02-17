@@ -1,6 +1,6 @@
 #!/bin/bash
 
-$FC $FOPT $WRK_DIR/Global.f90 $WRK_DIR/prec.f90 testFilterReactionSpecies.f90 $WRK_DIR/char_util.f90 $WRK_DIR/parsechem.f90 -o goTestFilterReactionSpecies
+$FC $FOPT $WRK_DIR/Global.f90 $WRK_DIR/prec.f90 testFormatReactions.f90 $WRK_DIR/char_util.f90 $WRK_DIR/parsechem.f90 -o goTestFormatReactions
 $FC $FOPT $WRK_DIR/Global.f90 $WRK_DIR/prec.f90 testSeparateReaction.f90 $WRK_DIR/char_util.f90 $WRK_DIR/parsechem.f90 -o goTestSeparate
 $FC $FOPT testCountSpeciesReactantsProducts.f90 $WRK_DIR/char_util.f90 -o goTestCount
 

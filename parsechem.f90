@@ -403,9 +403,21 @@
       CHARACTER(LEN=NSTR_REMX) :: C,CWRK
       INTEGER :: REAC_SPEC(NREAC,NSPEC)
 
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE GET_FORMATTED_REACTIONS(NREAC,CREAC,CREAC_F)
+      !
+      ! REFORMATS REACTIONS AS BELOW-INTENDED FOR PLASMA CHEMISTRY
+      ! 
+      ! AUTHOR: Z. NIKOLAOU (2025)     
+      USE GLOBAL, ONLY : NSTR_REMX
+      IMPLICIT NONE
+      INTEGER :: NREAC,I
+      CHARACTER(LEN=*) :: CREAC(NREAC)
+      CHARACTER(LEN=NSTR_REMX) :: CREAC_F(NREAC),C,CWRK
 
-      DO J=1,NSPEC
-       DO I=1,NREAC
+      DO I=1,NREAC
        C=CREAC(I)
        CALL RPLTXTE(C,'^+','^POS',CWRK,NSTR_REMX)
        C=CWRK
@@ -432,10 +444,13 @@
        CALL RPLTXTE(C,'(E3SU)',' *(E3SU)',CWRK,NSTR_REMX)
        C=CWRK
        CALL RPLTXTE(C,'ANY_NEUTRAL','  ANY_NEUTRAL ',CWRK,NSTR_REMX)
-
-       ENDDO
+       C=CWRK
+       CALL RPLTXTE(C,'POS','+',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'NEG','-',CWRK,NSTR_REMX)
+       CREAC_F(I)=CWRK
       ENDDO
-
+      
       RETURN
       END
       !-----------------------------------------------------------------
