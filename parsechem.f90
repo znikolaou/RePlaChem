@@ -70,6 +70,11 @@
       !CALL GET_REACPROD(NWRKC,NWRKC,NSTR_SPMX,NSTR_REMX, &
       !                  CSPEC_S,CREAC_S,I_REAC,I_PROD)
 
+      !REACTION SPECIES
+      !TODO
+      !CALL GET_REACTION_SPECIES(NSPEC,NREAC,CSPEC_S,CREAC_S,REAC_SPEC)
+
+
       !SPEC_NU_MATRIX
       !TODO
       !CALL GET_SPEC_NU_MATRIX(NSPEC,NREAC,CSPEC_S,CREAC_S,SPEC_NU_MATRIX)
@@ -385,6 +390,50 @@
        ENDIF
         REAC(I)=CLIST(1)
         PROD(I)=CLIST(2)
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE GET_REACTION_SPECIES(NSPEC,NREAC,CSPEC,CREAC,REAC_SPEC)
+      USE GLOBAL, ONLY: NSTR_SPMX,NSTR_REMX
+      IMPLICIT NONE
+      INTEGER :: NSPEC,NREAC,I,J
+      CHARACTER(LEN=*) :: CREAC(NREAC),CSPEC(NSPEC)
+      CHARACTER(LEN=NSTR_REMX) :: C,CWRK
+      INTEGER :: REAC_SPEC(NREAC,NSPEC)
+
+
+      DO J=1,NSPEC
+       DO I=1,NREAC
+       C=CREAC(I)
+       CALL RPLTXTE(C,'^+','^POS',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'^-','^NEG',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'+',' + ',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'=>',' => ',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'->',' -> ',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,':',': ',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'(E-V)',' *(E-V)',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'(B1SU)',' *(B1SU)',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'(C1PU)',' *(C1PU)',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'(A3SG)',' *(A3SG)',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'(C3PU)',' *(C3PU)',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'(E3SU)',' *(E3SU)',CWRK,NSTR_REMX)
+       C=CWRK
+       CALL RPLTXTE(C,'ANY_NEUTRAL','  ANY_NEUTRAL ',CWRK,NSTR_REMX)
+
+       ENDDO
       ENDDO
 
       RETURN
