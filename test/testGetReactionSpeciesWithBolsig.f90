@@ -1,0 +1,37 @@
+      PROGRAM TEST_GET_REACTION_SPECIES
+      IMPLICIT NONE 
+      CHARACTER(LEN=100) :: FL,FLSPEC
+      INTEGER :: NRMX,NREAC,NSTRMX,I,J,NSPEC
+      PARAMETER(NRMX=5000,NSTRMX=80)
+      CHARACTER(LEN=NSTRMX) :: CREAC(NRMX),CSPEC(NRMX), &
+              CREAC_F(NRMX)
+      INTEGER :: REAC_SPEC(NRMX,NRMX)
+      INTEGER :: NORSPEC(NRMX)
+   
+      FL='../input_test/reactions.txt'
+      FLSPEC='../input_test/species.txt'
+      OPEN(UNIT=1,FILE=FL,FORM='FORMATTED',STATUS='OLD')
+      OPEN(UNIT=2,FILE=FLSPEC,FORM='FORMATTED',STATUS='OLD')
+
+      CALL PARSE_INDEX_AND_STRING(1,NSTRMX,NRMX,NREAC,CREAC)
+      CALL PARSE_INDEX_AND_STRING(2,NSTRMX,NRMX,NSPEC,CSPEC)
+      CALL GET_FORMATTED_REACTIONS(NREAC,CREAC,CREAC_F)
+      CALL GET_REACTION_SPECIES(NSPEC,NREAC,CSPEC, &
+                                CREAC_F(1:NREAC), &
+                                REAC_SPEC(1:NREAC,1:NSPEC), &
+                                NORSPEC(1:NSPEC))
+      !STOP
+      WRITE(*,*) 'NSPEC=',NSPEC
+      WRITE(*,*) 'NREAC=',NREAC
+      DO J=1,NREAC
+       WRITE(*,*) TRIM(ADJUSTL(CREAC_F(J))),' :',NORSPEC(J)
+       DO I=1,NSPEC
+        IF(REAC_SPEC(J,I).EQ.1) THEN
+         WRITE(*,*) CSPEC(I)
+        ENDIF
+       ENDDO
+      ENDDO
+
+      CLOSE(1)
+      STOP
+      END
