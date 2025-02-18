@@ -401,7 +401,8 @@
       IMPLICIT NONE
       INTEGER :: NSPEC,NREAC,NOSPEC(NREAC),I,J,K,REAC_SPEC(NREAC,NSPEC)
       CHARACTER(LEN=*) :: CREAC(NREAC),CSPEC(NSPEC)
-      LOGICAL :: IS_SPEC_IN_REACTION,IS_BOLSIG_REACTION
+      LOGICAL :: IS_SPEC_IN_REACTION,IS_BOLSIG_REACTION, &
+                 IS_ANY_NEUTRAL_REACTION,IS_CHARGED_SPECIES
 
       REAC_SPEC(1:NREAC,1:NSPEC)=0
       DO J=1,NREAC
@@ -418,12 +419,33 @@
       !ADD MANUALLY SPEC 'E' NOT PRESENT FOR BOLSIG REACTIONS
       DO I=1,NREAC
        IF(IS_BOLSIG_REACTION(CREAC(I))) THEN
-        REAC_SPEC(I,1)=1
+        REAC_SPEC(I,1)=1 !TODO: THIS IS HARD-CODED HERE! 
+       ENDIF
+      ENDDO
+
+      !CHECK FOR 'ANY_NEUTRAL' REACTIONS
+      DO I=1,NREAC
+       IF(IS_ANY_NEUTRAL_REACTION(CREAC(I))) THEN
+        DO J=1,NSPEC
+         IF(.NOT.IS_CHARGED_SPECIES(CSPEC(J))) THEN
+          REAC_SPEC(I,J)=1
+         ENDIF
+        ENDDO
        ENDIF
       ENDDO
 
       RETURN
       END
+      !-----------------------------------------------------------------
+      FUNCTION IS_ANY_NEUTRAL_REACTION(REAC)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: REAC,NEUTRAL
+      LOGICAL :: IS_ANY_NEUTRAL_REACTION
+      PARAMETER(NEUTRAL='ANY_NEUTRAL')
+
+      IS_ANY_NEUTRAL_REACTION=INDEX(REAC,NEUTRAL).GT.0
+
+      END FUNCTION
       !-----------------------------------------------------------------
       FUNCTION IS_BOLSIG_REACTION(REAC)
       IMPLICIT NONE
@@ -504,3 +526,16 @@
       RETURN
       END
       !-----------------------------------------------------------------
+      FUNCTION IS_CHARGED_SPECIES(SPEC)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: SPEC
+      CHARACTER(LEN=LEN(TRIM(ADJUSTL(SPEC)))) :: C
+      LOGICAL :: IS_CHARGED_SPECIES
+
+      C=TRIM(ADJUSTL(SPEC))
+      IS_CHARGED_SPECIES=(INDEX(C,'^+').GT.0).OR. &
+                         (INDEX(C,'^-').GT.0).OR.(C.EQ.'E')
+             
+      END FUNCTION
+      !-----------------------------------------------------------------
+

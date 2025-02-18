@@ -9,6 +9,7 @@ SRC_T3=testSeparateReaction.f90
 SRC_T4=testGetReactionSpecies.f90
 SRC_T5=testCountSpeciesReactantsProducts.f90
 SRC_T6=testGetReactionSpeciesWithBolsig.f90
+SRC_T7=testIsChargedSpecies.f90
 
 OBJS_T1=$(SRC_T1:.f90=.o) $(OBJS_CHEM)
 OBJS_T2=$(SRC_T2:.f90=.o) $(OBJS_CHEM)
@@ -16,6 +17,8 @@ OBJS_T3=$(SRC_T3:.f90=.o) $(OBJS_CHEM)
 OBJS_T4=$(SRC_T4:.f90=.o) $(OBJS_CHEM)
 OBJS_T5=$(SRC_T5:.f90=.o) $(OBJS_CHEM)
 OBJS_T6=$(SRC_T6:.f90=.o) $(OBJS_CHEM)
+OBJS_T7=$(SRC_T7:.f90=.o) $(OBJS_CHEM)
+
 
 goTestIsBolsig: $(OBJS_T1)
 	$(FC) $(FOPT) $(OBJS_T1) -o $@ 
@@ -34,6 +37,9 @@ goTestCountSpeciesReactantsProducts: $(OBJS_T5)
 
 goTestGetReactionSpeciesWithBolsig: $(OBJS_T6)
 	$(FC) $(FOPT) $(OBJS_T6) -o $@
+
+goTestIsChargedSpecies: $(OBJS_T7)
+	$(FC) $(FOPT) $(OBJS_T7) -o $@
 
 
 %.o: %.f90
