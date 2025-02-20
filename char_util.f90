@@ -312,3 +312,38 @@
       RETURN
       END
       !-----------------------------------------------------------------
+      SUBROUTINE REMOVE_DUPLICATE_STRINGS(N,STRL,STRLF,NF)
+      IMPLICIT NONE
+      INTEGER :: N,NF,I,J
+      CHARACTER(LEN=*) :: STRL(N),STRLF(N)
+      LOGICAL :: IS_STRING_PRESENT
+
+      STRLF(1:N)=' ' 
+      J=0
+      DO I=1,N
+       IF(.NOT.IS_STRING_PRESENT(N,STRLF,STRL(I))) THEN
+        J=J+1
+        STRLF(J)=STRL(I)
+       ENDIF
+      ENDDO
+      NF=J
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      FUNCTION IS_STRING_PRESENT(N,STRL,STRING)
+      IMPLICIT NONE
+      INTEGER :: N,I
+      CHARACTER(LEN=*) :: STRL(N),STRING
+      LOGICAL IS_STRING_PRESENT
+
+      IS_STRING_PRESENT=.FALSE.
+      DO I=1,N
+       IF(STRING.EQ.STRL(I)) THEN
+        IS_STRING_PRESENT=.TRUE.
+        EXIT
+       ENDIF
+      ENDDO
+
+      END FUNCTION
+      !-----------------------------------------------------------------

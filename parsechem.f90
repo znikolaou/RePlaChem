@@ -46,7 +46,7 @@
       I=0
       STAT=0
       DO WHILE(STAT.EQ.0)
-       READ(FILEID,'(A)',IOSTAT=STAT) C  !FORMAT IS: INTEGER STRING
+       READ(FILEID,'(A)',IOSTAT=STAT) C 
        IF(.NOT.ISEMPTY(C).AND.(.NOT.ISCOMMENT(C))) THEN
         C=TRIM(ADJUSTL(C))
         IS=INDX_SPACE(C)
@@ -80,7 +80,6 @@
       !-----------------------------------------------------------------
       SUBROUTINE GET_REACTION_SPECIES(NSPEC,NREAC,CSPEC,CREAC, &
                                       REAC_SPEC,NOSPEC)
-      !USE GLOBAL, ONLY: NSTR_SPMX,NSTR_REMX
       IMPLICIT NONE
       INTEGER :: NSPEC,NREAC,NOSPEC(NREAC),I,J,K,REAC_SPEC(NREAC,NSPEC)
       CHARACTER(LEN=*) :: CREAC(NREAC),CSPEC(NSPEC)
@@ -172,6 +171,17 @@
                          (INDEX(C,'^-').GT.0).OR.(C.EQ.'E')
              
       END FUNCTION
+      !-----------------------------------------------------------------
+      SUBROUTINE REMOVE_DUPLICATE_REACTIONS(NREAC,CREAC,CREAC_F,NF)
+      IMPLICIT NONE
+      INTEGER :: NREAC,NF
+      CHARACTER(LEN=*) :: CREAC(NREAC),CREAC_F(NREAC)
+
+      CALL REMOVE_DUPLICATE_STRINGS(NREAC,CREAC,CREAC_F,NF)
+      WRITE(*,*) 'REMOVED',NREAC-NF,'DUPLICATE REACTIONS'
+
+      RETURN
+      END  
       !-----------------------------------------------------------------
       SUBROUTINE GET_FORMATTED_REACTIONS(NREAC,CREAC,CREAC_F)
       !
