@@ -264,6 +264,35 @@
 
       END FUNCTION
       !-----------------------------------------------------------------
+      SUBROUTINE SPLIT_STRING(STRING,SEP,N,COLMS,NA)
+      IMPLICIT NONE
+      INTEGER :: N,NA,I,IS,IE,INEXT
+      CHARACTER(LEN=*) :: STRING,SEP,COLMS(N)
+
+      IS=INDEX(STRING,SEP)
+      IF(IS.EQ.0) THEN
+       COLMS(1)=STRING
+       NA=0
+      ELSE
+       COLMS(1)=STRING(1:IS-1)
+       INEXT=IS
+       I=1
+       DO WHILE(INEXT.GT.0)
+        INEXT=INDEX(STRING(IS+1:),SEP)
+        IE=INEXT+IS
+        IF(IE.GE.IS) THEN
+         I=I+1
+         COLMS(I)=STRING(IS+1:IE-1)
+        ENDIF
+        IS=IE
+       ENDDO
+        COLMS(I)=STRING(IE+1:)
+        NA=I
+      ENDIF
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
       SUBROUTINE SEPARATE_STRING(STRING,SEP,STRLIST)
       !SEPARATES STRING WITH SINGLE SEPARATOR=SEP        
       IMPLICIT NONE
