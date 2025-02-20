@@ -505,22 +505,12 @@
        C=CWRK
        CALL RPLTXTE(C,'(E-V)',' *(E-V)',CWRK,NSTR_REMX)
        C=CWRK
-       CALL RPLTXTE(C,'(B1SU)',' *(B1SU)',CWRK,NSTR_REMX)
-       C=CWRK
-       CALL RPLTXTE(C,'(C1PU)',' *(C1PU)',CWRK,NSTR_REMX)
-       C=CWRK
-       CALL RPLTXTE(C,'(A3SG)',' *(A3SG)',CWRK,NSTR_REMX)
-       C=CWRK
-       CALL RPLTXTE(C,'(C3PU)',' *(C3PU)',CWRK,NSTR_REMX)
-       C=CWRK
-       CALL RPLTXTE(C,'(E3SU)',' *(E3SU)',CWRK,NSTR_REMX)
-       C=CWRK
        CALL RPLTXTE(C,'ANY_NEUTRAL','  ANY_NEUTRAL ',CWRK,NSTR_REMX)
        C=CWRK
        CALL RPLTXTE(C,'POS','+',CWRK,NSTR_REMX)
        C=CWRK
        CALL RPLTXTE(C,'NEG','-',CWRK,NSTR_REMX)
-       CREAC_F(I)='$ '//TRIM(ADJUSTL(CWRK))//' $'
+       CREAC_F(I)='$'//TRIM(ADJUSTL(CWRK))//'$'
       ENDDO
       
       RETURN
