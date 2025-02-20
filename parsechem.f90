@@ -79,10 +79,11 @@
       END
       !-----------------------------------------------------------------
       SUBROUTINE GET_REACTION_SPECIES(NSPEC,NREAC,CSPEC,CREAC, &
-                                      REAC_SPEC,NOSPEC)
+                                      REAC_SPEC,CREAC_SPEC,NOSPEC)
       IMPLICIT NONE
       INTEGER :: NSPEC,NREAC,NOSPEC(NREAC),I,J,K,REAC_SPEC(NREAC,NSPEC)
-      CHARACTER(LEN=*) :: CREAC(NREAC),CSPEC(NSPEC)
+      CHARACTER(LEN=*) :: CREAC(NREAC),CSPEC(NSPEC), &
+                          CREAC_SPEC(NREAC,NSPEC)
       LOGICAL :: IS_SPEC_IN_REACTION,IS_BOLSIG_REACTION, &
                  IS_ANY_NEUTRAL_REACTION,IS_CHARGED_SPECIES
 
@@ -93,6 +94,7 @@
         IF(IS_SPEC_IN_REACTION(CREAC(J),CSPEC(I))) THEN
          K=K+1
          REAC_SPEC(J,I)=1
+         CREAC_SPEC(J,I)=CSPEC(I)
          NOSPEC(J)=K
         ENDIF
        ENDDO
@@ -102,6 +104,7 @@
       DO I=1,NREAC
        IF(IS_BOLSIG_REACTION(CREAC(I))) THEN
         REAC_SPEC(I,1)=1 !TODO: THIS IS HARD-CODED HERE! 
+        CREAC_SPEC(I,1)='E'
         NOSPEC(I)=NOSPEC(I)+1
        ENDIF
       ENDDO
@@ -112,6 +115,7 @@
         DO J=1,NSPEC
          IF(.NOT.IS_CHARGED_SPECIES(CSPEC(J))) THEN
           REAC_SPEC(I,J)=1
+          CREAC_SPEC(I,J)=CSPEC(J)
          ENDIF
         ENDDO
        ENDIF
@@ -145,6 +149,20 @@
 
       END FUNCTION
       !-----------------------------------------------------------------
+      FUNCTION IS_FOREIGN_SPEC_IN_REACTION(CREAC,NSPEC,CSPEC)
+      IMPLICIT NONE
+      INTEGER :: NSPEC,I
+      CHARACTER(LEN=*) :: CREAC,CSPEC(NSPEC)
+      LOGICAL IS_FOREIGN_SPEC_IN_REACTION
+
+      IS_FOREIGN_SPEC_IN_REACTION=.FALSE.
+      !CALL GET_REACTION_SPECIES(NSPEC,1,CREAC,CSPEC,REAC_SPEC,NOSPEC)
+      !TODO
+
+      !ENDDO
+
+      END FUNCTION
+      !-----------------------------------------------------------------
       FUNCTION IS_SPEC_IN_REACTION(REAC,SPEC)
       IMPLICIT NONE
       LOGICAL :: CASEA,CASEB,CASEC,IS_SPEC_IN_REACTION
@@ -171,6 +189,24 @@
                          (INDEX(C,'^-').GT.0).OR.(C.EQ.'E')
              
       END FUNCTION
+      !-----------------------------------------------------------------
+      SUBROUTINE REMOVE_REACTIONS_WITH_FOREIGN_SPECIES(NREAC,CREAC, &
+                      NSPEC,CSPEC,CREAC_F,NF)
+      IMPLICIT NONE
+      INTEGER :: NREAC,NSPEC,NF,I,J
+      CHARACTER(LEN=*) :: CREAC(NREAC),CSPEC(NSPEC),CREAC_F(NREAC)
+
+      J=0
+      DO I=1,NREAC
+       !IF(.NOT.IS_FOREIGN_SPECIES_PRESENT(CREAC(I),NSPEC,CSPEC)) THEN
+       ! J=J+1
+       ! CREAC_F(J)=CREAC(I)
+       !ENDIF
+      ENDDO
+      NF=I
+
+      RETURN
+      END
       !-----------------------------------------------------------------
       SUBROUTINE REMOVE_DUPLICATE_REACTIONS(NREAC,CREAC,CREAC_F,NF)
       IMPLICIT NONE

@@ -4,7 +4,7 @@
       INTEGER :: NRMX,NREAC,NSTRMX,I,J,NSPEC
       PARAMETER(NRMX=5000,NSTRMX=80)
       CHARACTER(LEN=NSTRMX) :: CREAC(NRMX),CSPEC(NRMX), &
-              CREAC_F(NRMX)
+              CREAC_F(NRMX),CREAC_SPEC(NRMX,NRMX)
       INTEGER :: REAC_SPEC(NRMX,NRMX)
       INTEGER :: NORSPEC(NRMX)
    
@@ -19,6 +19,7 @@
       CALL GET_REACTION_SPECIES(NSPEC,NREAC,CSPEC, &
                                 CREAC_F(1:NREAC), &
                                 REAC_SPEC(1:NREAC,1:NSPEC), &
+                                CREAC_SPEC(1:NREAC,1:NSPEC), &
                                 NORSPEC(1:NSPEC))
       !STOP
       WRITE(*,*) 'NSPEC=',NSPEC
@@ -27,7 +28,7 @@
        WRITE(*,*) TRIM(ADJUSTL(CREAC_F(J))),' :',NORSPEC(J)
        DO I=1,NSPEC
         IF(REAC_SPEC(J,I).EQ.1) THEN
-         WRITE(*,*) CSPEC(I)
+         WRITE(*,*) CSPEC(I),TRIM(ADJUSTL(CREAC_SPEC(J,I)))
         ENDIF
        ENDDO
       ENDDO
