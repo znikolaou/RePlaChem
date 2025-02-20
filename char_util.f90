@@ -266,27 +266,32 @@
       !-----------------------------------------------------------------
       SUBROUTINE SPLIT_STRING(STRING,SEP,N,COLMS,NA)
       IMPLICIT NONE
-      INTEGER :: N,NA,I,IS,IE,INEXT
+      INTEGER :: N,NA,I,IS,IE,INEXT,ISNEW,INE,NTRIM,LSEP
       CHARACTER(LEN=*) :: STRING,SEP,COLMS(N)
+      CHARACTER(LEN=LEN(TRIM(ADJUSTL(STRING)))) :: CSTR
 
-      IS=INDEX(STRING,SEP)
+      CSTR=TRIM(ADJUSTL(STRING))
+      IS=INDEX(CSTR,SEP)
       IF(IS.EQ.0) THEN
-       COLMS(1)=STRING
+       COLMS(1)=CSTR
        NA=0
       ELSE
-       COLMS(1)=STRING(1:IS-1)
-       INEXT=IS
+       LSEP=LEN(SEP)
+       IE=IS+LSEP-1
+       COLMS(1)=CSTR(1:IS-1)
        I=1
+       INEXT=IS
        DO WHILE(INEXT.GT.0)
-        INEXT=INDEX(STRING(IS+1:),SEP)
-        IE=INEXT+IS
-        IF(IE.GE.IS) THEN
+        INEXT=INDEX(CSTR(IE+1:),SEP)
+        ISNEW=INEXT+IE
+        !WRITE(*,*) IS,IE,ISNEW,CSTR(IE+1:ISNEW-1)
+        IF(ISNEW.GE.IE) THEN
          I=I+1
-         COLMS(I)=STRING(IS+1:IE-1)
+         COLMS(I)=CSTR(IE+1:ISNEW-1)
         ENDIF
-        IS=IE
+        IE=ISNEW+LSEP-1
        ENDDO
-        COLMS(I)=STRING(IE+1:)
+        COLMS(I)=CSTR(ISNEW+1:)
         NA=I
       ENDIF
 
