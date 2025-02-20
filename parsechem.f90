@@ -510,7 +510,7 @@
        CALL RPLTXTE(C,'POS','+',CWRK,NSTR_REMX)
        C=CWRK
        CALL RPLTXTE(C,'NEG','-',CWRK,NSTR_REMX)
-       CREAC_F(I)='$'//TRIM(ADJUSTL(CWRK))//'$'
+       CREAC_F(I)='$ '//TRIM(ADJUSTL(CWRK))//' $'
       ENDDO
       
       RETURN
