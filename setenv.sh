@@ -1,6 +1,8 @@
 #!/bin/bash
 
 WRK_DIR=$(pwd)
+SRC_DIR=$WRK_DIR/src/
+
 FC='gfortran'
 FOPT='-O3 -mcmodel=large -fbounds-check'
 
@@ -16,5 +18,6 @@ echo $FOPT
 echo " "
 
 export WRK_DIR
+export SRC_DIR
 export FC
 export FOPT

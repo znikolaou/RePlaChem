@@ -34,7 +34,7 @@
 !
 !-----------------------------------------------------------------------
 !
-      USE GLOBAL, ONLY :NWRKC
+      USE GLOBAL, ONLY :NWRK
       USE PRECIS, ONLY : DBL_P
 !
       IMPLICIT NONE
@@ -43,7 +43,7 @@
       REAL(KIND=DBL_P) :: WIJ(NREAC,NSPEC),RR(NREAC),JIJ(NSPEC,NSPEC)
       !
       CHARACTER(LEN=4) :: CDAT
-      CHARACTER(LEN=NWRKC) :: FLNM
+      CHARACTER(LEN=NWRK) :: FLNM
       INTEGER :: NSP,NRE
       REAL(KIND=DBL_P) :: TIME,THETA
 ! 

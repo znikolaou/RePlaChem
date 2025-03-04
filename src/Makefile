@@ -6,7 +6,7 @@ SRC=globalModule.f90 precModule.f90 graphSearchModule.f90 parsechem.f90 main.f90
 OBJS=$(SRC:.f90=.o)
 
 goRedChem: $(OBJS) 
-	$(FC) $(FOPT) $(OBJS) -o $@
+	$(FC) $(FOPT) $(OBJS) -o $@ 
 
 %.o: %.f90
 	$(FC) $(FOPT) -c $< 
