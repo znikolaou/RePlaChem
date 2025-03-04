@@ -1,88 +1,83 @@
-      SUBROUTINE READ_CHEM(DIR,CHEMFL,SPECFL,CREAC,CSPEC, &
-                           NREAC,NSPEC)
+      !-----------------------------------------------------------------
+      SUBROUTINE READ_CHEM(DIR,CHEMFL,SPECFL)
+      !      
       ! AUTHOR: Z. NIKOLAOU
-      USE GLOBAL, ONLY : NWRK,NSMX,NSMX
-      USE PRECIS, ONLY: DBL_P
+      !
+      USE GLOBAL
+      USE PRECIS, ONLY : DBL_P
       IMPLICIT NONE
       CHARACTER(LEN=*) :: DIR,CHEMFL,SPECFL
-      CHARACTER(LEN=LEN(DIR)) :: RATEDIR
-      CHARACTER(LEN=NSMX) :: CREAC(NWRK),CREAC_F(NWRK)
-      CHARACTER(LEN=NSMX) :: CSPEC(NWRK)
-      INTEGER I,I1,I2,NREAC,NSPEC,REAC_SPEC_MATRIX(NWRK,NWRK)
+      CHARACTER(LEN=LEN(DIR)+6) :: RDIR
+      CHARACTER(LEN=NSMX) :: CREAC(NWRK),CSPEC(NWRK),CREAC_F(NWRK)
+      INTEGER I,I1,I2,NOSPEC(NWRK)
       PARAMETER(I1=1,I2=2)
-      LOGICAL :: CHECK_ARRAY_SIZE
+      LOGICAL :: IS_LE_TO,IS_SPEC(NWRK,NWRK)
 
-      RATEDIR=TRIM(ADJUSTL(DIR))//'rates/'
+      RDIR=TRIM(ADJUSTL(DIR))//'rates/'
+
+      CREAC(1:NWRK)=''
+      CSPEC(1:NWRK)=''
+      CREAC_F(1:NWRK)=''
 
       !REMOVE TABS FROM INPUT FILES
       CALL SYSTEM("sed -i 's/\t/\ /g'"//' '//DIR//CHEMFL) 
       CALL SYSTEM("sed -i 's/\t/\ /g'"//' '//DIR//SPECFL) 
-      CALL PARSE_INDEX_AND_STRING(DIR//CHEMFL,NSMX,NWRK,NREAC, &
-              CREAC)   
-      CALL PARSE_INDEX_AND_STRING(DIR//SPECFL,NSMX,NWRK,NSPEC, &
-              CSPEC)
+
+      CALL READ_INT_AND_STR(DIR//CHEMFL,REAC,NREAC)   
+      CALL READ_INT_AND_STR(DIR//SPECFL,SPEC,NSPEC)
      
-      IF(.NOT.CHECK_ARRAY_SIZE(NREAC,NWRK)) THEN
+      IF(.NOT.IS_LE_TO(NREAC,NWRK)) THEN
        WRITE(*,*) '*ERROR: NREAC>NWRK:',NREAC,NWRK
        STOP
       ENDIF
-      IF(.NOT.CHECK_ARRAY_SIZE(NSPEC,NWRK)) THEN
+      IF(.NOT.IS_LE_TO(NSPEC,NWRK)) THEN
        WRITE(*,*) '*ERROR: NSPEC>NWRK:',NSPEC,NWRK
        STOP
       ENDIF
 
-      WRITE(*,*) 'SPECIES:' 
-      WRITE(*,*) '--------'
+      WRITE(*,*) '***READ_CHEM***'
+      WRITE(*,*) 'SPECIES:',NSPEC 
       DO I=1,NSPEC
        WRITE(*,'(I5,X,A)') I,TRIM(ADJUSTL(CSPEC(I)))
       ENDDO 
-      WRITE(*,*) 'REACTIONS:' 
-      WRITE(*,*) '----------'
+      WRITE(*,*) 'REACTIONS:',NREAC 
       DO I=1,NREAC
        WRITE(*,'(I5,X,A)') I,TRIM(ADJUSTL(CREAC(I)))
       ENDDO 
-      
-      !TODO:
-      !SPEC_REAC_M(NSPEC,NREAC)=1 IF SPEC PRESENT 0 OTHERWISE  
-      !CALL GET_SPECIES_REACTION_MATRIX(NSPEC,NREAC,NWRK,CSPEC,CREAC, &
-      !        SPEC_REAC_M)
+     
+      CALL GET_FORMATTED_REACTIONS()
+      CALL GET_REACTION_SPECIES()
+     
+      WRITE(*,*) '***READ_CHEM***'
 
       RETURN
       END
-      !-----------------------------------------------------------------
-      LOGICAL FUNCTION CHECK_ARRAY_SIZE(N,NMAX)
-      IMPLICIT NONE
-      INTEGER :: N,NMAX
-      
-      CHECK_ARRAY_SIZE=N.LE.NMAX
-
-      END FUNCTION
-      !-----------------------------------------------------------------
-      SUBROUTINE PARSE_INDEX_AND_STRING(FL,NMX,NWRK,NLIST,STRLIST)
-      IMPLICIT NONE
+      !------------------------------------------------------------------
+      SUBROUTINE READ_INT_AND_STR(FL,STRL,NL)
+      USE GLOBAL, ONLY : NSMX,NWRK
+      CHARACTER(LEN=*) :: FL 
+      INTEGER :: N,ID,STAT,I,NL,NA
+      CHARACTER(LEN=NSMX) :: STRL(NWRK),CL(2),C
       LOGICAL ISEMPTY,ISCOMMENT
-      CHARACTER(LEN=*) :: FL
-      INTEGER :: NMX,NWRK,NLIST,FID,STAT,I,IS,INDX_SPACE
-      CHARACTER(LEN=NMX) :: STRLIST(NWRK),C
-      PARAMETER(FID=1)
+      PARAMETER(ID=1)
       
-      OPEN(UNIT=FID,FILE=TRIM(ADJUSTL(FL)),STATUS='OLD', &
-              FORM='FORMATTED')
+      OPEN(UNIT=ID,FILE=TRIM(ADJUSTL(FL)),STATUS='OLD',FORM='FORMATTED')
 
       I=0
       STAT=0
       DO WHILE(STAT.EQ.0)
-       READ(FID,'(A)',IOSTAT=STAT) C 
-       IF(.NOT.ISEMPTY(C).AND.(.NOT.ISCOMMENT(C))) THEN
-        C=TRIM(ADJUSTL(C))
-        IS=INDX_SPACE(C)
-        I=I+1
-        STRLIST(I)=C(IS+1:)
+       READ(ID,'(A)',IOSTAT=STAT) C 
+       IF(.NOT.ISEMPTY(C)) THEN
+        IF(.NOT.ISCOMMENT(C)) THEN
+         CALL SPLIT_STRING(C,' ',2,CL,NA)
+          I=I+1
+          STRL(I)=CL(2)
+        ENDIF
        ENDIF
       ENDDO      
-      NLIST=I
+      NL=I
 
-      CLOSE(FID)
+      CLOSE(ID)
 
       END SUBROUTINE 
       !-----------------------------------------------------------------
@@ -118,7 +113,7 @@
       
       DO I=1,NREAC
        C=CREAC(I)
-       CALL GET_FORMATTED_REACTIONS(1,C,CF)
+       CALL GET_FORMATTED_REACTIONS()
        CALL SPLIT_STRING(CF,' ',NSPEC,CREAC_SPEC(I,:),NA)
        NC(I)=NA
        IF(IS_ANY_NEUTRAL_REACTION(CREAC(I))) THEN
@@ -137,23 +132,18 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE GET_REACTION_SPECIES(NSPEC,NREAC,CSPEC,CREAC, &
-                                      IS_SPEC_PRESENT,NOSPEC)
+      SUBROUTINE GET_REACTION_SPECIES()
+      USE GLOBAL
       IMPLICIT NONE
-      INTEGER :: NSPEC,NREAC,NOSPEC(NREAC),I,J,K,NA
-      CHARACTER(LEN=*) :: CREAC(NREAC),CSPEC(NSPEC)
+      INTEGER :: I,J
       LOGICAL :: IS_SPEC_IN_REACTION,IS_BOLSIG_REACTION, &
-                 IS_ANY_NEUTRAL_REACTION,IS_CHARGED_SPECIES, &
-                 IS_SPEC_PRESENT(NSPEC,NREAC)
+                 IS_ANY_NEUTRAL_REACTION,IS_CHARGED_SPECIES
 
-      IS_SPEC_PRESENT(1:NSPEC,1:NREAC)=.FALSE.
+      IS_SPEC_IN_REAC(1:NWRK,1:NWRK)=.FALSE.
       DO J=1,NREAC
-       K=0
        DO I=1,NSPEC
-        IF(IS_SPEC_IN_REACTION(CREAC(J),CSPEC(I))) THEN 
-         K=K+1
-         IS_SPEC_PRESENT(I,J)=.TRUE.
-         NOSPEC(J)=K
+        IF(IS_SPEC_IN_REACTION(REACF(J),SPEC(I))) THEN 
+         IS_SPEC_IN_REAC(I,J)=.TRUE.
         ENDIF
        ENDDO
       ENDDO
@@ -162,18 +152,17 @@
       ! TO KEEP ABOVE CODE GENERAL! 
       !ADD MANUALLY SPEC 'E' NOT PRESENT FOR BOLSIG REACTIONS
       DO I=1,NREAC
-       IF(IS_BOLSIG_REACTION(CREAC(I))) THEN
-        IS_SPEC_PRESENT(1,I)=.TRUE. !TODO: THIS IS HARD-CODED HERE! 
-        NOSPEC(I)=NOSPEC(I)+1
+       IF(IS_BOLSIG_REACTION(REACF(I))) THEN
+        IS_SPEC_IN_REAC(1,I)=.TRUE. !TODO: THIS IS HARD-CODED HERE! 
        ENDIF
       ENDDO
 
       !CHECK FOR 'ANY_NEUTRAL' REACTIONS
       DO I=1,NREAC
-       IF(IS_ANY_NEUTRAL_REACTION(CREAC(I))) THEN
+       IF(IS_ANY_NEUTRAL_REACTION(REACF(I))) THEN
         DO J=1,NSPEC
-         IF(.NOT.IS_CHARGED_SPECIES(CSPEC(J))) THEN
-          IS_SPEC_PRESENT(J,I)=.TRUE.
+         IF(.NOT.IS_CHARGED_SPECIES(SPEC(J))) THEN
+          IS_SPEC_IN_REAC(J,I)=.TRUE.
          ENDIF
         ENDDO
        ENDIF
@@ -182,6 +171,14 @@
       RETURN
       END
       !-----------------------------------------------------------------
+      LOGICAL FUNCTION IS_LE_TO(N,NMAX)
+      IMPLICIT NONE
+      INTEGER :: N,NMAX
+      
+      IS_LE_TO=N.LE.NMAX
+
+      END FUNCTION
+      !------------------------------------------------------------------
       FUNCTION IS_ANY_NEUTRAL_REACTION(REAC)
       IMPLICIT NONE
       CHARACTER(LEN=*) :: REAC,NEUTRAL
@@ -315,20 +312,17 @@
       RETURN
       END 
       !-----------------------------------------------------------------
-      SUBROUTINE GET_FORMATTED_REACTIONS(NREAC,CREAC,CREAC_F)
+      SUBROUTINE GET_FORMATTED_REACTIONS()
       !
-      ! REFORMATS REACTIONS AS BELOW-INTENDED FOR PLASMA CHEMISTRY
-      ! 
-      ! AUTHOR: Z. NIKOLAOU (2025)     
-      USE GLOBAL, ONLY : NSMX
+      ! AUTHOR: Z. NIKOLAOU  
+      !  
+      USE GLOBAL
       IMPLICIT NONE
-      INTEGER :: NREAC,I
-      CHARACTER(LEN=*) :: CREAC(NREAC)
-      CHARACTER(LEN=*) :: CREAC_F(NREAC)
+      INTEGER :: I
       CHARACTER(LEN=NSMX) :: C,CWRK
 
       DO I=1,NREAC
-       C=CREAC(I)
+       C=REAC(I)
        CALL RPLTXTE(C,'^+','^POS',CWRK,NSMX)
        C=CWRK
        CALL RPLTXTE(C,':',' ',CWRK,NSMX)
@@ -349,7 +343,7 @@
        C=CWRK
        CALL RPLTXTE(C,'NEG','-',CWRK,NSMX)
        C='* '//TRIM(ADJUSTL(CWRK))//' *'
-       CREAC_F(I)=TRIM(ADJUSTL(C))
+       REACF(I)=TRIM(ADJUSTL(C))
       ENDDO
       
       RETURN
