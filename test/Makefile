@@ -1,6 +1,6 @@
 
 #Source files
-SRC_CHEM=$(WRK_DIR)/Global.f90 $(WRK_DIR)/char_util.f90 $(WRK_DIR)/prec.f90 $(WRK_DIR)/parsechem.f90 
+SRC_CHEM=$(SRC_DIR)/globalModule.f90 $(SRC_DIR)/charUtil.f90 $(SRC_DIR)/precModule.f90 $(SRC_DIR)/parsechem.f90 
 OBJS_CHEM=$(SRC_CHEM:%.f90=%.o)
 
 SRC_T1=testIsBolsigReaction.f90
@@ -58,9 +58,9 @@ goTestGetChargedSpecies: $(OBJS_T10)
 %.o: %.f90
 	$(FC) $(FOPT) -c -o $@ $< 
 
-$(WRK_DIR)/%.o: $(WRK_DIR)/%.f90
+$(SRC_DIR)/%.o: $(SRC_DIR)/%.f90
 	$(FC) $(FOPT) -c -o $@ $< 
 
 clean:
-	rm $(WRK_DIR)/*.o  *.o log* go*
+	rm $(SRC_DIR)/*.o  *.o log* go*  *.mod
 
