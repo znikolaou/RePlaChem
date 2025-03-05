@@ -4,20 +4,18 @@
       ! AUTHOR: Z. NIKOLAOU
       !
       USE GLOBAL
-      USE PRECIS, ONLY : DBL_P
       IMPLICIT NONE
       CHARACTER(LEN=*) :: DIR,CHEMFL,SPECFL
       CHARACTER(LEN=LEN(DIR)+6) :: RDIR
-      CHARACTER(LEN=NSMX) :: CREAC(NWRK),CSPEC(NWRK),CREAC_F(NWRK)
-      INTEGER I,I1,I2,NOSPEC(NWRK)
-      PARAMETER(I1=1,I2=2)
+      INTEGER I,J
+      INTEGER, PARAMETER :: I1=1,I2=2
       LOGICAL :: IS_LE_TO,IS_SPEC(NWRK,NWRK)
 
       RDIR=TRIM(ADJUSTL(DIR))//'rates/'
 
-      CREAC(1:NWRK)=''
-      CSPEC(1:NWRK)=''
-      CREAC_F(1:NWRK)=''
+      REAC(1:NWRK)=''
+      SPEC(1:NWRK)=''
+      REACF(1:NWRK)=''
 
       !REMOVE TABS FROM INPUT FILES
       CALL SYSTEM("sed -i 's/\t/\ /g'"//' '//DIR//CHEMFL) 
@@ -25,7 +23,11 @@
 
       CALL READ_INT_AND_STR(DIR//CHEMFL,REAC,NREAC)   
       CALL READ_INT_AND_STR(DIR//SPECFL,SPEC,NSPEC)
-     
+      CALL SET_FORMATTED_REACTIONS()
+      CALL SET_REACTION_SPECIES()
+      
+      WRITE(*,*) '***READ_CHEM***'
+
       IF(.NOT.IS_LE_TO(NREAC,NWRK)) THEN
        WRITE(*,*) '*ERROR: NREAC>NWRK:',NREAC,NWRK
        STOP
@@ -34,19 +36,25 @@
        WRITE(*,*) '*ERROR: NSPEC>NWRK:',NSPEC,NWRK
        STOP
       ENDIF
-
-      WRITE(*,*) '***READ_CHEM***'
+      
       WRITE(*,*) 'SPECIES:',NSPEC 
       DO I=1,NSPEC
-       WRITE(*,'(I5,X,A)') I,TRIM(ADJUSTL(CSPEC(I)))
+       WRITE(*,'(I5,X,A)') I,TRIM(ADJUSTL(SPEC(I)))
       ENDDO 
       WRITE(*,*) 'REACTIONS:',NREAC 
       DO I=1,NREAC
-       WRITE(*,'(I5,X,A)') I,TRIM(ADJUSTL(CREAC(I)))
+       WRITE(*,'(I5,X,A)') I,TRIM(ADJUSTL(REAC(I)))
       ENDDO 
      
-      CALL GET_FORMATTED_REACTIONS()
-      CALL GET_REACTION_SPECIES()
+      WRITE(*,*) 'REACTION SPECIES:'
+      DO I=1,NREAC
+       WRITE(*,*) I,REAC(I)
+       DO J=1,NSPEC
+        IF(IS_SPEC_IN_REAC(J,I)) THEN
+         WRITE(*,*) J,SPEC(J)
+        ENDIF
+       ENDDO
+      ENDDO
      
       WRITE(*,*) '***READ_CHEM***'
 
@@ -81,6 +89,8 @@
 
       END SUBROUTINE 
       !-----------------------------------------------------------------
+      
+      !TODO: REFORMAT
       SUBROUTINE SEPARATE_REACTIONS(N,CREAC,REAC,PROD)
       USE GLOBAL, ONLY : NSMX
       IMPLICIT NONE
@@ -101,7 +111,9 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE GET_REAC_SPEC(NSPEC,NREAC,CREAC,CSPEC,CREAC_SPEC,NC)
+      !TODO: CHECK WITH TEST
+      SUBROUTINE GET_REAC_SPEC_FROM_REAC(NSPEC,NREAC,CREAC,CSPEC, &
+                      CREAC_SPEC,NC)
       USE GLOBAL, ONLY : NSMX        
       IMPLICIT NONE
       LOGICAL :: IS_ANY_NEUTRAL_REACTION,IS_CHARGED_SPECIES, &
@@ -113,7 +125,7 @@
       
       DO I=1,NREAC
        C=CREAC(I)
-       CALL GET_FORMATTED_REACTIONS()
+       CALL SET_FORMATTED_REACTIONS()
        CALL SPLIT_STRING(CF,' ',NSPEC,CREAC_SPEC(I,:),NA)
        NC(I)=NA
        IF(IS_ANY_NEUTRAL_REACTION(CREAC(I))) THEN
@@ -132,12 +144,39 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE GET_REACTION_SPECIES()
+      SUBROUTINE SET_REACTION_SPECIES()
       USE GLOBAL
       IMPLICIT NONE
+    
+      IS_SPEC_IN_REAC(1:NWRK,1:NWRK)=.FALSE.
+      CALL SET_SPECIES_FROM_LIST()
+      CALL SET_E_FOR_BOLSIG_IF_ANY()
+      CALL SET_NEUTRAL_IF_ANY()
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      FUNCTION GET_SPECIES_INDEX(SP)
+      USE GLOBAL 
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: SP
+      INTEGER :: I,GET_SPECIES_INDEX
+
+      GET_SPECIES_INDEX=0
+      DO I=1,NSPEC
+       IF(TRIM(ADJUSTL(SP)).EQ.TRIM(ADJUSTL(SPEC(I)))) THEN
+         GET_SPECIES_INDEX=I
+         EXIT
+       ENDIF
+      ENDDO
+      
+      END FUNCTION
+      !-----------------------------------------------------------------
+      SUBROUTINE SET_SPECIES_FROM_LIST()
+      USE GLOBAL
+      IMPLICIT NONE 
       INTEGER :: I,J
-      LOGICAL :: IS_SPEC_IN_REACTION,IS_BOLSIG_REACTION, &
-                 IS_ANY_NEUTRAL_REACTION,IS_CHARGED_SPECIES
+      LOGICAL :: IS_SPEC_IN_REACTION
 
       IS_SPEC_IN_REAC(1:NWRK,1:NWRK)=.FALSE.
       DO J=1,NREAC
@@ -148,16 +187,30 @@
        ENDDO
       ENDDO
 
-      !TODO :: IMPLEMENT NEXT TWO AS SEPARATE SUBROUTINES 
-      ! TO KEEP ABOVE CODE GENERAL! 
-      !ADD MANUALLY SPEC 'E' NOT PRESENT FOR BOLSIG REACTIONS
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE SET_E_FOR_BOLSIG_IF_ANY()
+      USE GLOBAL 
+      IMPLICIT NONE
+      INTEGER :: I,IE,GET_SPECIES_INDEX
+      LOGICAL :: IS_BOLSIG_REACTION
+
+      IE=GET_SPECIES_INDEX('E') 
       DO I=1,NREAC
        IF(IS_BOLSIG_REACTION(REACF(I))) THEN
-        IS_SPEC_IN_REAC(1,I)=.TRUE. !TODO: THIS IS HARD-CODED HERE! 
+        IS_SPEC_IN_REAC(IE,I)=.TRUE.
        ENDIF
       ENDDO
 
-      !CHECK FOR 'ANY_NEUTRAL' REACTIONS
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE SET_NEUTRAL_IF_ANY()
+      USE GLOBAL 
+      INTEGER :: I,J
+      LOGICAL :: IS_ANY_NEUTRAL_REACTION,IS_CHARGED_SPECIES
+      
       DO I=1,NREAC
        IF(IS_ANY_NEUTRAL_REACTION(REACF(I))) THEN
         DO J=1,NSPEC
@@ -180,43 +233,26 @@
       END FUNCTION
       !------------------------------------------------------------------
       FUNCTION IS_ANY_NEUTRAL_REACTION(REAC)
+      USE GLOBAL, ONLY : NEUTRALID
       IMPLICIT NONE
-      CHARACTER(LEN=*) :: REAC,NEUTRAL
+      CHARACTER(LEN=*) :: REAC
       LOGICAL :: IS_ANY_NEUTRAL_REACTION
-      PARAMETER(NEUTRAL='ANY_NEUTRAL')
 
-      IS_ANY_NEUTRAL_REACTION=INDEX(REAC,NEUTRAL).GT.0
+      IS_ANY_NEUTRAL_REACTION=INDEX(REAC,NEUTRALID).GT.0
 
       END FUNCTION
       !-----------------------------------------------------------------
       FUNCTION IS_BOLSIG_REACTION(REAC)
+      USE GLOBAL, ONLY : BOLSIGID
       IMPLICIT NONE
       LOGICAL :: IS_BOLSIG_REACTION
       CHARACTER(LEN=*) :: REAC
-      CHARACTER(LEN=*) :: BOLSIG
-      PARAMETER(BOLSIG='bolsig')
       
-      IF(INDEX(REAC,BOLSIG).GT.0) THEN
+      IF(INDEX(REAC,BOLSIGID).GT.0) THEN
        IS_BOLSIG_REACTION=.TRUE.
       ELSE
        IS_BOLSIG_REACTION=.FALSE.
       ENDIF
-
-      END FUNCTION
-      !-----------------------------------------------------------------
-      FUNCTION IS_FOREIGN_SPEC_IN_REACTION(CREAC,NSPEC,CSPEC)
-      IMPLICIT NONE
-      INTEGER :: NSPEC,I,REAC_SPEC(1,NSPEC)
-      CHARACTER(LEN=*) :: CREAC,CSPEC(NSPEC)
-      LOGICAL :: IS_FOREIGN_SPEC_IN_REACTION
-
-      IS_FOREIGN_SPEC_IN_REACTION=.FALSE.
-      
-      !CALL GET_REACTION_SPECIES(NSPEC,1,CREAC,CSPEC,REAC_SPEC, &
-      !                          CREAC_SPEC,NOSPEC)
-      
-
-      !ENDDO
 
       END FUNCTION
       !-----------------------------------------------------------------
@@ -246,24 +282,6 @@
                          (INDEX(C,'^-').GT.0).OR.(C.EQ.'E')
              
       END FUNCTION
-      !-----------------------------------------------------------------
-      SUBROUTINE REMOVE_REACTIONS_WITH_FOREIGN_SPECIES(NREAC,CREAC, &
-                      NSPEC,CSPEC,CREAC_F,NF)
-      IMPLICIT NONE
-      INTEGER :: NREAC,NSPEC,NF,I,J
-      CHARACTER(LEN=*) :: CREAC(NREAC),CSPEC(NSPEC),CREAC_F(NREAC)
-
-      J=0
-      DO I=1,NREAC
-       !IF(.NOT.IS_FOREIGN_SPECIES_PRESENT(CREAC(I),NSPEC,CSPEC)) THEN
-       ! J=J+1
-       ! CREAC_F(J)=CREAC(I)
-       !ENDIF
-      ENDDO
-      NF=I
-
-      RETURN
-      END
       !-----------------------------------------------------------------
       SUBROUTINE REMOVE_DUPLICATE_REACTIONS(NREAC,CREAC,CREAC_F,NF)
       IMPLICIT NONE
@@ -312,7 +330,7 @@
       RETURN
       END 
       !-----------------------------------------------------------------
-      SUBROUTINE GET_FORMATTED_REACTIONS()
+      SUBROUTINE SET_FORMATTED_REACTIONS()
       !
       ! AUTHOR: Z. NIKOLAOU  
       !  

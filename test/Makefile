@@ -8,7 +8,7 @@ SRC_T2=testFormatReactions.f90
 SRC_T3=testSeparateReaction.f90
 SRC_T4=testGetReactionSpeciesFromReaction.f90
 SRC_T5=testCountSpeciesReactantsProducts.f90
-SRC_T6=testGetReactionSpeciesFromSpeciesListOnly.f90
+SRC_T6=testReadChem.f90
 SRC_T7=testIsChargedSpecies.f90
 SRC_T8=testSplitString.f90
 SRC_T9=testRemoveDuplicateReactions.f90
@@ -48,7 +48,7 @@ goTestGetReactionSpeciesFromReaction: $(OBJS_T4)
 goTestCountSpeciesReactantsProducts: $(OBJS_T5)
 	$(FC) $(FOPT) $(OBJS_T5) -o $@
 
-goTestGetReactionSpeciesFromSpeciesListOnly: $(OBJS_T6)
+goTestReadChem: $(OBJS_T6)
 	$(FC) $(FOPT) $(OBJS_T6) -o $@
 
 goTestIsChargedSpecies: $(OBJS_T7)
