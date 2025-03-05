@@ -49,8 +49,8 @@
                           SKELETAL_SPEC_KPP, &
                           DNUFILE
       !INPUT/OUTPUT DIRS
-      PARAMETER(INDIR='input_test/')
-      PARAMETER(OUTDIR='output/')
+      PARAMETER(INDIR='../input_test/')
+      PARAMETER(OUTDIR='../output/')
       PARAMETER(RATEDIR=INDIR//'rates/')
       !INPUT FILES
       PARAMETER(TRGFILE="target.txt")        !TARGET SPEC
