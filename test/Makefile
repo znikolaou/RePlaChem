@@ -1,6 +1,6 @@
 
 #Source files
-SRC_CHEM=$(SRC_DIR)/global.f90 $(SRC_DIR)/precis.f90 $(SRC_DIR)/charUtil.f90 $(SRC_DIR)/parsechem.f90 
+SRC_CHEM=$(SRC_DIR)/global.f90 $(SRC_DIR)/precis.f90 $(SRC_DIR)/charUtil.f90 $(SRC_DIR)/parsechem.f90 $(SRC_DIR)/io.f90 
 OBJS_CHEM=$(SRC_CHEM:%.f90=%.o)
 
 SRC_T1=testIsBolsigReaction.f90
@@ -73,5 +73,5 @@ $(SRC_DIR)/%.o: $(SRC_DIR)/%.f90
 	$(FC) $(FOPT) -c -o $@ $< 
 
 clean:
-	rm -f $(SRC_DIR)/*.o  *.o log* go*  *.mod
+	@ rm -f $(SRC_DIR)/*.o  *.o log* go*  *.mod
 

@@ -6,34 +6,29 @@
       USE GLOBAL
       IMPLICIT NONE
       CHARACTER(LEN=*) :: DIR,CHEMFL,SPECFL
-      CHARACTER(LEN=LEN(DIR)+6) :: RDIR
       INTEGER I,J
       INTEGER, PARAMETER :: I1=1,I2=2
-      LOGICAL :: IS_LE_TO,IS_SPEC(NWRK,NWRK)
+      LOGICAL :: IS_LE_TO
 
-      RDIR=TRIM(ADJUSTL(DIR))//'rates/'
+      CALL INIT_GLOBALS()
 
-      REAC(1:NWRK)=''
-      SPEC(1:NWRK)=''
-      REACF(1:NWRK)=''
-
-      !REMOVE TABS FROM INPUT FILES
-      CALL SYSTEM("sed -i 's/\t/\ /g'"//' '//DIR//CHEMFL) 
-      CALL SYSTEM("sed -i 's/\t/\ /g'"//' '//DIR//SPECFL) 
-
-      CALL READ_INT_AND_STR(DIR//CHEMFL,REAC,NREAC)   
-      CALL READ_INT_AND_STR(DIR//SPECFL,SPEC,NSPEC)
+      CALL REMOVE_TABS_FROM_FILE(DIR//SPECFL)
+      CALL REMOVE_TABS_FROM_FILE(DIR//CHEMFL)
+      
+      CALL SET_SPECIES(DIR//SPECFL)
+      CALL SET_IS_NEUTRAL()
+      CALL SET_REACTIONS(DIR//CHEMFL)
       CALL SET_FORMATTED_REACTIONS()
       CALL SET_REACTION_SPECIES()
       
       WRITE(*,*) '***READ_CHEM***'
 
-      IF(.NOT.IS_LE_TO(NREAC,NWRK)) THEN
-       WRITE(*,*) '*ERROR: NREAC>NWRK:',NREAC,NWRK
+      IF(.NOT.IS_LE_TO(NREAC,NREMX)) THEN
+       WRITE(*,*) '*ERROR: NREAC>NREMX:',NREAC,NREMX
        STOP
       ENDIF
-      IF(.NOT.IS_LE_TO(NSPEC,NWRK)) THEN
-       WRITE(*,*) '*ERROR: NSPEC>NWRK:',NSPEC,NWRK
+      IF(.NOT.IS_LE_TO(NSPEC,NSPMX)) THEN
+       WRITE(*,*) '*ERROR: NSPEC>NSPMX:',NSPEC,NSPMX
        STOP
       ENDIF
       
@@ -61,35 +56,39 @@
       RETURN
       END
       !------------------------------------------------------------------
-      SUBROUTINE READ_INT_AND_STR(FL,STRL,NL)
-      USE GLOBAL, ONLY : NSMX,NWRK
-      CHARACTER(LEN=*) :: FL 
-      INTEGER :: N,ID,STAT,I,NL,NA
-      CHARACTER(LEN=NSMX) :: STRL(NWRK),CL(2),C
-      LOGICAL ISEMPTY,ISCOMMENT
-      PARAMETER(ID=1)
+      SUBROUTINE INIT_GLOBALS()
+      USE GLOBAL
+      IMPLICIT NONE
       
-      OPEN(UNIT=ID,FILE=TRIM(ADJUSTL(FL)),STATUS='OLD',FORM='FORMATTED')
+      REAC(1:NREMX)=''
+      REACF(1:NREMX)=''
+      SPEC(1:NSPMX)=''
+      IS_SPEC_IN_REAC(1:NSPMX,1:NREMX)=.FALSE.
+      IS_SPEC_NEUTRAL(1:NSPMX)=.TRUE.
 
-      I=0
-      STAT=0
-      DO WHILE(STAT.EQ.0)
-       READ(ID,'(A)',IOSTAT=STAT) C 
-       IF(.NOT.ISEMPTY(C)) THEN
-        IF(.NOT.ISCOMMENT(C)) THEN
-         CALL SPLIT_STRING(C,' ',2,CL,NA)
-          I=I+1
-          STRL(I)=CL(2)
-        ENDIF
-       ENDIF
-      ENDDO      
-      NL=I
+      RETURN
+      END
+      !------------------------------------------------------------------
+      SUBROUTINE SET_REACTIONS(FL)
+      USE GLOBAL, ONLY : REAC,NREAC,NREMX
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: FL
 
-      CLOSE(ID)
+      CALL READ_INT_AND_STR(FL,NREMX,REAC,NREAC)
 
-      END SUBROUTINE 
-      !-----------------------------------------------------------------
-      
+      RETURN
+      END
+      !------------------------------------------------------------------
+      SUBROUTINE SET_SPECIES(FL)
+      USE GLOBAL, ONLY : SPEC,NSPEC,NSPMX
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: FL
+
+      CALL READ_INT_AND_STR(FL,NSPMX,SPEC,NSPEC)
+
+      RETURN
+      END
+      !----------------------------------------------------------------- 
       !TODO: REFORMAT
       SUBROUTINE SEPARATE_REACTIONS(N,CREAC,REAC,PROD)
       USE GLOBAL, ONLY : NSMX
@@ -148,7 +147,6 @@
       USE GLOBAL
       IMPLICIT NONE
     
-      IS_SPEC_IN_REAC(1:NWRK,1:NWRK)=.FALSE.
       CALL SET_SPECIES_FROM_LIST()
       CALL SET_E_FOR_BOLSIG_IF_ANY()
       CALL SET_NEUTRAL_IF_ANY()
@@ -178,7 +176,7 @@
       INTEGER :: I,J
       LOGICAL :: IS_SPEC_IN_REACTION
 
-      IS_SPEC_IN_REAC(1:NWRK,1:NWRK)=.FALSE.
+      IS_SPEC_IN_REAC(1:NSPMX,1:NREMX)=.FALSE.
       DO J=1,NREAC
        DO I=1,NSPEC
         IF(IS_SPEC_IN_REACTION(REACF(J),SPEC(I))) THEN 
@@ -272,14 +270,18 @@
       END FUNCTION
       !-----------------------------------------------------------------
       FUNCTION IS_CHARGED_SPECIES(SPEC)
+      USE GLOBAL, ONLY : EID
       IMPLICIT NONE
       CHARACTER(LEN=*) :: SPEC
       CHARACTER(LEN=LEN(TRIM(ADJUSTL(SPEC)))) :: C
       LOGICAL :: IS_CHARGED_SPECIES
 
       C=TRIM(ADJUSTL(SPEC))
-      IS_CHARGED_SPECIES=(INDEX(C,'^+').GT.0).OR. &
-                         (INDEX(C,'^-').GT.0).OR.(C.EQ.'E')
+      IF(C.EQ.EID) THEN
+       IS_CHARGED_SPECIES=.TRUE.
+      ELSE
+       IS_CHARGED_SPECIES=(INDEX(C,'^+').GT.0).OR.(INDEX(C,'^-').GT.0) 
+      ENDIF
              
       END FUNCTION
       !-----------------------------------------------------------------
@@ -294,20 +296,19 @@
       RETURN
       END  
       !-----------------------------------------------------------------
-      SUBROUTINE GET_NEUTRAL_SPECIES(NSPEC,CSPEC,CNEUT,NC)
+      SUBROUTINE SET_IS_NEUTRAL()
+      USE GLOBAL, ONLY : NSPEC,SPEC,IS_SPEC_NEUTRAL
       IMPLICIT NONE
       LOGICAL :: IS_CHARGED_SPECIES
-      INTEGER :: NSPEC,NC,I,J
-      CHARACTER(LEN=*) :: CSPEC(NSPEC),CNEUT(NSPEC)
-
-      J=0
+      INTEGER :: NC,I
+      
       DO I=1,NSPEC
-       IF(.NOT.IS_CHARGED_SPECIES(CSPEC(I))) THEN
-        J=J+1
-        CNEUT(J)=CSPEC(I)
+       IF(IS_CHARGED_SPECIES(SPEC(I))) THEN
+        IS_SPEC_NEUTRAL(I)=.FALSE.
+       ELSE
+        IS_SPEC_NEUTRAL(I)=.TRUE.
        ENDIF
       ENDDO
-      NC=J
 
       RETURN
       END

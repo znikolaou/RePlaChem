@@ -31,7 +31,7 @@
 !
 !-----------------------------------------------------------------------
           
-      USE GLOBAL, ONLY: NWRK,NSMX,NSMX 
+      USE GLOBAL, ONLY: NREMX,NSMX,NSMX 
       USE PRECIS, ONLY: DBL_P
 !
       IMPLICIT NONE
@@ -65,8 +65,8 @@
 !
 !-----------------------------------------------------------------------
 !
-      CHARACTER(LEN=NSMX) :: CREACNM_S(NWRK),CREACNM_F(NWRK)
-      CHARACTER(LEN=NSMX) :: CSPECNM_S(NWRK),CSPECNM_F(NWRK)
+      CHARACTER(LEN=NSMX) :: CREACNM_S(NREMX),CREACNM_F(NREMX)
+      CHARACTER(LEN=NSMX) :: CSPECNM_S(NSPMX),CSPECNM_F(NSPMX)
       INTEGER :: I,J,K,N,NSPEC,NREAC,LCREAC,LCSPEC,IPROD
 !
       CHARACTER(LEN=NSMX), ALLOCATABLE :: CREAC(:)
