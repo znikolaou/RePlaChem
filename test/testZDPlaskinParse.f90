@@ -1,0 +1,5 @@
+      PROGRAM TEST_ZDPLASKIN
+      IMPLICIT NONE 
+
+      STOP
+      END

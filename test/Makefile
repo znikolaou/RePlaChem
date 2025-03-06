@@ -1,6 +1,6 @@
 
 #Source files
-SRC_CHEM=$(SRC_DIR)/global.f90 $(SRC_DIR)/precis.f90 $(SRC_DIR)/charUtil.f90 $(SRC_DIR)/parsechem.f90 $(SRC_DIR)/io.f90 
+SRC_CHEM=$(SRC_DIR)/global.f90 $(SRC_DIR)/precis.f90 $(SRC_DIR)/zdplaskin_parse.f90 $(SRC_DIR)/charUtil.f90 $(SRC_DIR)/parsechem.f90 $(SRC_DIR)/io.f90 
 OBJS_CHEM=$(SRC_CHEM:%.f90=%.o)
 
 SRC_T1=testIsBolsigReaction.f90
@@ -14,6 +14,8 @@ SRC_T8=testSplitString.f90
 SRC_T9=testRemoveDuplicateReactions.f90
 SRC_T10=testGetChargedSpecies.f90
 SRC_T11=testGetSpeciesIndex.f90
+SRC_T12=testZDPlaskinParse.f90
+SRC_T13=testReadLines.f90
 
 OBJS_T1=$(OBJS_CHEM) $(SRC_T1:.f90=.o)
 OBJS_T2=$(OBJS_CHEM) $(SRC_T2:.f90=.o)
@@ -26,6 +28,8 @@ OBJS_T8=$(OBJS_CHEM) $(SRC_T8:.f90=.o)
 OBJS_T9=$(OBJS_CHEM) $(SRC_T9:.f90=.o)
 OBJS_T10=$(OBJS_CHEM) $(SRC_T10:.f90=.o)
 OBJS_T11=$(OBJS_CHEM) $(SRC_T11)
+OBJS_T12=$(OBJS_CHEM) $(SRC_T12)
+OBJS_T13=$(OBJS_CHEM) $(SRC_T13)
 
 printSourceFiles: 	
 	@echo $(SRC_CHEM)
@@ -65,6 +69,12 @@ goTestGetChargedSpecies: $(OBJS_T10)
 
 goTestGetSpecIndex: $(OBJS_T11)
 	$(FC) $(FOPT) $(OBJS_T11) -o $@
+
+goTestZDPlaskinParse: $(OBJS_T12)
+	$(FC) $(FOPT) $(OBJS_T12) -o $@
+
+goTestReadLines: $(OBJS_T13)
+	$(FC) $(FOPT) $(OBJS_T13) -o $@
 
 %.o: %.f90
 	$(FC) $(FOPT) -c -o $@ $< 

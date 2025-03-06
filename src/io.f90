@@ -36,4 +36,44 @@
        
       END
       !-----------------------------------------------------------------
-      
+      SUBROUTINE READ_LINES(FL,LINES,NL)
+      USE GLOBAL, ONLY : NSMX_LINE,NLINEMX
+      IMPLICIT NONE
+      CHARACTER(LEN=*) FL
+      CHARACTER(NSMX_LINE) :: L,LINES(NLINEMX)
+      INTEGER, PARAMETER :: ID=1
+      INTEGER :: IOS,I,NL
+
+      WRITE(*,*) '***READ_LINES:***'
+      WRITE(*,*) 'FILE:'
+      WRITE(*,*) FL
+      OPEN(UNIT=ID,FILE=FL,STATUS='OLD',FORM='FORMATTED',IOSTAT=IOS)
+
+      IF(IOS.LT.0) THEN
+       WRITE(*,*) 'ERROR READING FILE'
+       STOP
+      ENDIF
+
+      NL=0
+      DO
+       READ(ID,'(A)',IOSTAT=IOS) L
+       IF(IOS.NE.0) EXIT
+       NL=NL+1
+       IF(NL.GT.NLINEMX) THEN
+        WRITE(*,*) 'MAX LINES EXCEEDED, TERMINATING ...'
+        STOP
+       ENDIF
+      ENDDO
+      WRITE(*,*) 'NO OF LINES:',NL
+
+      REWIND(ID)
+      DO I=1,NL
+       READ(ID,'(A)') LINES(I)
+      ENDDO
+
+      CLOSE(ID)
+            
+      WRITE(*,*) '***READ_LINES:***'
+
+      END
+      !-----------------------------------------------------------------
