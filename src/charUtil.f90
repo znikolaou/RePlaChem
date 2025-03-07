@@ -265,7 +265,7 @@
 
       END FUNCTION
       !-----------------------------------------------------------------
-      SUBROUTINE SPLIT_NEW(STRING,N,COLMS,NA)
+      SUBROUTINE SPLIT_STRING_WITH_SPACES(STRING,N,COLMS,NA)
       IMPLICIT NONE
       INTEGER :: N,NA,IS,IE,J,GET_INDEX_FIRST_CHAR, &
                  ISC,GET_INDEX_FIRST_SPACE
@@ -306,48 +306,6 @@
       NA=J
         
       END 
-      !-----------------------------------------------------------------
-      SUBROUTINE SPLIT_WITH_SPACES(STRING,N,COLMS,NA)
-      IMPLICIT NONE
-      INTEGER :: GET_INDEX_FIRST_CHAR
-      INTEGER :: N,NA,L,J,IS,IE
-      CHARACTER(LEN=*) :: STRING,COLMS(N)
-      CHARACTER(LEN=*), PARAMETER :: SPACE=' '
-      LOGICAL :: ISEMPTY
-
-      NA=0
-      COLMS(1:N)=SPACE
-      IF(ISEMPTY(STRING)) RETURN
-      IF(INDEX(STRING,SPACE).EQ.0) THEN
-       NA=1
-       COLMS(1)=STRING
-       RETURN
-      ENDIF
-      IS=GET_INDEX_FIRST_CHAR(STRING)
-      IE=INDEX(STRING(IS+1:),SPACE)+IS
-      IF(IE.EQ.IS) THEN
-       COLMS(1)=STRING(IS:LEN(STRING))
-       NA=NA+1
-       RETURN
-      ENDIF
-
-      J=0
-      DO WHILE(IS.GT.0)
-       J=J+1
-       COLMS(J)=STRING(IS:IE-1)
-       WRITE(*,*) IS,IE,COLMS(J)
-       IS=GET_INDEX_FIRST_CHAR(STRING(IE+1:))+IE
-       IE=INDEX(STRING(IS+1:),SPACE)+IS
-       IF(IE.EQ.IS) THEN
-        J=J+1
-        COLMS(J+1)=STRING(IS:)
-        EXIT
-       ENDIF
-      ENDDO
-      NA=J
-
-      RETURN
-      END
       !-----------------------------------------------------------------
       FUNCTION GET_INDEX_FIRST_CHAR(STR)
       IMPLICIT NONE
