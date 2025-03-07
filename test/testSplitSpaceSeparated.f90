@@ -1,0 +1,22 @@
+      PROGRAM TEST_SPLIT_SPACE_SEPARATED
+      IMPLICIT NONE
+      CHARACTER(LEN=*), PARAMETER :: &
+              STR1='     werwe werwe    12312 !!', &
+              STR2='',&
+              STR3='        1231231', &
+              STR4='!qweqwe        GDFGDFG!'
+      INTEGER, PARAMETER :: N=100
+      INTEGER :: I,N1,N2,N3,N4,NA1,NA2,NA3,NA4
+      CHARACTER(LEN=100) :: COLMS1(N),COLMS2(N),COLMS3(N),COLMS4(N)
+      
+      CALL SPLIT_NEW(STR1,N,COLMS1,NA1)
+      !CALL SPLIT_NEW(STR2,N,COLMS2,NA2)
+      !CALL SPLIT_WITH_SPACES(STR3,N,COLMS3,NA3)
+      !CALL SPLIT_WITH_SPACES(STR4,N,COLMS4,NA4)
+      
+      DO I=1,NA1
+       WRITE(*,*) I,COLMS1(I)
+      ENDDO
+     
+      STOP
+      END

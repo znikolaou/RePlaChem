@@ -261,6 +261,115 @@
       CHARACTER(LEN=*) STRING
 
       ISCOMMENT=STRING(1:1).EQ.'!'.OR.STRING(1:1).EQ.'#'
+      ISCOMMENT=ISCOMMENT.OR.STRING(1:1).EQ.'$'
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      SUBROUTINE SPLIT_NEW(STRING,N,COLMS,NA)
+      IMPLICIT NONE
+      INTEGER :: N,NA,IS,IE,J,GET_INDEX_FIRST_CHAR, &
+                 ISC,GET_INDEX_FIRST_SPACE
+      CHARACTER(LEN=*) :: STRING,COLMS(N)
+      CHARACTER(LEN=*), PARAMETER :: SPACE=' '
+
+      IF(INDEX(STRING,SPACE).EQ.0) THEN
+       COLMS(1)=STRING(1:LEN(STRING))
+       NA=1
+       RETURN
+      ENDIF
+      
+      IS=1
+      ISC=1
+      J=0
+      DO WHILE(ISC.GT.0)
+       ISC=GET_INDEX_FIRST_CHAR(STRING(IS:))
+       IF(ISC.EQ.0) EXIT
+       IS=ISC+IS-1
+       IE=GET_INDEX_FIRST_SPACE(STRING(IS+1:))+IS
+       IF(IE.EQ.IS) THEN
+        J=J+1
+        COLMS(J)=STRING(IS:LEN(STRING))
+        EXIT
+       ENDIF
+       J=J+1
+       COLMS(J)=STRING(IS:IE-1)
+       WRITE(*,*) 'TEST',ISC,IS,IE,COLMS(J)
+       IS=IE+1
+      ENDDO
+      NA=J
+        
+      END 
+      !-----------------------------------------------------------------
+      SUBROUTINE SPLIT_WITH_SPACES(STRING,N,COLMS,NA)
+      IMPLICIT NONE
+      INTEGER :: GET_INDEX_FIRST_CHAR
+      INTEGER :: N,NA,L,J,IS,IE
+      CHARACTER(LEN=*) :: STRING,COLMS(N)
+      CHARACTER(LEN=*), PARAMETER :: SPACE=' '
+      LOGICAL :: ISEMPTY
+
+      NA=0
+      COLMS(1:N)=SPACE
+      IF(ISEMPTY(STRING)) RETURN
+      IF(INDEX(STRING,SPACE).EQ.0) THEN
+       NA=1
+       COLMS(1)=STRING
+       RETURN
+      ENDIF
+      IS=GET_INDEX_FIRST_CHAR(STRING)
+      IE=INDEX(STRING(IS+1:),SPACE)+IS
+      IF(IE.EQ.IS) THEN
+       COLMS(1)=STRING(IS:LEN(STRING))
+       NA=NA+1
+       RETURN
+      ENDIF
+
+      J=0
+      DO WHILE(IS.GT.0)
+       J=J+1
+       COLMS(J)=STRING(IS:IE-1)
+       WRITE(*,*) IS,IE,COLMS(J)
+       IS=GET_INDEX_FIRST_CHAR(STRING(IE+1:))+IE
+       IE=INDEX(STRING(IS+1:),SPACE)+IS
+       IF(IE.EQ.IS) THEN
+        J=J+1
+        COLMS(J+1)=STRING(IS:)
+        EXIT
+       ENDIF
+      ENDDO
+      NA=J
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      FUNCTION GET_INDEX_FIRST_CHAR(STR)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: STR
+      INTEGER :: GET_INDEX_FIRST_CHAR,I
+
+      GET_INDEX_FIRST_CHAR=0
+      DO I=1,LEN(STR)
+       IF(STR(I:I).NE.' ') THEN
+        GET_INDEX_FIRST_CHAR=I
+        EXIT
+       ENDIF
+      ENDDO
+      
+      END FUNCTION
+      !-----------------------------------------------------------------
+      FUNCTION GET_INDEX_FIRST_SPACE(STR)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: STR
+      CHARACTER(LEN=*), PARAMETER :: SPACE=' '
+      INTEGER :: GET_INDEX_FIRST_SPACE,I
+      
+      GET_INDEX_FIRST_SPACE=0
+      DO I=1,LEN(STR)
+       IF(STR(I:I).EQ.SPACE) THEN
+        GET_INDEX_FIRST_SPACE=I
+        EXIT
+       ENDIF
+      ENDDO
 
       END FUNCTION
       !-----------------------------------------------------------------
@@ -344,6 +453,19 @@
         EXIT
        ENDIF
       ENDDO
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      FUNCTION GET_KEY_INDEX(KEY,NL,STRL,IS)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: KEY,STRL(NL)
+      INTEGER :: GET_KEY_INDEX,I,NL,IS
+
+      GET_KEY_INDEX=0
+      DO I=IS,NL
+       IF(TRIM(ADJUSTL(STRL(I))).EQ.TRIM(ADJUSTL(KEY))) EXIT
+      ENDDO
+      GET_KEY_INDEX=I
 
       END FUNCTION
       !-----------------------------------------------------------------
