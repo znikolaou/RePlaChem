@@ -1,7 +1,7 @@
       PROGRAM TEST_SPLIT_SPACE_SEPARATED
       IMPLICIT NONE
       CHARACTER(LEN=*), PARAMETER :: &
-              STR1='     werwe werwe    12312 !!', &
+              STR1='12312       24234   432423', &
               STR2='',&
               STR3='        1231231', &
               STR4='!qweqwe        GDFGDFG!'

@@ -271,11 +271,18 @@
                  ISC,GET_INDEX_FIRST_SPACE
       CHARACTER(LEN=*) :: STRING,COLMS(N)
       CHARACTER(LEN=*), PARAMETER :: SPACE=' '
+      LOGICAL :: ISEMPTY
 
-      IF(INDEX(STRING,SPACE).EQ.0) THEN
-       COLMS(1)=STRING(1:LEN(STRING))
-       NA=1
+      COLMS(1:N)=''
+      NA=0
+      IF(ISEMPTY(STRING)) THEN
        RETURN
+      ELSE
+       IF(INDEX(STRING,SPACE).EQ.0) THEN
+        COLMS(1)=STRING(1:LEN(STRING))
+        NA=1
+        RETURN
+       ENDIF
       ENDIF
       
       IS=1
@@ -293,7 +300,7 @@
        ENDIF
        J=J+1
        COLMS(J)=STRING(IS:IE-1)
-       WRITE(*,*) 'TEST',ISC,IS,IE,COLMS(J)
+       !WRITE(*,*) 'TEST',ISC,IS,IE,COLMS(J)
        IS=IE+1
       ENDDO
       NA=J
