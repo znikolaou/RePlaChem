@@ -284,13 +284,11 @@
         RETURN
        ENDIF
       ENDIF
-      
-      IS=1
-      ISC=1
+     
+      IS=1 
       J=0
+      ISC=GET_INDEX_FIRST_CHAR(STRING(IS:))
       DO WHILE(ISC.GT.0)
-       ISC=GET_INDEX_FIRST_CHAR(STRING(IS:))
-       IF(ISC.EQ.0) EXIT
        IS=ISC+IS-1
        IE=GET_INDEX_FIRST_SPACE(STRING(IS+1:))+IS
        IF(IE.EQ.IS) THEN
@@ -300,8 +298,8 @@
        ENDIF
        J=J+1
        COLMS(J)=STRING(IS:IE-1)
-       !WRITE(*,*) 'TEST',ISC,IS,IE,COLMS(J)
        IS=IE+1
+       ISC=GET_INDEX_FIRST_CHAR(STRING(IS:))
       ENDDO
       NA=J
         
