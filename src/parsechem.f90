@@ -342,25 +342,25 @@
 
       DO I=1,NREAC
        C=REAC(I)
-       CALL RPLTXTE(C,'^+','^POS',CWRK,NSMX)
+       CALL REPLACE_TEXT(C,'^+','^POS',CWRK,NSMX)
        C=CWRK
-       CALL RPLTXTE(C,':',' ',CWRK,NSMX)
+       CALL REPLACE_TEXT(C,':',' ',CWRK,NSMX)
        C=CWRK
-       CALL RPLTXTE(C,'^-','^NEG',CWRK,NSMX)
+       CALL REPLACE_TEXT(C,'^-','^NEG',CWRK,NSMX)
        C=CWRK
-       CALL RPLTXTE(C,'+',' ',CWRK,NSMX)
+       CALL REPLACE_TEXT(C,'+',' ',CWRK,NSMX)
        C=CWRK
-       CALL RPLTXTE(C,'=>',' ',CWRK,NSMX)
+       CALL REPLACE_TEXT(C,'=>',' ',CWRK,NSMX)
        C=CWRK
-       CALL RPLTXTE(C,'->',' ',CWRK,NSMX)
+       CALL REPLACE_TEXT(C,'->',' ',CWRK,NSMX)
        C=CWRK
-       CALL RPLTXTE(C,'(E-V)',' ',CWRK,NSMX)
+       CALL REPLACE_TEXT(C,'(E-V)',' ',CWRK,NSMX)
        C=CWRK
-       CALL RPLTXTE(C,'ANY_NEUTRAL','  ANY_NEUTRAL ',CWRK,NSMX)
+       CALL REPLACE_TEXT(C,'ANY_NEUTRAL','  ANY_NEUTRAL ',CWRK,NSMX)
        C=CWRK
-       CALL RPLTXTE(C,'POS','+',CWRK,NSMX)
+       CALL REPLACE_TEXT(C,'POS','+',CWRK,NSMX)
        C=CWRK
-       CALL RPLTXTE(C,'NEG','-',CWRK,NSMX)
+       CALL REPLACE_TEXT(C,'NEG','-',CWRK,NSMX)
        C='* '//TRIM(ADJUSTL(CWRK))//' *'
        REACF(I)=TRIM(ADJUSTL(C))
       ENDDO

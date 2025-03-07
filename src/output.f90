@@ -9,7 +9,7 @@
       CHARACTER(LEN=*) :: CSPNM(NSPEC),CSPNMF(NSPEC),CRENMF(NREAC), &
                           FLSP_KPP,FLRE_KPP
       CHARACTER(LEN=NSMX) :: C,CF
-      INTEGER :: NOSTR,NSPEC_SKEL,NREAC_SKEL
+      INTEGER :: GET_TEXT_WITH_SPACES_COUNT,NSPEC_SKEL,NREAC_SKEL
       CHARACTER(LEN=8)  :: DATE
       CHARACTER(LEN=10) :: TIME
       CHARACTER(LEN=5)  :: ZONE
@@ -68,7 +68,7 @@
       WRITE(1,'(A)') '#DEFVAR' 
       DO J=1,NSPEC
        C=CSPNM(J)
-       CALL FLSHL(LEN(C),C,LS)
+       CALL REMOVE_SPACES(LEN(C),C,LS)
        
        IF(SETSP(J).EQ.1) THEN
         !WRITE(*,'(A,X,I3)') C
@@ -78,8 +78,8 @@
          I=I+1
          CF=CSPNMF(I)
          CF=CF(1:INDEX(CF,'='))
-         K=NOSTR(CF,C)         
-         !K=NOSTR(CSPNMF(I),C)
+         K=GET_TEXT_WITH_SPACES_COUNT(CF,C)         
+         !K=GET_TEXT_WITH_SPACES_COUNT(CSPNMF(I),C)
          !write(*,*) K
         ENDDO            
         !WRITE(*,*) CSPNMF(I)
