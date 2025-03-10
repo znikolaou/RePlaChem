@@ -143,6 +143,28 @@
       RETURN
       END
       !-----------------------------------------------------------------
+      SUBROUTINE GET_SUBTEXTP1_DISTINCT_LIST(STR,TXT,N,SLIST,ND)
+      !
+      !AUTHOR: Z. NIKOLAOU
+      !
+      IMPLICIT NONE
+      INTEGER :: N,ND,I,LTXT,NA,IAR(N,2)
+      CHARACTER(LEN=*) :: STR,TXT,SLIST(N)
+      LOGICAL :: IS_STRING_PRESENT
+
+      SLIST(1:N)=' '
+      CALL GET_INDEX(STR,TXT,N,IAR,NA)
+      ND=0
+      DO I=1,NA
+      IF(.NOT.IS_STRING_PRESENT(N,SLIST,STR(IAR(I,1):IAR(I,2)+1))) THEN
+       SLIST(I)=STR(IAR(I,1):IAR(I,2)+1)
+       ND=ND+1
+      ENDIF
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
       FUNCTION GET_INDEX_FIRST_SPACE(STR)
       ! 
       !AUTHOR: Z. NIKOLAOU
@@ -277,6 +299,8 @@
       !-----------------------------------------------------------------
       SUBROUTINE REPLACE_TEXT_IN_STRING(STRING,TEXT,NEWTEXT)
       !
+      ! TODO: SOME BUG HERE NEWTEXT OVERWRITES ORIGINAL STRING IF LENGTH NOT
+      ! EQUAL TO TEXT!
       ! AUTHOR: Z. NIKOLAOU     
       ! 
       IMPLICIT NONE
@@ -288,7 +312,7 @@
        WRITE(*,*) 'FUNCTION RPLTXT: ERROR'
        STOP
       ENDIF
-
+      
       NSTR=LEN(TRIM(ADJUSTL(STRING)))
       NTXT=LEN(TRIM(ADJUSTL(TEXT)))
       NNEWTXT=LEN(TRIM(ADJUSTL(NEWTEXT)))

@@ -14,6 +14,8 @@
       CHARACTER(LEN=*), PARAMETER :: KEY_END='END'
       CHARACTER(LEN=*), PARAMETER :: KEY_AT='@'
       CHARACTER(LEN=*), PARAMETER :: KEY_EXCL='!'
+      CHARACTER(LEN=*), PARAMETER :: KEY_EQ='='
+
 
       CHARACTER(LEN=NSFLMX) :: FLCHEM
       CHARACTER(LEN=NSMX_LINE) :: LINES(NLINEMX)
@@ -100,7 +102,7 @@
       IS=GET_KEY_INDEX(KEY_REAC,NLINES,LINES(1:NLINES),1)
       IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
       CALL ZDP_READ_SECTION(IS,IE,NREMX,NSMX,REAC_RAW,NREAC_RAW,.FALSE.)
-      CALL FILTER_REACTIONS(NREAC_RAW)
+      CALL FILTER_REACTIONS()
       STOP
       WRITE(*,'(AXI4)') 'NO OF REACTIONS: ',NREAC
       DO I=1,NREAC
@@ -110,46 +112,71 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE FILTER_REACTIONS(NRAW)
+      SUBROUTINE FILTER_REACTIONS()
       IMPLICIT NONE
-      INTEGER :: NRAW,I,J,K,IREAC,ICONS,IEQ,NA,IARR(NSPMX,2),NGA
-      CHARACTER(LEN=NSMX) :: R,KR,CGLINE,THIRD_SPEC,COLMS(NSPMX)
+      INTEGER :: GET_KEY_INDEX
+      INTEGER :: I,J,K,L,IREAC,ICONS,IEQ,NA,IARR(NSPMX,2),NG,IKEY,NC
+      CHARACTER(LEN=NSMX) :: R,KR,CGLINE,THIRD_SPEC,ATLIST(NSPMX), &
+                             GLIST(NSPMX),ROLD,RNEW,C
+      CHARACTER(LEN=10) :: OLDTXT,NEWTXT
       CHARACTER(LEN=2) :: GSYMB
+      CHARACTER(LEN=NSMX) :: COLMS(50)
 
       IREAC=0
-      DO I=1,NRAW
-       CALL EXTRACT_REAC_AND_CONS(REAC_RAW(I),R,KR)
-
+      I=1
+      L=0
+      DO WHILE(I.LE.NREAC_RAW)
+       !CALL EXTRACT_REAC_AND_CONS(REAC_RAW(I),R,KR)
+       R=REAC_RAW(I)
+       !WRITE(*,'(I4XAXAXA)') I,TRIM(ADJUSTL(R))  
        IF(IS_GROUP_SPEC_REAC(R)) THEN
-        WRITE(*,*) 'GROUP SPECIES REACTION:',TRIM(ADJUSTL(R))
+        WRITE(*,*) '   ***'//TRIM(ADJUSTL(R))
+        CALL GET_SUBTEXTP1_DISTINCT_LIST(R,KEY_AT,NSPMX,ATLIST,NA)
+        
+        !READ NEXT NA LINES FOR GROUP SPECIES
+        GLIST(1:NSPMX)=' '
+        DO J=1,NA
+         I=I+1 
+         CALL GET_GSPEC_LIST(REAC_RAW(I),NSPMX,C,NG)
+         !!!Build single string for output
+         GLIST(I)=TRIM(ADJUSTL(C))
+        ENDDO
 
-        !CALL GET_INDEX(C,KEY_AT,NSPMX,IARR,NA)
-        !DO J=1,NA
-        ! IF(NA.GT.1) THEN
-        !  !TODO: HANDLE MORE THAN 1 GROUP SPECIES       
-        !  WRITE(*,*) '*FILTER_REACTIONS: WARNING!'
-        !  WRITE(*,*) 'MORE THAN ONE GROUP FOUND FOR REACTION:', &
-        !             TRIM(ADJUSTL(C))
-        !  STOP
-        ! ENDIF
-        ! GSYMB=C(IARR(1):IARR(1)+1)
-        ! CGLINE=TRIM(ADJUSTL(C(I+J)))
-        ! IEQ=INDEX(CGLINE,'=')
-        ! CALL SPLIT_STRING_WITH_SPACES(CGLINE(IEQ+1:),NSPMX,COLMS,NGA) 
-        ! DO K=1,NGA
-        !  CALL REPLACE_TEXT_IN_STRING(C,GSYMB,COLMS(K))
-        !  IREAC=IREAC+1
-        !  REAC(IREAC)=TRIM(ADJUSTL(C))
-        ! ENDDO 
-        !ENDDO
+         !GET INDEX OF @ IN GLIST
+         DO J=1,NA
+          IKEY=GET_KEY_INDEX(TRIM(ADJUSTL(ATLIST(J))),NSPMX,GLIST,1)
+          CALL SPLIT_STRING_WITH_SPACES(GLIST(IKEY),50,COLMS,NC)
+          C=' '
+          DO K=1,NG
+           C=TRIM(ADJUSTL(C))//' '//TRIM(ADJUSTL(GLIST(IKEY,K)))
+          ENDDO
+          WRITE(*,*) TRIM(ADJUSTL(ATLIST(J))),'   :', &
+                  TRIM(ADJUSTL(C))
 
+         !!!
+         
+        ENDDO
+        DO K=1,NG
+         L=L+1
+         ROLD=R
+         DO J=1,NA
+          IKEY=GET_KEY_INDEX(TRIM(ADJUSTL(ATLIST(J))),NSPMX,GLIST,1)
+          OLDTXT=ATLIST(J)
+          NEWTXT=GLIST(IKEY,K)
+          CALL REPLACE_TEXT(ROLD,TRIM(ADJUSTL(OLDTXT)), &
+                  TRIM(ADJUSTL(NEWTXT)),RNEW,NSMX)
+          ROLD=RNEW
+         ENDDO
+         REAC(L)=RNEW
+         WRITE(*,'(I4XA)') L,TRIM(ADJUSTL(REAC(L)))
+        ENDDO
+ 
        ELSE
-
-        IREAC=IREAC+1
-        !REAC(IREAC)=C
-
+        L=L+1       
+        REAC(L)=R    
+        WRITE(*,'(I4XA)') L,TRIM(ADJUSTL(REAC(L)))
        ENDIF
-
+       I=I+1
       ENDDO
 
       RETURN
@@ -162,7 +189,7 @@
       
       IF(IS_CONST_GIVEN(RRAW)) THEN
        I=INDEX(RRAW,KEY_EXCL)
-       KR=TRIM(ADJUSTL(RRAW(I:)))
+       KR=TRIM(ADJUSTL(RRAW(I+1:)))
        R=TRIM(ADJUSTL(RRAW(1:I-1)))
       ELSE
        R=TRIM(ADJUSTL(RRAW))
@@ -171,6 +198,17 @@
 
       RETURN
       END     
+      !-----------------------------------------------------------------
+      SUBROUTINE GET_GSPEC_LIST(GLINE,N,GLIST,NA)
+      IMPLICIT NONE
+      INTEGER :: I,N,NA,IE
+      CHARACTER(LEN=*) :: GLINE,GLIST(N)
+
+      !IE=INDEX(GLINE,KEY_EQ)
+      CALL SPLIT_STRING_WITH_SPACES(GLINE,N,GLIST,NA)
+
+      RETURN
+      END
       !-----------------------------------------------------------------
       FUNCTION IS_CONST_GIVEN(R)
       IMPLICIT NONE
@@ -189,24 +227,6 @@
       IS_GROUP_SPEC_REAC=INDEX(R,KEY_AT).NE.0
 
       END FUNCTION
-      !-----------------------------------------------------------------
-      !
-      SUBROUTINE EXTRACT_GROUP_SPECIES(R,GSPEC)
-      IMPLICIT NONE
-      CHARACTER(LEN=NSMX) :: R
-      CHARACTER(LEN=NSMX) :: GSPEC(NSPMX)
-      INTEGER :: IA,I
-
-      IA=INDEX(R,'@')
-      I=0
-      !DO WHILE(IA.NE.0)
-      ! I=I+1
-      ! GSPEC(I)=R(IA+1)
-      ! IA=INDEX(R(IA+1:),'@') 
-      !ENDDO
-
-      RETURN
-      END      
       !-----------------------------------------------------------------
       SUBROUTINE ZDP_READ_SECTION(LSTART,LEND,NAR_MX,NSTR_MX,CARR,NAR, &
                       IS_SPLIT) 
