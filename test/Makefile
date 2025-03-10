@@ -17,6 +17,7 @@ SRC_T11=testGetSpeciesIndex.f90
 SRC_T12=testZDPlaskinParse.f90
 SRC_T13=testReadLines.f90
 SRC_T14=testSplitSpaceSeparated.f90
+SRC_T15=testGetIndex.f90
 
 OBJS_T1=$(OBJS_CHEM) $(SRC_T1:.f90=.o)
 OBJS_T2=$(OBJS_CHEM) $(SRC_T2:.f90=.o)
@@ -32,6 +33,7 @@ OBJS_T11=$(OBJS_CHEM) $(SRC_T11)
 OBJS_T12=$(OBJS_CHEM) $(SRC_T12)
 OBJS_T13=$(OBJS_CHEM) $(SRC_T13)
 OBJS_T14=$(OBJS_CHEM) $(SRC_T14)
+OBJS_T15=$(OBJS_CHEM) $(SRC_T15)
 
 printSourceFiles: 	
 	@echo $(SRC_CHEM)
@@ -80,6 +82,9 @@ goTestReadLines: $(OBJS_T13)
 
 goTestSplitSpaceSeparated: $(OBJS_T14)
 	$(FC) $(FOPT) $(OBJS_T14) -o $@
+
+goTestGetIndex: $(OBJS_T15)
+	$(FC) $(FOPT) $(OBJS_T15) -o $@
 
 %.o: %.f90
 	$(FC) $(FOPT) -c -o $@ $< 

@@ -12,8 +12,11 @@
       CHARACTER(LEN=*), PARAMETER :: KEY_REAC='REACTIONS'
       CHARACTER(LEN=*), PARAMETER :: KEY_BOLS='BOLSIG'
       CHARACTER(LEN=*), PARAMETER :: KEY_END='END'
+      CHARACTER(LEN=*), PARAMETER :: KEY_AT='@'
+
       CHARACTER(LEN=NSFLMX) :: FLCHEM
       CHARACTER(LEN=NSMX_LINE) :: LINES(NLINEMX)
+      CHARACTER(LEN=NSMX) :: REAC_RAW(NREMX)
       INTEGER :: NLINES
       
       CONTAINS
@@ -28,8 +31,10 @@
       CALL READ_LINES(FL,LINES,NLINES)
       CALL ZDP_READ_ELEMENTS()
       CALL ZDP_READ_SPECIES()
-      CALL ZDP_READ_BOLSIG()
-      CALL ZDP_READ_REACTIONS()
+      !TODO: CYCLE THROUGH "SET" KEYWORDS
+      !CALL ZDP_READ_BOLSIG()
+      
+      CALL ZDP_READ_AND_FILTER_REACTIONS()
       
       WRITE(*,*) '***MODULE ZPDLASKING_PARSE***'
 
@@ -43,7 +48,7 @@
       IS=GET_KEY_INDEX(KEY_ELEM,NLINES,LINES(1:NLINES),1)
       IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
       CALL ZDP_READ_SECTION(IS,IE,NSPMX,NSMX,ELEM,NELEM,.TRUE.)
-      WRITE(*,'(AXI4') 'NO OF ELEMENTS: ',NELEM
+      WRITE(*,'(AXI4)') 'NO OF ELEMENTS: ',NELEM
       DO I=1,NELEM
        WRITE(*,*) I,TRIM(ADJUSTL(ELEM(I)))
       ENDDO
@@ -82,13 +87,15 @@
       RETURN
       END
       !-----------------------------------------------------------------
-       SUBROUTINE ZDP_READ_REACTIONS() 
+      SUBROUTINE ZDP_READ_AND_FILTER_REACTIONS() 
       IMPLICIT NONE
       INTEGER :: GET_KEY_INDEX,I,IS,IE 
 
       IS=GET_KEY_INDEX(KEY_REAC,NLINES,LINES(1:NLINES),1)
       IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
-      CALL ZDP_READ_SECTION(IS,IE,NREMX,NSMX,REAC,NREAC,.FALSE.)
+      CALL ZDP_READ_SECTION(IS,IE,NREMX,NSMX,REAC_RAW,NREAC,.FALSE.)
+      CALL FILTER_REACTIONS
+      
       WRITE(*,'(AXI4)') 'NO OF REACTIONS: ',NREAC
       DO I=1,NREAC
        WRITE(*,*) I,TRIM(ADJUSTL(REAC(I)))
@@ -96,6 +103,47 @@
 
       RETURN
       END
+      !-----------------------------------------------------------------
+      SUBROUTINE FILTER_REACTIONS()
+      IMPLICIT NONE
+      INTEGER :: I,IC,IA
+      CHARACTER(LEN=NSMX) :: C,THIRD_SPEC
+
+      REAC(1:NREMX)=' '
+      DO I=1,NREAC
+       !IC=INDEX(REAC_RAW(I),'!')
+       !IF(IC.NE.0) THEN
+       ! C=TRIM(ADJUSTL(REAC_RAW(1:IC-1)))
+       !ELSE
+       ! C=TRIM(ADJUSTL(REAC_RAW(I)))
+       !ENDIF
+       !REAC(I)=C
+       !CHECK FOR GROUP-SYNTAX SPECIES
+       !IA=INDEX(REAC(I),KEY_AT)
+       !DO WHILE IA.NE.0
+       ! THIRD_SPEC=C(IA+1)
+       !ENDDO
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE EXTRACT_GROUP_SPECIES(R,GSPEC)
+      IMPLICIT NONE
+      CHARACTER(LEN=NSMX) :: R
+      CHARACTER(LEN=NSMX) :: GSPEC(NSPMX)
+      INTEGER :: IA,I
+
+      IA=INDEX(R,'@')
+      I=0
+      !DO WHILE(IA.NE.0)
+      ! I=I+1
+      ! GSPEC(I)=R(IA+1)
+      ! IA=INDEX(R(IA+1:),'@') 
+      !ENDDO
+
+      RETURN
+      END      
       !-----------------------------------------------------------------
       SUBROUTINE ZDP_READ_SECTION(LSTART,LEND,NAR_MX,NSTR_MX,CARR,NAR, &
                       IS_SPLIT) 

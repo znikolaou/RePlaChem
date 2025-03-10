@@ -74,6 +74,29 @@
       
       END FUNCTION
       !-----------------------------------------------------------------
+      SUBROUTINE GET_INDEX(STR,TXT,N,IARR,NA)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: STR,TXT
+      INTEGER :: N,NA,IARR(N,2),IS,IP,IE,J,LT
+
+      IS=INDEX(STR,TXT)
+      IP=IS
+      LT=LEN(TXT)
+      IE=IS+LT-1
+      J=0
+      DO WHILE(IP.NE.0)
+       J=J+1
+       IARR(J,1)=IS
+       IARR(J,2)=IE
+       IP=INDEX(STR(IE+1:),TXT)
+       IS=IP+IE
+       IE=IS+LT-1
+      ENDDO
+      NA=J
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
       FUNCTION GET_INDEX_FIRST_SPACE(STR)
       ! 
       !AUTHOR: Z. NIKOLAOU
