@@ -42,6 +42,8 @@
       !-----------------------------------------------------------------
       FUNCTION GET_KEY_INDEX(KEY,NL,STRL,IS)
       !
+      !GET INDEX OF (UNIQUE) KEY PRESENT IN LIST STRL
+      !
       !AUTHOR: Z. NIKOLAOU
       !      
       IMPLICIT NONE
@@ -75,6 +77,11 @@
       END FUNCTION
       !-----------------------------------------------------------------
       SUBROUTINE GET_INDEX(STR,TXT,N,IARR,NA)
+      !         
+      !GET ALL STARTING INDICES OF TXT IN STR
+      ! 
+      !AUTHOR: Z. NIKOLAOU
+      !      
       IMPLICIT NONE
       CHARACTER(LEN=*) :: STR,TXT
       INTEGER :: N,NA,IARR(N,2),IS,IP,IE,J,LT
@@ -93,6 +100,45 @@
        IE=IS+LT-1
       ENDDO
       NA=J
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE GET_SUBTEXT_LIST(STR,TXT,N,SLIST,NS)
+      !
+      !AUTHOR: Z. NIKOLAOU
+      !
+      IMPLICIT NONE
+      INTEGER :: N,NS,I,IAR(N,2)
+      CHARACTER(LEN=*) :: STR,TXT,SLIST(N)
+
+      SLIST(1:N)=' '
+      CALL GET_INDEX(STR,TXT,N,IAR,NS)
+      DO I=1,NS
+       SLIST(I)=STR(IAR(I,1):IAR(I,2))
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE GET_SUBTEXT_DISTINCT_LIST(STR,TXT,N,SLIST,ND)
+      !
+      !AUTHOR: Z. NIKOLAOU
+      !
+      IMPLICIT NONE
+      INTEGER :: N,ND,I,LTXT,NA,IAR(N,2)
+      CHARACTER(LEN=*) :: STR,TXT,SLIST(N)
+      LOGICAL :: IS_STRING_PRESENT
+
+      SLIST(1:N)=' '
+      CALL GET_INDEX(STR,TXT,N,IAR,NA)
+      ND=0
+      DO I=1,NA
+      IF(.NOT.IS_STRING_PRESENT(N,SLIST,STR(IAR(I,1):IAR(I,2)))) THEN
+       SLIST(I)=STR(IAR(I,1):IAR(I,2))
+       ND=ND+1
+      ENDIF
+      ENDDO
 
       RETURN
       END

@@ -5,7 +5,7 @@
       MODULE ZDPLASKIN_PARSE
       USE GLOBAL, ONLY : ELEM,SPEC,SPEC_BOLSIG,REAC,NELEM,NSPEC, &
                          NSPEC_BOLSIG,NREAC,NSFLMX,NSMX_LINE,NLINEMX, & 
-                         NSPMX,NREMX,NSMX
+                         NSPMX,NREMX,NSMX,REAC_CONS
       IMPLICIT NONE
       CHARACTER(LEN=*), PARAMETER :: KEY_ELEM='ELEMENTS'
       CHARACTER(LEN=*), PARAMETER :: KEY_SPEC='SPECIES'
@@ -13,11 +13,12 @@
       CHARACTER(LEN=*), PARAMETER :: KEY_BOLS='BOLSIG'
       CHARACTER(LEN=*), PARAMETER :: KEY_END='END'
       CHARACTER(LEN=*), PARAMETER :: KEY_AT='@'
+      CHARACTER(LEN=*), PARAMETER :: KEY_EXCL='!'
 
       CHARACTER(LEN=NSFLMX) :: FLCHEM
       CHARACTER(LEN=NSMX_LINE) :: LINES(NLINEMX)
       CHARACTER(LEN=NSMX) :: REAC_RAW(NREMX)
-      INTEGER :: NLINES
+      INTEGER :: NLINES,NREAC_RAW
       
       CONTAINS
       !-----------------------------------------------------------------
@@ -27,13 +28,18 @@
       
       WRITE(*,*) '***MODULE ZPDLASKING_PARSE***'
 
+      NSPEC=0
+      NREAC=0
+      NELEM=0
+      ELEM(1:NSPMX)=' '
+      SPEC(1:NSPMX)=' '
+      REAC(1:NREMX)=' '
+      REAC_CONS(1:NREMX)=' '
       FLCHEM=FL
+
       CALL READ_LINES(FL,LINES,NLINES)
       CALL ZDP_READ_ELEMENTS()
       CALL ZDP_READ_SPECIES()
-      !TODO: CYCLE THROUGH "SET" KEYWORDS
-      !CALL ZDP_READ_BOLSIG()
-      
       CALL ZDP_READ_AND_FILTER_REACTIONS()
       
       WRITE(*,*) '***MODULE ZPDLASKING_PARSE***'
@@ -93,9 +99,9 @@
 
       IS=GET_KEY_INDEX(KEY_REAC,NLINES,LINES(1:NLINES),1)
       IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
-      CALL ZDP_READ_SECTION(IS,IE,NREMX,NSMX,REAC_RAW,NREAC,.FALSE.)
-      CALL FILTER_REACTIONS
-      
+      CALL ZDP_READ_SECTION(IS,IE,NREMX,NSMX,REAC_RAW,NREAC_RAW,.FALSE.)
+      CALL FILTER_REACTIONS(NREAC_RAW)
+      STOP
       WRITE(*,'(AXI4)') 'NO OF REACTIONS: ',NREAC
       DO I=1,NREAC
        WRITE(*,*) I,TRIM(ADJUSTL(REAC(I)))
@@ -104,30 +110,87 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE FILTER_REACTIONS()
+      SUBROUTINE FILTER_REACTIONS(NRAW)
       IMPLICIT NONE
-      INTEGER :: I,IC,IA
-      CHARACTER(LEN=NSMX) :: C,THIRD_SPEC
+      INTEGER :: NRAW,I,J,K,IREAC,ICONS,IEQ,NA,IARR(NSPMX,2),NGA
+      CHARACTER(LEN=NSMX) :: R,KR,CGLINE,THIRD_SPEC,COLMS(NSPMX)
+      CHARACTER(LEN=2) :: GSYMB
 
-      REAC(1:NREMX)=' '
-      DO I=1,NREAC
-       !IC=INDEX(REAC_RAW(I),'!')
-       !IF(IC.NE.0) THEN
-       ! C=TRIM(ADJUSTL(REAC_RAW(1:IC-1)))
-       !ELSE
-       ! C=TRIM(ADJUSTL(REAC_RAW(I)))
-       !ENDIF
-       !REAC(I)=C
-       !CHECK FOR GROUP-SYNTAX SPECIES
-       !IA=INDEX(REAC(I),KEY_AT)
-       !DO WHILE IA.NE.0
-       ! THIRD_SPEC=C(IA+1)
-       !ENDDO
+      IREAC=0
+      DO I=1,NRAW
+       CALL EXTRACT_REAC_AND_CONS(REAC_RAW(I),R,KR)
+
+       IF(IS_GROUP_SPEC_REAC(R)) THEN
+        WRITE(*,*) 'GROUP SPECIES REACTION:',TRIM(ADJUSTL(R))
+
+        !CALL GET_INDEX(C,KEY_AT,NSPMX,IARR,NA)
+        !DO J=1,NA
+        ! IF(NA.GT.1) THEN
+        !  !TODO: HANDLE MORE THAN 1 GROUP SPECIES       
+        !  WRITE(*,*) '*FILTER_REACTIONS: WARNING!'
+        !  WRITE(*,*) 'MORE THAN ONE GROUP FOUND FOR REACTION:', &
+        !             TRIM(ADJUSTL(C))
+        !  STOP
+        ! ENDIF
+        ! GSYMB=C(IARR(1):IARR(1)+1)
+        ! CGLINE=TRIM(ADJUSTL(C(I+J)))
+        ! IEQ=INDEX(CGLINE,'=')
+        ! CALL SPLIT_STRING_WITH_SPACES(CGLINE(IEQ+1:),NSPMX,COLMS,NGA) 
+        ! DO K=1,NGA
+        !  CALL REPLACE_TEXT_IN_STRING(C,GSYMB,COLMS(K))
+        !  IREAC=IREAC+1
+        !  REAC(IREAC)=TRIM(ADJUSTL(C))
+        ! ENDDO 
+        !ENDDO
+
+       ELSE
+
+        IREAC=IREAC+1
+        !REAC(IREAC)=C
+
+       ENDIF
+
       ENDDO
 
       RETURN
       END
       !-----------------------------------------------------------------
+      SUBROUTINE EXTRACT_REAC_AND_CONS(RRAW,R,KR)
+      IMPLICIT NONE
+      INTEGER :: I
+      CHARACTER(LEN=*) :: RRAW,R,KR
+      
+      IF(IS_CONST_GIVEN(RRAW)) THEN
+       I=INDEX(RRAW,KEY_EXCL)
+       KR=TRIM(ADJUSTL(RRAW(I:)))
+       R=TRIM(ADJUSTL(RRAW(1:I-1)))
+      ELSE
+       R=TRIM(ADJUSTL(RRAW))
+       KR=' '
+      ENDIF
+
+      RETURN
+      END     
+      !-----------------------------------------------------------------
+      FUNCTION IS_CONST_GIVEN(R)
+      IMPLICIT NONE
+      LOGICAL IS_CONST_GIVEN
+      CHARACTER(LEN=*) :: R
+
+      IS_CONST_GIVEN=INDEX(R,KEY_EXCL).NE.0
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      FUNCTION IS_GROUP_SPEC_REAC(R)
+      IMPLICIT NONE
+      LOGICAL :: IS_GROUP_SPEC_REAC
+      CHARACTER(LEN=*) :: R
+
+      IS_GROUP_SPEC_REAC=INDEX(R,KEY_AT).NE.0
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      !
       SUBROUTINE EXTRACT_GROUP_SPECIES(R,GSPEC)
       IMPLICIT NONE
       CHARACTER(LEN=NSMX) :: R

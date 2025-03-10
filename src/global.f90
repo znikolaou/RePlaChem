@@ -10,7 +10,8 @@
       CHARACTER(LEN=*), PARAMETER :: EID='E'
       INTEGER :: NREAC,NSPEC,NSPEC_BOLSIG,NELEM
       CHARACTER(LEN=NSMX) :: REAC(NREMX),SPEC(NSPMX),REACF(NREMX), &
-                             ELEM(NSPMX),SPEC_BOLSIG(NSPMX)
+                             ELEM(NSPMX),SPEC_BOLSIG(NSPMX), &
+                             REAC_CONS(NREMX) 
       LOGICAL :: IS_SPEC_IN_REAC(NSPMX,NREMX),IS_SPEC_NEUTRAL(NSPMX), &
                  IS_BOLSIG_REAC(NREMX)
 
