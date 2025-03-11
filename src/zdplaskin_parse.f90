@@ -114,69 +114,93 @@
       !-----------------------------------------------------------------
       SUBROUTINE FILTER_REACTIONS()
       IMPLICIT NONE
-      INTEGER :: GET_KEY_INDEX
-      INTEGER :: I,J,K,L,IREAC,ICONS,IEQ,NA,IARR(NSPMX,2),NG,IKEY,NC
-      CHARACTER(LEN=NSMX) :: R,KR,CGLINE,THIRD_SPEC,ATLIST(NSPMX), &
-                             GLIST(NSPMX),ROLD,RNEW,C
-      CHARACTER(LEN=10) :: OLDTXT,NEWTXT
-      CHARACTER(LEN=2) :: GSYMB
-      CHARACTER(LEN=NSMX) :: COLMS(50)
+      INTEGER :: I,NA,NG,ILINE,IREAC
+      CHARACTER(LEN=NSMX) :: R,ATLIST(NSPMX),GLIST(NSPMX,NSPMX)
 
       IREAC=0
-      I=1
-      L=0
-      DO WHILE(I.LE.NREAC_RAW)
-       !CALL EXTRACT_REAC_AND_CONS(REAC_RAW(I),R,KR)
-       R=REAC_RAW(I)
-       !WRITE(*,'(I4XAXAXA)') I,TRIM(ADJUSTL(R))  
+      ILINE=1
+      DO WHILE(ILINE.LE.NREAC_RAW) 
+       
+      !CALL EXTRACT_REAC_AND_CONS(REAC_RAW(I),R,KR)
+       R=REAC_RAW(ILINE)
+       
        IF(IS_GROUP_SPEC_REAC(R)) THEN
-        WRITE(*,*) '   ***'//TRIM(ADJUSTL(R))
-        CALL GET_SUBTEXTP1_DISTINCT_LIST(R,KEY_AT,NSPMX,ATLIST,NA)
+
+        WRITE(*,'(4XAXA)') '*GROUP REAC FOUND: '//TRIM(ADJUSTL(R))
+      
+        CALL EXTRACT_REAC_GROUP_SPEC(ILINE,NSPMX,ATLIST,GLIST,NA,NG) 
+      
+        !GENERATE NEW REAC FOR EACH GROUP 
+        DO I=1,NG
+         IREAC=IREAC+1
+         CALL GENERATE_REAC_FOR_GROUP(R,NA,ATLIST(1:NA),GLIST(1:NA,I), &
+                 REAC(IREAC))
+         WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
+        ENDDO
+
+        ILINE=ILINE+NA+1
         
-        !READ NEXT NA LINES FOR GROUP SPECIES
-        GLIST(1:NSPMX)=' '
-        DO J=1,NA
-         I=I+1 
-         CALL GET_GSPEC_LIST(REAC_RAW(I),NSPMX,C,NG)
-         !!!Build single string for output
-         GLIST(I)=TRIM(ADJUSTL(C))
-        ENDDO
+       ELSE   
 
-         !GET INDEX OF @ IN GLIST
-         DO J=1,NA
-          IKEY=GET_KEY_INDEX(TRIM(ADJUSTL(ATLIST(J))),NSPMX,GLIST,1)
-          CALL SPLIT_STRING_WITH_SPACES(GLIST(IKEY),50,COLMS,NC)
-          C=' '
-          DO K=1,NG
-           C=TRIM(ADJUSTL(C))//' '//TRIM(ADJUSTL(GLIST(IKEY,K)))
-          ENDDO
-          WRITE(*,*) TRIM(ADJUSTL(ATLIST(J))),'   :', &
-                  TRIM(ADJUSTL(C))
+        IREAC=IREAC+1  
+        REAC(IREAC)=R   
+        ILINE=ILINE+1
+        WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
 
-         !!!
-         
-        ENDDO
-        DO K=1,NG
-         L=L+1
-         ROLD=R
-         DO J=1,NA
-          IKEY=GET_KEY_INDEX(TRIM(ADJUSTL(ATLIST(J))),NSPMX,GLIST,1)
-          OLDTXT=ATLIST(J)
-          NEWTXT=GLIST(IKEY,K)
-          CALL REPLACE_TEXT(ROLD,TRIM(ADJUSTL(OLDTXT)), &
-                  TRIM(ADJUSTL(NEWTXT)),RNEW,NSMX)
-          ROLD=RNEW
-         ENDDO
-         REAC(L)=RNEW
-         WRITE(*,'(I4XA)') L,TRIM(ADJUSTL(REAC(L)))
-        ENDDO
- 
-       ELSE
-        L=L+1       
-        REAC(L)=R    
-        WRITE(*,'(I4XA)') L,TRIM(ADJUSTL(REAC(L)))
        ENDIF
-       I=I+1
+
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE GENERATE_REAC_FOR_GROUP(R,NA,ATSPEC,GLIST,RNEW)
+      IMPLICIT NONE
+      INTEGER :: NA,I
+      CHARACTER(LEN=*) :: R,ATSPEC(NA),GLIST(NA),RNEW
+      CHARACTER(LEN=LEN(R)) :: ROLD
+     
+      ROLD=R
+      DO I=1,NA
+       !WRITE(*,*) 'TEST:   ',TRIM(ADJUSTL(ATSPEC(I))), &
+       !        TRIM(ADJUSTL(GLIST(I))),LEN(TRIM(ADJUSTL(ATSPEC(I)))), &
+       !        LEN(TRIM(ADJUSTL(GLIST(I))))
+       CALL REPLACE_TEXT(ROLD,TRIM(ADJUSTL(ATSPEC(I))), &
+                 TRIM(ADJUSTL(GLIST(I))),RNEW,NSMX)
+       ROLD=RNEW
+      ENDDO
+      
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE EXTRACT_REAC_GROUP_SPEC(IREAC,NL,ATSPEC,GLIST,NA,NG)
+      IMPLICIT NONE
+      INTEGER :: IREAC,NL,NG,I,K,IK,NA,ILINE
+      CHARACTER(LEN=*) :: ATSPEC(NL),GLIST(NL,NL)
+      CHARACTER(LEN=NSMX) :: LINE
+
+      !GET @ SPECIES
+      CALL GET_SUBTEXTP1_DISTINCT_LIST(REAC_RAW(IREAC),KEY_AT,NL, &
+              ATSPEC,NA) 
+      !FOR EACH @ SPECIES FIND LINE WITH GROUP SPEC
+      DO I=1,NA
+       IK=0
+       ILINE=IREAC
+       WRITE(*,'(5XAXA)') 'GROUP SPEC:',TRIM(ADJUSTL(ATSPEC(I)))
+       DO WHILE(IK.EQ.0)
+        ILINE=ILINE+1 
+        IK=INDEX(REAC_RAW(ILINE),TRIM(ADJUSTL(ATSPEC(I))))
+       ENDDO
+       IF(IK.EQ.0) THEN
+        WRITE(*,*) '*EXTRACT_GROUP_SPEC ERROR: NO GROUP SPEC FOUND!'
+        STOP
+       ENDIF
+       LINE=TRIM(ADJUSTL(REAC_RAW(ILINE)))
+       LINE=TRIM(ADJUSTL(LINE(INDEX(LINE,KEY_EQ)+1:)))
+       CALL SPLIT_STRING_WITH_SPACES(LINE,NL,GLIST(I,:),NG)
+       DO K=1,NG
+        WRITE(*,'(6XA)') TRIM(ADJUSTL(GLIST(I,K)))
+       ENDDO
       ENDDO
 
       RETURN
@@ -198,17 +222,6 @@
 
       RETURN
       END     
-      !-----------------------------------------------------------------
-      SUBROUTINE GET_GSPEC_LIST(GLINE,N,GLIST,NA)
-      IMPLICIT NONE
-      INTEGER :: I,N,NA,IE
-      CHARACTER(LEN=*) :: GLINE,GLIST(N)
-
-      !IE=INDEX(GLINE,KEY_EQ)
-      CALL SPLIT_STRING_WITH_SPACES(GLINE,N,GLIST,NA)
-
-      RETURN
-      END
       !-----------------------------------------------------------------
       FUNCTION IS_CONST_GIVEN(R)
       IMPLICIT NONE

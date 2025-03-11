@@ -52,10 +52,12 @@
 
       GET_KEY_INDEX=0
       DO I=IS,NL
-       IF(TRIM(ADJUSTL(STRL(I))).EQ.TRIM(ADJUSTL(KEY))) EXIT
+       IF(TRIM(ADJUSTL(STRL(I))).EQ.TRIM(ADJUSTL(KEY))) THEN
+        GET_KEY_INDEX=I
+        EXIT
+       ENDIF
       ENDDO
-      GET_KEY_INDEX=I
-
+    
       END FUNCTION
       !-----------------------------------------------------------------
       FUNCTION GET_INDEX_FIRST_CHAR(STR)
