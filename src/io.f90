@@ -37,10 +37,10 @@
       END
       !-----------------------------------------------------------------
       SUBROUTINE READ_LINES(FL,LINES,NL)
-      USE GLOBAL, ONLY : NSMX_LINE,NLINEMX
+      USE GLOBAL, ONLY : NSMX,NLINEMX
       IMPLICIT NONE
       CHARACTER(LEN=*) FL
-      CHARACTER(NSMX_LINE) :: L,LINES(NLINEMX)
+      CHARACTER(NSMX) :: L,LINES(NLINEMX)
       INTEGER, PARAMETER :: ID=1
       INTEGER :: IOS,I,NL
 
