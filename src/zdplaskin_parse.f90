@@ -1,28 +1,21 @@
       !TODO: FIX 'SET' KEYWORD WHEN READING BOLSIG SECTION
-      !TODO: ACCOUNT FOR REACTIONS WITH @
-      !TODO: SPLIT REACTION LINE INTO REACTION PART AND RATE CONSTANT PART
       !-----------------------------------------------------------------
       MODULE ZDPLASKIN_PARSE
       USE GLOBAL, ONLY : ELEM,SPEC,SPEC_BOLSIG,REAC,NELEM,NSPEC, &
                          NSPEC_BOLSIG,NREAC,NSFLMX,NSMX_LINE,NLINEMX, & 
                          NSPMX,NREMX,NSMX,REAC_CONS
       IMPLICIT NONE
-      CHARACTER(LEN=*), PARAMETER :: KEY_ELEM='ELEMENTS'
-      CHARACTER(LEN=*), PARAMETER :: KEY_SPEC='SPECIES'
-      CHARACTER(LEN=*), PARAMETER :: KEY_REAC='REACTIONS'
-      CHARACTER(LEN=*), PARAMETER :: KEY_BOLS='BOLSIG'
-      CHARACTER(LEN=*), PARAMETER :: KEY_END='END'
-      CHARACTER(LEN=*), PARAMETER :: KEY_AT='@'
-      CHARACTER(LEN=*), PARAMETER :: KEY_EXCL='!'
-      CHARACTER(LEN=*), PARAMETER :: KEY_EQ='='
-
-
-      CHARACTER(LEN=NSFLMX) :: FLCHEM
-      CHARACTER(LEN=NSMX_LINE) :: LINES(NLINEMX)
-      CHARACTER(LEN=NSMX) :: REAC_RAW(NREMX)
-      INTEGER :: NLINES,NREAC_RAW
+      CHARACTER(LEN=*), PARAMETER, PRIVATE :: &
+       KEY_ELEM='ELEMENTS',KEY_SPEC='SPECIES', KEY_REAC='REACTIONS', &
+       KEY_BOLS='BOLSIG', KEY_END='END', KEY_SET='SET', KEY_AT='@', &
+       KEY_EXCL='!', KEY_EQ='='
+      CHARACTER(LEN=NSFLMX), PRIVATE :: FLCHEM
+      CHARACTER(LEN=NSMX_LINE), PRIVATE :: LINES(NLINEMX)
+      CHARACTER(LEN=NSMX), PRIVATE :: REAC_RAW(NREMX)
+      INTEGER, PRIVATE :: NLINES,NREAC_RAW
       
       CONTAINS
+
       !-----------------------------------------------------------------
       SUBROUTINE ZDP_INIT(FL)
       IMPLICIT NONE
@@ -44,6 +37,7 @@
       CALL READ_LINES(FL,LINES,NLINES)
       CALL ZDP_READ_ELEMENTS()
       CALL ZDP_READ_SPECIES()
+      CALL ZDP_READ_BOLSIG_SPECIES()
       CALL ZDP_READ_AND_FILTER_REACTIONS()
       
       WRITE(*,*) '***MODULE ZPDLASKING_PARSE***'
@@ -81,7 +75,7 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE ZDP_READ_BOLSIG() 
+      SUBROUTINE ZDP_READ_BOLSIG_SPECIES() 
       IMPLICIT NONE
       INTEGER :: GET_KEY_INDEX,I,IS,IE 
 
@@ -227,6 +221,15 @@
 
       END FUNCTION
       !-----------------------------------------------------------------
+      FUNCTION ISKEYWORD(LINE)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: LINE
+      LOGICAL :: ISKEYWORD
+
+      ISKEYWORD=INDEX(LINE,KEY_SET).GT.0
+
+      END FUNCTION
+      !-----------------------------------------------------------------
       SUBROUTINE ZDP_READ_SECTION(LSTART,LEND,NAR_MX,NSTR_MX,CARR,NAR, &
                       IS_SPLIT) 
       IMPLICIT NONE
@@ -243,17 +246,19 @@
       DO I=LSTART+1,LEND-1
        IF(.NOT.ISCOMMENT(LINES(I))) THEN
         IF(.NOT.ISEMPTY(LINES(I))) THEN
-         IF(IS_SPLIT) THEN       
-          CALL SPLIT_STRING_WITH_SPACES(LINES(I),NSPMX,COLMS,NA)  
-          DO J=1,NA
-           CARR(J+JOFS)=TRIM(ADJUSTL(COLMS(J)))
-          ENDDO
-          JOFS=JOFS+NA
-          NAR=NAR+NA
-         ELSE
-          NAR=NAR+1
-          CARR(NAR)=TRIM(ADJUSTL(LINES(I)))
-         ENDIF
+         IF(.NOT.ISKEYWORD(LINES(I))) THEN
+          IF(IS_SPLIT) THEN       
+           CALL SPLIT_STRING_WITH_SPACES(LINES(I),NSPMX,COLMS,NA)  
+           DO J=1,NA
+            CARR(J+JOFS)=TRIM(ADJUSTL(COLMS(J)))
+           ENDDO
+           JOFS=JOFS+NA
+           NAR=NAR+NA
+          ELSE
+           NAR=NAR+1
+           CARR(NAR)=TRIM(ADJUSTL(LINES(I)))
+          ENDIF
+         ENDIF 
         ENDIF
        ENDIF
       ENDDO
@@ -273,18 +278,6 @@
       GET_LINE_NO=I
 
       END FUNCTION
-      !----------------------------------------------------------------- 
-      SUBROUTINE ZDP_READ_SECTION_SPECIES() 
-      RETURN
-      END
-      !-----------------------------------------------------------------        
-      SUBROUTINE ZDP_READ_SECTION_REACTIONS()
-      RETURN
-      END
-      !-----------------------------------------------------------------        
-      SUBROUTINE ZDP_READ_SECTION_BOLSIG()   
-      RETURN
-      END  
-      !-----------------------------------------------------------------        
+      !-----------------------------------------------------------------     
       END MODULE
       !-----------------------------------------------------------------

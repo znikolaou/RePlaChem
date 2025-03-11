@@ -91,6 +91,58 @@ SPECIES: NSPEC=   77
           75 H2(V13)
           76 H2(V14)
           77 H(E2)
+ ***ZDP_READ_SECTION***
+LINES:     67 -    78
+ ***ZDP_READ_SECTION***
+BOLSIG SPECIES: NSPEC_BOSLIG=   48
+           1 C
+           2 C2
+           3 C3
+           4 C(S)
+           5 CH4
+           6 CH4(V1)
+           7 CH4(V2)
+           8 CH4(V3)
+           9 CH4(V4)
+          10 CH3
+          11 CH2
+          12 CH
+          13 C2H
+          14 C2H2
+          15 C2H3
+          16 C2H4
+          17 C2H5
+          18 C2H6
+          19 CH4^+
+          20 CH3^+
+          21 CH2^+
+          22 CH^+
+          23 C2H6^+
+          24 C2H5^+
+          25 C2H4^+
+          26 C2H3^+
+          27 C2H2^+
+          28 C2H^+
+          29 H
+          30 H2
+          31 H2(V1)
+          32 H2(V2)
+          33 H2(V3)
+          34 H2(V4)
+          35 H2(V5)
+          36 H2(V6)
+          37 H2(V7)
+          38 H2(V8)
+          39 H2(V9)
+          40 H2(V10)
+          41 H2(V11)
+          42 H2(V12)
+          43 H2(V13)
+          44 H2(V14)
+          45 H(E2)
+          46 H2^+
+          47 H3^+
+          48 H^-
 REACTIONS:
  ***ZDP_READ_SECTION***
 LINES:     80 -  3861
