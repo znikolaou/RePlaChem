@@ -3,8 +3,8 @@
       IMPLICIT NONE
       INTEGER :: I
       CHARACTER(LEN=*), PARAMETER :: &
-       FL='../input_chemistry/argon2step/kinet2stepArgon.inp', &
-       FLA='../input_chemistry/methaneAntwerp/'//&
+      FL='../input_chemistry/argon2step/kinet2stepArgon.inp', &
+      FLA='../input_chemistry/methaneAntwerp/'//&
               'kinetAntwerpMethaneNoTabs.inp'
 
       CALL REMOVE_TABS_FROM_FILE(FLA)

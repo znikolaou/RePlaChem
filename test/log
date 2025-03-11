@@ -1,16 +1,19 @@
  ***MODULE ZPDLASKING_PARSE***
  ***READ_LINES:***
- FILE:
- ../input_chemistry/methaneAntwerp/kinetAntwerpMethaneNoTabs.inp
- NO OF LINES:        3861
+FILE: ../input_chemistry/methaneAntwerp/kinetAntwerpMethaneNoTabs.inp
+NO OF LINES:   3861
  ***READ_LINES:***
- READING SECTION: LINES            6 -           8
-NO OF ELEMENTS:     3
+ ***ZDP_READ_SECTION***
+LINES:      6 -     8
+ ***ZDP_READ_SECTION***
+ELEMENTS: NELEM=    3
            1 E
            2 C
            3 H
- READING SECTION: LINES           10 -          65
-NO OF SPECIES:    77
+ ***ZDP_READ_SECTION***
+LINES:     10 -    65
+ ***ZDP_READ_SECTION***
+SPECIES: NSPEC=   77
            1 E
            2 H2
            3 H
@@ -88,7 +91,10 @@ NO OF SPECIES:    77
           75 H2(V13)
           76 H2(V14)
           77 H(E2)
- READING SECTION: LINES           80 -        3861
+REACTIONS:
+ ***ZDP_READ_SECTION***
+LINES:     80 -  3861
+ ***ZDP_READ_SECTION***
    1 CH3 + H  => CH4  + 52747.36544_K           ! K_FT_U
    2 CH3 + H(E2)  => CH4  + 144896.78837_K      ! K_FT_U
    3 CH3 + CH3 => C2H6 + 45124.39932_K            ! K_F2

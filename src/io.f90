@@ -45,8 +45,8 @@
       INTEGER :: IOS,I,NL
 
       WRITE(*,*) '***READ_LINES:***'
-      WRITE(*,*) 'FILE:'
-      WRITE(*,*) FL
+      WRITE(*,'(AXA)') 'FILE:',TRIM(ADJUSTL(FL))
+
       OPEN(UNIT=ID,FILE=FL,STATUS='OLD',FORM='FORMATTED',IOSTAT=IOS)
 
       IF(IOS.LT.0) THEN
@@ -64,7 +64,7 @@
         STOP
        ENDIF
       ENDDO
-      WRITE(*,*) 'NO OF LINES:',NL
+      WRITE(*,'(AXI6)') 'NO OF LINES:',NL
 
       REWIND(ID)
       DO I=1,NL
