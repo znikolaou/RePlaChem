@@ -1,14 +1,16 @@
       !-----------------------------------------------------------------
       MODULE ZDPLASKIN_PARSE
-      USE GLOBAL, ONLY : ELEM,SPEC,SPEC_BOLSIG,REAC,NELEM,NSPEC, &
-                         NSPEC_BOLSIG,NREAC,NSFLMX,NSMX,NLINEMX, & 
-                         NSPMX,NREMX,NSMX
+      USE GLOBAL, ONLY : NELEM,NSPEC,NSPEC_BOLSIG,NREAC,ELEM,SPEC, &
+                         SPEC_BOLSIG,SPEC_CHARGE,REAC,REAC_CONST, &
+                         IS_SPEC_CHARGED,IS_SPEC_IN_REAC, &
+                         REAC_SPEC,NSFLMX,NSMX,NLINEMX,NSPMX,NREMX,NSMX
       IMPLICIT NONE
       CHARACTER(LEN=*), PARAMETER, PRIVATE :: KEY_ELEM='ELEMENTS', &
        KEY_SPEC='SPECIES', KEY_REAC='REACTIONS',KEY_BOLS='BOLSIG', &
-       KEY_END='END', KEY_SET='SET', KEY_AT='@',KEY_EXCL='!', KEY_EQ='='
+       KEY_END='END', KEY_SET='SET', KEY_AT='@',KEY_EXCL='!', &
+       KEY_EQ='=',KEY_NEUTRAL='ANY_NEUTRAL'
       CHARACTER(LEN=NSMX), PRIVATE :: LINES(NLINEMX)
-      CHARACTER(LEN=NSMX), PRIVATE :: CHEM_LINES(NREMX)
+      CHARACTER(LEN=NSMX), PRIVATE :: CHEM_LINES(NREMX),REAC_F(NREMX)
       INTEGER, PRIVATE :: NLINES,NREAC_RAW
       
       CONTAINS
@@ -16,7 +18,8 @@
       !-----------------------------------------------------------------
       SUBROUTINE ZDP_INIT(FL)
       IMPLICIT NONE
-      CHARACTER(LEN=*) FL
+      INTEGER :: I,J
+      CHARACTER(LEN=*) :: FL
       
       WRITE(*,*) '***MODULE ZPDLASKIN_PARSE***'
 
@@ -29,12 +32,37 @@
       SPEC(1:NSPMX)=' '
       SPEC_BOLSIG(1:NSPMX)=' '
       REAC(1:NREMX)=' '
-      
+      REAC_CONST(1:NREMX)=' '
+      IS_SPEC_CHARGED(1:NSPMX)=.FALSE.
+      IS_SPEC_IN_REAC(1:NSPMX,1:NREMX)=.FALSE.
+       
       CALL READ_LINES(FL,LINES,NLINES)
       CALL ZDP_READ_ELEMENTS()
       CALL ZDP_READ_SPECIES()
       CALL ZDP_READ_BOLSIG_SPECIES()
       CALL ZDP_READ_AND_FILTER_REACTIONS() 
+      
+      CALL ZDP_SET_IS_SPEC_CHARGED()
+      CALL ZDP_EXTRACT_REAC_AND_CONST()
+      CALL ZDP_SET_REAC_SPEC()
+
+      WRITE(*,*) 'IS SPEC CHARGED:'
+      DO I=1,NSPEC
+       WRITE(*,*) I,TRIM(ADJUSTL(SPEC(I))), &
+                         IS_SPEC_CHARGED(I)
+      ENDDO
+      WRITE(*,*) 'EXTRACTED REACTIONS AND RATE CONSTANTS:'
+      DO I=1,NREAC
+       WRITE(*,'(I5XAXAXA)') I,TRIM(ADJUSTL(REAC(I))),'RATE CONST:', &
+                           TRIM(ADJUSTL(REAC_CONST(I)))
+      ENDDO
+      WRITE(*,*) 'REACTION SPECIES'
+      DO I=1,NREAC
+       WRITE(*,'(I5XAXAXA)') I,TRIM(ADJUSTL(REAC(I)))
+       DO J=1,NSPEC
+        IF(IS_SPEC_IN_REAC(J,I)) WRITE(*,*) TRIM(ADJUSTL(SPEC(J)))
+       ENDDO
+      ENDDO
 
       WRITE(*,*) 
       WRITE(*,*) 'VARS SET: ELEM, SPEC, SPEC_BOLSIG, REAC, NSPEC,' &
@@ -111,7 +139,6 @@
       IREAC=0
       ILINE=1
       DO WHILE(ILINE.LE.NREAC_RAW)  
-      !CALL EXTRACT_REAC_AND_CONS(CHEM_LINES(I),R,KR)
        R=CHEM_LINES(ILINE)
        IF(IS_GROUP_SPEC_REAC(R)) THEN
         WRITE(*,'(4XAXA)') '*GROUP REAC FOUND: '//TRIM(ADJUSTL(R))
@@ -131,6 +158,7 @@
         WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
        ENDIF
       ENDDO
+      NREAC=IREAC
 
       RETURN
       END
@@ -184,29 +212,164 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE EXTRACT_REAC_AND_CONS(RRAW,R,KR)
+      SUBROUTINE ZDP_EXTRACT_REAC_AND_CONST()
       IMPLICIT NONE
-      INTEGER :: I
-      CHARACTER(LEN=*) :: RRAW,R,KR
-      
-      IF(IS_CONST_GIVEN(RRAW)) THEN
-       I=INDEX(RRAW,KEY_EXCL)
-       KR=TRIM(ADJUSTL(RRAW(I+1:)))
-       R=TRIM(ADJUSTL(RRAW(1:I-1)))
-      ELSE
-       R=TRIM(ADJUSTL(RRAW))
-       KR=' '
-      ENDIF
+      INTEGER :: I,IP
+  
+      DO I=1,NREAC
+       IP=INDEX(REAC(I),KEY_EXCL)
+       IF(IP.GT.0) THEN
+        REAC_CONST(I)=TRIM(ADJUSTL(REAC(I)(IP+1:)))
+        REAC(I)(IP:)=' '
+       ENDIF
+      ENDDO
 
       RETURN
       END     
       !-----------------------------------------------------------------
-      FUNCTION IS_CONST_GIVEN(R)
+      SUBROUTINE ZDP_SET_REAC_SPEC()
       IMPLICIT NONE
-      LOGICAL IS_CONST_GIVEN
-      CHARACTER(LEN=*) :: R
 
-      IS_CONST_GIVEN=INDEX(R,KEY_EXCL).NE.0
+      CALL ZDP_SET_REAC_F()
+      CALL SET_SPECIES_FROM_LIST()
+      CALL SET_NEUTRAL_IF_ANY()
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE SET_SPECIES_FROM_LIST()
+      IMPLICIT NONE 
+      INTEGER :: I,J
+      
+      DO J=1,NREAC
+       DO I=1,NSPEC
+        IF(ZDP_IS_SPEC_IN_REACTION(REAC_F(J),SPEC(I))) THEN 
+         IS_SPEC_IN_REAC(I,J)=.TRUE.
+        ENDIF
+       ENDDO
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE SET_NEUTRAL_IF_ANY()
+      INTEGER :: I,J
+      
+      DO I=1,NREAC
+       IF(ZDP_IS_ANY_NEUTRAL_REACTION(REAC_F(I))) THEN
+        DO J=1,NSPEC
+         IF(.NOT.IS_SPEC_CHARGED(J)) THEN
+          IS_SPEC_IN_REAC(J,I)=.TRUE.
+         ENDIF
+        ENDDO
+       ENDIF
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE ZDP_SET_SPEC_CHARGE()
+      IMPLICIT NONE 
+      INTEGER :: I,J
+      !LOGICAL :: IS_ANY_NEUTRAL_REACTION,IS_CHARGED_SPECIES
+      
+
+      !DO I=1,NREAC
+      ! IF(IS_ANY_NEUTRAL_REACTION(REAC(I))) THEN
+      !  DO J=1,NSPEC
+      !   IF(.NOT.IS_CHARGED_SPECIES(SPEC(J))) THEN
+      !    IS_SPEC_IN_REAC(J,I)=.TRUE.
+      !   ENDIF
+      !  ENDDO
+      ! ENDIF
+      !ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE ZDP_SET_REAC_F()
+      !
+      ! AUTHOR: Z. NIKOLAOU  
+      !  
+      IMPLICIT NONE
+      INTEGER :: I
+      CHARACTER(LEN=NSMX) :: C,CWRK
+
+      DO I=1,NREAC
+       C=REAC(I)
+       CALL REPLACE_TEXT(C,'^+','^POS',CWRK,NSMX)
+       C=CWRK
+       CALL REPLACE_TEXT(C,':',' ',CWRK,NSMX)
+       C=CWRK
+       CALL REPLACE_TEXT(C,'^-','^NEG',CWRK,NSMX)
+       C=CWRK
+       CALL REPLACE_TEXT(C,'+',' ',CWRK,NSMX)
+       C=CWRK
+       CALL REPLACE_TEXT(C,'=>',' ',CWRK,NSMX)
+       C=CWRK
+       CALL REPLACE_TEXT(C,'->',' ',CWRK,NSMX)
+       C=CWRK
+       CALL REPLACE_TEXT(C,'(E-V)',' ',CWRK,NSMX)
+       C=CWRK
+       CALL REPLACE_TEXT(C,'ANY_NEUTRAL','  ANY_NEUTRAL ',CWRK,NSMX)
+       C=CWRK
+       CALL REPLACE_TEXT(C,'POS','+',CWRK,NSMX)
+       C=CWRK
+       CALL REPLACE_TEXT(C,'NEG','-',CWRK,NSMX)
+       C='* '//TRIM(ADJUSTL(CWRK))//' *'
+       REAC_F(I)=TRIM(ADJUSTL(C))
+      ENDDO
+      
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      FUNCTION ZDP_IS_SPEC_IN_REACTION(REAC,SPEC)
+      IMPLICIT NONE
+      LOGICAL :: CASEA,CASEB,CASEC,ZDP_IS_SPEC_IN_REACTION
+      CHARACTER(LEN=*) :: REAC,SPEC
+      CHARACTER(LEN=LEN(TRIM(ADJUSTL(SPEC)))+2) :: CA
+      
+      CA=' '//TRIM(ADJUSTL(SPEC))//' ' 
+      IF(INDEX(REAC,CA).GT.0) THEN
+       ZDP_IS_SPEC_IN_REACTION=.TRUE.
+      ELSE
+       ZDP_IS_SPEC_IN_REACTION=.FALSE.
+      ENDIF
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      SUBROUTINE ZDP_SET_IS_SPEC_CHARGED()
+      IMPLICIT NONE
+      INTEGER :: I
+
+      DO I=1,NSPEC
+       IS_SPEC_CHARGED(I)=(INDEX(SPEC(I),'^+').GT.0).OR. &
+                          (INDEX(SPEC(I),'^-').GT.0).OR. &
+                          (TRIM(ADJUSTL(SPEC(I))).EQ.'E')
+      ENDDO
+             
+      END
+      !-----------------------------------------------------------------
+      FUNCTION ZDP_IS_ANY_NEUTRAL_REACTION(REAC)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: REAC
+      LOGICAL :: ZDP_IS_ANY_NEUTRAL_REACTION
+
+      ZDP_IS_ANY_NEUTRAL_REACTION=INDEX(REAC,KEY_NEUTRAL).GT.0
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      FUNCTION IS_BOLSIG_REACTION(REAC)
+      USE GLOBAL, ONLY : BOLSIGID
+      IMPLICIT NONE
+      LOGICAL :: IS_BOLSIG_REACTION
+      CHARACTER(LEN=*) :: REAC
+      
+      IF(INDEX(REAC,BOLSIGID).GT.0) THEN
+       IS_BOLSIG_REACTION=.TRUE.
+      ELSE
+       IS_BOLSIG_REACTION=.FALSE.
+      ENDIF
 
       END FUNCTION
       !-----------------------------------------------------------------
