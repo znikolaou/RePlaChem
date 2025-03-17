@@ -2,7 +2,7 @@
       MODULE ZDPLASKIN_PARSE
       USE GLOBAL, ONLY : NELEM,NSPEC,NSPEC_BOLSIG,NREAC,ELEM,SPEC, &
                          SPEC_BOLSIG,REAC,REAC_CONST,IS_SPEC_CHARGED, &
-                         IS_SPEC_IN_REAC,REAC_SPEC, &
+                         IS_SPEC_IN_REAC,REAC_SPEC,RSPEC, &
                          NSFLMX,NSMX,NLINEMX,NSPMX,NREMX,NSMX
       IMPLICIT NONE
       CHARACTER(LEN=*), PARAMETER, PRIVATE :: KEY_ELEM='ELEMENTS', &
@@ -33,6 +33,7 @@
       SPEC_BOLSIG(1:NSPMX)=' '
       REAC(1:NREMX)=' '
       REAC_CONST(1:NREMX)=' '
+      REAC_SPEC(1:NREMX,1:NSPMX)=' '
       IS_SPEC_CHARGED(1:NSPMX)=.FALSE.
       IS_SPEC_IN_REAC(1:NSPMX,1:NREMX)=.FALSE.
       
@@ -246,6 +247,7 @@
        DO I=1,NSPEC
         IF(ZDP_IS_SPEC_IN_REACTION(REAC_F(J),SPEC(I))) THEN 
          IS_SPEC_IN_REAC(I,J)=.TRUE.
+         RSPEC(I,J)=1
         ENDIF
        ENDDO
       ENDDO
@@ -261,6 +263,7 @@
         DO J=1,NSPEC
          IF(.NOT.IS_SPEC_CHARGED(J)) THEN
           IS_SPEC_IN_REAC(J,I)=.TRUE.
+          RSPEC(J,I)=1
          ENDIF
         ENDDO
        ENDIF

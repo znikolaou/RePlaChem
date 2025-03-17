@@ -10,11 +10,14 @@ OBJS=$(patsubst $(SRC_DIR)/%.o,$(BUILD_DIR)/%.o,$(SRC:%.f90=%.o))
 exe:$(OBJS) 
 	$(FC) $(FOPT) $(OBJS) -o $@
 
+testReadControl:$(OBJS)
+	$(FC) $(FOPT) $(OBJS) -o $@
+
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.f90
 	$(FC) $(FOPT) -c $< -o $@
 
 clean:
-	@ rm -f exe *.o *.mod
+	@ rm -f exe *.o *.mod $(BUILD_DIR)/*.o
 
 print:
 	@ echo $(OBJS)

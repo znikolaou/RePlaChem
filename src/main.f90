@@ -29,83 +29,40 @@
 !
 !     Contact details: ZachariasMNic@gmail.com
 !
-!-----------------------------------------------------------------------
-          
-      USE GLOBAL, ONLY: NREMX,NSMX,NSPMX,NREMX 
+!----------------------------------------------------------------------- 
+      USE GLOBAL, ONLY: INDIR,RATE_FL,OUTDIR,NSMX,NSPMX,NREMX,SPEC, &
+                        REAC,RSPEC
       USE PRECIS, ONLY: DBL_P
       IMPLICIT NONE
       INTEGER :: NDATA,NCASE,NTRG,CHECK,IRDMETH,NSPEC_SKEL,NREAC_SKEL
-      INTEGER, ALLOCATABLE :: INDX_TRG(:)
-      REAL(KIND=DBL_P), ALLOCATABLE :: ETOL(:)
-      CHARACTER(LEN=*) :: INDIR,OUTDIR,RATEDIR
-      CHARACTER(LEN=*) :: TRGFILE,CHEMFILE,SPECFILE,RATEFILE,  & 
-                          SPECFILE_KPP,      &
-                          SKELETAL_CHEM_KPP, &
-                          SKELETAL_SPEC_KPP, &
-                          DNUFILE
-      !INPUT/OUTPUT DIRS
-      PARAMETER(INDIR='../input_test/')
-      PARAMETER(OUTDIR='../output/')
-      PARAMETER(RATEDIR=INDIR//'rates/')
-      !INPUT FILES
-      PARAMETER(TRGFILE="target.txt")        !TARGET SPEC
-      PARAMETER(DNUFILE="DELTANU.dat")       !NUP-NUR FILE
-      PARAMETER(SPECFILE="species.txt")      !SPEC FILE
-      PARAMETER(CHEMFILE="reactions.txt")    !REAC FILE 
-      PARAMETER(RATEFILE="speciesRR.dat")         !RATES FILE
-      PARAMETER(SPECFILE_KPP="SPEC_KPP.txt") !INPUT KPP SPEC FILE
-      !OUTPUT FILES
-      PARAMETER(SKELETAL_CHEM_KPP=OUTDIR//'/'//'reactions_reduced.txt')
-      PARAMETER(SKELETAL_SPEC_KPP=OUTDIR//'/'//'species_reduced.txt')
-!
-!-----------------------------------------------------------------------
-!
-      CHARACTER(LEN=NSMX) :: CREACNM_S(NREMX),CREACNM_F(NREMX)
-      CHARACTER(LEN=NSMX) :: CSPECNM_S(NSPMX),CSPECNM_F(NSPMX)
+      INTEGER :: INDX_TRG(NSPMX)
+      REAL(KIND=DBL_P) :: ETOL(NSPMX)
+      !-----------------------------------------------------------------
       INTEGER :: I,J,K,N,NSPEC,NREAC,LCREAC,LCSPEC,IPROD
-!
-      CHARACTER(LEN=NSMX), ALLOCATABLE :: CREAC(:)
-      CHARACTER(LEN=NSMX), ALLOCATABLE :: CSPEC(:),CSPEC_KPP(:)
-      INTEGER, ALLOCATABLE :: RSPEC(:,:),SET_TRG(:,:),SPSET_TRG(:,:), &
-       SPSET_TRGUP(:,:),SPSET_UNION(:),RESET_UNION(:)
-
+      INTEGER, ALLOCATABLE :: SET_TRG(:,:),SPSET_TRG(:,:), &
+                              SPSET_TRGUP(:,:),SPSET_UNION(:), &
+                              RESET_UNION(:)
       REAL(KIND=DBL_P), ALLOCATABLE :: WIJ(:,:),DELTANU(:,:),RR(:), &
                                        JIJW(:,:)
       CHARACTER(LEN=8)  :: DATE
       CHARACTER(LEN=10) :: TIME
       CHARACTER(LEN=5)  :: ZONE
-      CHARACTER(LEN=8+10+LEN(OUTDIR)+1) :: DIRCASE
       CHARACTER(LEN=500) :: COMMAND
       CHARACTER(LEN=2) :: JCASE
-      CHARACTER(LEN=LEN(RATEDIR)+10) :: FLCASE
+      CHARACTER(LEN=1000) :: FLCASE
+      
 !
 !-----------------------------------------------------------------------
 
       WRITE(*,*) 'MAIN:'
 
-      FLCASE=RATEDIR//'output_01/'
-
+      !TODO:
+      CALL READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,IRDMETH,INDX_TRG,ETOL)
+    
       !READ IN ORIGINAL CHEM FILE/SPEC FILE AND KPP PRODUCED SPEC FILE.
-      CALL READ_CHEM(INDIR,CHEMFILE,SPECFILE)
+      !CALL READ_CHEM(INDIR,CHEMFILE,SPECFILE)
 
-      !TODO
-      !READ_CONTROL(TRGFILE)
       STOP
-
-      !READ IN DELTANU *SPEC NUMBERING AS IN SPEC_KPP.txt
-      !ALLOCATE( DELTANU(NSPEC,NREAC) )
-      !OPEN(UNIT=3,FILE=FLCASE//DNUFILE, &
-      !     STATUS='OLD',FORM='UNFORMATTED') 
-      !READ(3) DELTANU
-      !CLOSE(3)
-                                !CREACNM_S,CSPECNM_S,CREACNM_F,CSPECNM_F
-      !ALLOCATE( CSPEC_KPP(NSPEC) )	
-      !CALL PARSE_SPEC_KPP(NSPEC,FLCASE,SPECFILE_KPP,CSPEC_KPP)
-      !*THIS IS USED FOR SPECIES ORDERING SINCE KPP OUTPUT SPECIES 
-      !ORDERING IS NOT SAME AS KPP INPUT SPECIES ORDERING.
-
-
-      
 
       WRITE(*,'(AXI6)') 'NSPEC=',NSPEC
       WRITE(*,'(AXI6)') 'NREAC=',NREAC
@@ -138,31 +95,24 @@
 
       WRITE(*,*) 'DRG-LOOPING THROUGH DATASETS'       
       WRITE(*,*) 
-
-      !CASE LOOP
       DO N=1,NCASE
-      
        WRITE(*,*) 'CASE',N
-
        WRITE(JCASE,'(I2.2)') N
-       FLCASE=RATEDIR//'output_'//JCASE//'/'
-         
-       !DATA LOOP
+       FLCASE=INDIR//'case'//JCASE//'/'         
        DO I=1,NDATA
-
         WRITE(*,*) 'DATASET',I
         WRITE(*,*) '-------------------'
 
         !WRITE(*,*) 'CHECK JIJW ',JIJW
 
-        CALL READ_RATES(I,FLCASE,RATEFILE,NSPEC,NREAC,WIJ,RR,JIJW)                      
+        CALL READ_RATES(I,FLCASE,RATE_FL,NSPEC,NREAC,WIJ,RR,JIJW)                      
         !1=MY WAY
         !2=GRAPH SEARCH (PATH DEPENDENT)
-        CALL DRIVER_DRG(IRDMETH,NSPEC,NREAC,NTRG,INDX_TRG,ETOL, &
-                        DELTANU,RSPEC,WIJ,RR,JIJW, &
-                        LCSPEC,LCREAC,CSPEC,CREAC,SET_TRG)  
+        CALL DRIVER_DRG(IRDMETH,NSPEC,NREAC,NTRG,INDX_TRG(1:NTRG), &
+                        ETOL(1:NTRG), &
+                        DELTANU,RSPEC(1:NREAC,1:NSPEC),WIJ,RR, &
+                        JIJW,LCSPEC,LCREAC,SPEC,REAC,SET_TRG)  
         !SAVE PICs
-
         !UPDATE_SETS
         DO K=1,NSPEC
          DO J=1,NTRG
@@ -172,15 +122,13 @@
          ENDDO  
         ENDDO   
        
-        
        ENDDO!DATA
-
       ENDDO!CASE
       !-----------------------------------------------------------------     
       
       WRITE(*,*) 'FINAL TARGET SPECIES SETS:'
       DO I=1,NTRG
-       WRITE(*,*) I,TRIM(CSPEC(INDX_TRG(I))),SUM(SPSET_TRGUP(I,:))
+       WRITE(*,*) I,TRIM(SPEC(INDX_TRG(I))),SUM(SPSET_TRGUP(I,:))
       ENDDO
       WRITE(*,*) '-------------------'
 
@@ -203,11 +151,11 @@
       WRITE(*,*) '------------------------------------------'
       DO J=1,NREAC
        IPROD=1
-       WRITE(*,*) J,TRIM(CREAC(J))
+       WRITE(*,*) J,TRIM(REAC(J))
        DO I=1,NSPEC
         IF(RSPEC(J,I).EQ.1) THEN !SPEC IN R
          IPROD=IPROD*SPSET_UNION(I)
-         WRITE(*,*) TRIM(ADJUSTL(CSPEC(I))),SPSET_UNION(I),IPROD
+         WRITE(*,*) TRIM(ADJUSTL(SPEC(I))),SPSET_UNION(I),IPROD
         ENDIF
        ENDDO
        IF(IPROD.EQ.1) THEN
@@ -229,9 +177,9 @@
         
         DO J=1,NREAC
          IF(RESET_UNION(J).EQ.1.AND.RSPEC(J,I).EQ.1) THEN !EXISTS IN SOME REACTION
-          !WRITE(*,*) TRIM(ADJUSTL(CREAC(J))) 
+          !WRITE(*,*) TRIM(ADJUSTL(REAC(J))) 
           CHECK=1
-          !WRITE(*,'(A,X,A,X,I1)') 'CHECK ',CSPEC(I),CHECK
+          !WRITE(*,'(A,X,A,X,I1)') 'CHECK ',SPEC(I),CHECK
           EXIT
          ELSE
           CHECK=0
@@ -240,10 +188,10 @@
         IF(CHECK.EQ.0) THEN !SPEC IN SKEL SET NOT IN ANY REACTION IN SKEL SET -> REMOVE SPEC
          N=N+1
          !WRITE(*,*) 'ERROR: REDUCED REACTION SET NOT POSSIBLE'
-         !WRITE(*,*) TRIM(ADJUSTL(CREAC(J))) 
+         !WRITE(*,*) TRIM(ADJUSTL(REAC(J))) 
          !STOP
          WRITE(*,*) 'CHECK REACTIONS-REMOVING ', &
-                     TRIM(ADJUSTL(CSPEC(I))), &
+                     TRIM(ADJUSTL(SPEC(I))), &
                      ' FROM SKEL MECH SET'         
          SPSET_UNION(I)=0         
         ENDIF
@@ -259,7 +207,7 @@
       WRITE(*,*) 'ELIMINATED SPECIES:'
       DO I=1,NSPEC
        IF(SPSET_UNION(I).EQ.0) THEN
-        WRITE(*,*) TRIM(CSPEC(I)) 
+        WRITE(*,*) TRIM(SPEC(I)) 
        ENDIF
       ENDDO
       WRITE(*,*) '-------------------'
@@ -267,7 +215,7 @@
       WRITE(*,*) 'SPECIES UNION SET:'
       DO I=1,NSPEC
        IF(SPSET_UNION(I).EQ.1) THEN 
-        WRITE(*,*) TRIM(CSPEC(I))
+        WRITE(*,*) TRIM(SPEC(I))
        ENDIF
       ENDDO
       WRITE(*,*) '-------------------'
@@ -275,7 +223,7 @@
       WRITE(*,*) 'REACTIONS UNION SET:'
       DO I=1,NREAC
        IF(RESET_UNION(I).EQ.1) THEN   
-        WRITE(*,*) TRIM(CREAC(I))
+        WRITE(*,*) TRIM(REAC(I))
        ENDIF
       ENDDO
       WRITE(*,*) '-------------------'
@@ -289,18 +237,13 @@
       ENDIF
      
       !OUTPUT SKELETAL MECHANISM
-      CALL OUTPUT(NSPEC,NREAC,SPSET_UNION,RESET_UNION,CSPEC,CSPECNM_F, &
-                  CREACNM_F,SKELETAL_SPEC_KPP,SKELETAL_CHEM_KPP	)
+      !TODO: ZDP FORMAT OUTPUT
+      !CALL OUTPUT(NSPEC,NREAC,SPSET_UNION,RESET_UNION,SPEC,CSPECNM_F, &
+      !            CREACNM_F,SKELETAL_SPEC_KPP,SKELETAL_CHEM_KPP	)
 
 
-      DEALLOCATE(CREAC)
-      DEALLOCATE(CSPEC)	
-      DEALLOCATE(RSPEC)
       DEALLOCATE(WIJ)
-      DEALLOCATE(INDX_TRG)
       DEALLOCATE(SET_TRG)
-      DEALLOCATE(ETOL)
-
      
       WRITE(*,*) 'SKELETAL MECHANISM SIZE:'
       WRITE(*,*) 'NUNION SPEC=',SUM(SPSET_UNION)
