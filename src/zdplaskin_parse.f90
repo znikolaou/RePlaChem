@@ -412,12 +412,12 @@
       FUNCTION ZDP_GET_LINE_NO(KEY,ISTART)
       IMPLICIT NONE
       CHARACTER(LEN=*) KEY
-      INTEGER :: I,ISTART,GET_LINE_NO
+      INTEGER :: I,ISTART,ZDP_GET_LINE_NO
 
       DO I=ISTART,NLINES
        IF(TRIM(ADJUSTL(LINES(I))).EQ.KEY) EXIT
       ENDDO
-      GET_LINE_NO=I
+      ZDP_GET_LINE_NO=I
 
       END FUNCTION
       !-----------------------------------------------------------------     

@@ -31,17 +31,12 @@
 !
 !-----------------------------------------------------------------------
           
-      USE GLOBAL, ONLY: NREMX,NSMX,NSMX 
+      USE GLOBAL, ONLY: NREMX,NSMX,NSPMX,NREMX 
       USE PRECIS, ONLY: DBL_P
-!
       IMPLICIT NONE
-!
       INTEGER :: NDATA,NCASE,NTRG,CHECK,IRDMETH,NSPEC_SKEL,NREAC_SKEL
       INTEGER, ALLOCATABLE :: INDX_TRG(:)
       REAL(KIND=DBL_P), ALLOCATABLE :: ETOL(:)
-!
-!-----------------------------------------------------------------------
-!
       CHARACTER(LEN=*) :: INDIR,OUTDIR,RATEDIR
       CHARACTER(LEN=*) :: TRGFILE,CHEMFILE,SPECFILE,RATEFILE,  & 
                           SPECFILE_KPP,      &
@@ -93,36 +88,24 @@
       !READ IN ORIGINAL CHEM FILE/SPEC FILE AND KPP PRODUCED SPEC FILE.
       CALL READ_CHEM(INDIR,CHEMFILE,SPECFILE)
 
+      !TODO
+      !READ_CONTROL(TRGFILE)
       STOP
 
       !READ IN DELTANU *SPEC NUMBERING AS IN SPEC_KPP.txt
-      ALLOCATE( DELTANU(NSPEC,NREAC) )
-      OPEN(UNIT=3,FILE=FLCASE//DNUFILE, &
-           STATUS='OLD',FORM='UNFORMATTED') 
-      READ(3) DELTANU
-      CLOSE(3)
-
+      !ALLOCATE( DELTANU(NSPEC,NREAC) )
+      !OPEN(UNIT=3,FILE=FLCASE//DNUFILE, &
+      !     STATUS='OLD',FORM='UNFORMATTED') 
+      !READ(3) DELTANU
+      !CLOSE(3)
                                 !CREACNM_S,CSPECNM_S,CREACNM_F,CSPECNM_F
-
-      ALLOCATE( CSPEC_KPP(NSPEC) )	
-      CALL PARSE_SPEC_KPP(NSPEC,FLCASE,SPECFILE_KPP,CSPEC_KPP)
+      !ALLOCATE( CSPEC_KPP(NSPEC) )	
+      !CALL PARSE_SPEC_KPP(NSPEC,FLCASE,SPECFILE_KPP,CSPEC_KPP)
       !*THIS IS USED FOR SPECIES ORDERING SINCE KPP OUTPUT SPECIES 
       !ORDERING IS NOT SAME AS KPP INPUT SPECIES ORDERING.
 
-      !READ IN TARGET SPECIES INDICES/TOLERANCES
-      WRITE(*,*) 'TARGET SPECIES INDEX, ACTUAL MECH. INDEX, TOL:'
-      OPEN(UNIT=1,FILE=INDIR//TRGFILE,STATUS='OLD')
-      READ(1,*) !IGNORE LINE
-      READ(1,*) NTRG,NCASE,NDATA,IRDMETH
-      READ(1,*) !IGNORE LINE
-      ALLOCATE( INDX_TRG(NTRG) )
-      ALLOCATE( ETOL(NTRG) )
-      DO I=1,NTRG
-       READ(1,*) INDX_TRG(I),ETOL(I)
-       WRITE(*,*) I,INDX_TRG(I),TRIM(ADJUSTL(CSPEC_KPP(INDX_TRG(I)))), & 
-                  ETOL(I)       
-      ENDDO
-      CLOSE(1)
+
+      
 
       WRITE(*,'(AXI6)') 'NSPEC=',NSPEC
       WRITE(*,'(AXI6)') 'NREAC=',NREAC
@@ -139,48 +122,10 @@
 
       WRITE(*,*) '-------------------'
 
-      !GET SPECIES IN EACH REACTION
-      ALLOCATE( CREAC(NREAC) )
-      ALLOCATE( CSPEC(NSPEC) )	
-      ALLOCATE( RSPEC(NREAC,NSPEC) )
       ALLOCATE( WIJ(NREAC,NSPEC) )
       ALLOCATE( RR(NREAC) )
       ALLOCATE( JIJW(NSPEC,NSPEC) )
  
-      WRITE(*,*) 'REACTIONS:'
-      DO I=1,NREAC
-       CREAC(I)=CREACNM_S(I)
-       WRITE(*,*) I,TRIM(ADJUSTL(CREAC(I)))
-      ENDDO
-      WRITE(*,*) '-------------------'
-
-      WRITE(*,*) 'SPECIES:'
-      DO I=1,NSPEC
-       CSPEC(I)=CSPEC_KPP(I)
-       WRITE(*,*) I,TRIM(ADJUSTL(CSPEC(I)))
-      ENDDO
-      WRITE(*,*) '-------------------'
- 
-      LCSPEC=LEN(CSPEC)
-      LCREAC=LEN(CREAC)      
-      CALL GET_RSPEC(NSPEC,NREAC,LCSPEC,LCREAC,CSPEC,CREAC,RSPEC)
-      WRITE(*,*) 'REACTION SPECIES:'
-      DO J=1,NREAC
-       WRITE(*,*) J,TRIM(ADJUSTL(CREAC(J)))
-       DO I=1,NSPEC
-        IF(RSPEC(J,I).NE.0) THEN
-         WRITE(*,*) TRIM(ADJUSTL(CSPEC(I)))
-        ENDIF
-       ENDDO
-       WRITE(*,*) '-----------------'
-      ENDDO
-
-      WRITE(*,*) 'PARSING COMPLETE' 
-      WRITE(*,*) '-----------------'
-      WRITE(*,*) 
-                                                         !PARSE COMPLETE
-      !-----------------------------------------------------------------
-
       !LOOP THROUGH DATA SETS-PERFORM DRG-UPDATE SPEC AND REAC
 
       ALLOCATE( SET_TRG(NTRG,NSPEC) )

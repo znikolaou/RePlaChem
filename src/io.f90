@@ -77,3 +77,30 @@
 
       END
       !-----------------------------------------------------------------
+      SUBROUTINE READ_CONTROL(FL,NTRG,NCASE,NDATA,IRDMETH,INDX_TRG,ETOL)
+      USE PRECIS, ONLY : DBL_P
+      USE GLOBAL, ONLY: SPEC
+      IMPLICIT NONE
+      INTEGER :: I,NTRG,NCASE,NDATA,IRDMETH
+      INTEGER, PARAMETER:: IU=1
+      INTEGER, ALLOCATABLE :: INDX_TRG(:)
+      REAL(KIND=DBL_P), ALLOCATABLE :: ETOL(:)
+      CHARACTER(LEN=*) :: FL
+      
+      WRITE(*,*) 'TARGET SPECIES INDEX, ACTUAL MECH. INDEX, TOL:'
+      OPEN(UNIT=IU,FILE=FL,STATUS='OLD')
+      READ(IU,*) 
+      READ(IU,*) NTRG,NCASE,NDATA,IRDMETH
+      READ(IU,*) 
+      ALLOCATE(INDX_TRG(NTRG))
+      ALLOCATE(ETOL(NTRG))
+      DO I=1,NTRG
+       READ(IU,*) INDX_TRG(I),ETOL(I)
+       WRITE(*,*) I,INDX_TRG(I),TRIM(ADJUSTL(SPEC(INDX_TRG(I)))), & 
+                  ETOL(I)       
+      ENDDO
+      CLOSE(IU)
+      
+      RETURN
+      END
+      !-----------------------------------------------------------------
