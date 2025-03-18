@@ -77,37 +77,84 @@
 
       END
       !-----------------------------------------------------------------
-      SUBROUTINE READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,IRDMETH,INDX_TRG, &
-                              ETOL)
+      SUBROUTINE READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,IRDMETH, &
+                              INDX_TRG,ETOL,CHEMFL,SPECFL)
       USE PRECIS, ONLY : DBL_P
       USE GLOBAL, ONLY: SPEC,CONTROL_FL
       IMPLICIT NONE
+      CHARACTER(LEN=*) :: CHEMFL,SPECFL
       INTEGER :: I,NSPMX,NTRG,NCASE,NDATA,IRDMETH,INDX_TRG(NSPMX)
       REAL(KIND=DBL_P) :: ETOL(NSPMX)
       INTEGER, PARAMETER:: IU=1
      
       WRITE(*,*) '***READ_CONTROL***'
-      WRITE(*,*) 'CONTROL FILE:',TRIM(ADJUSTL(CONTROL_FL))
-     
+      
       OPEN(UNIT=IU,FILE=CONTROL_FL,STATUS='OLD',FORM='FORMATTED')
+
+      READ(IU,*) 
+      READ(IU,*) CHEMFL
+      READ(IU,*) 
+      READ(IU,*) SPECFL
       READ(IU,*) 
       READ(IU,*) NTRG,NCASE,NDATA,IRDMETH
       READ(IU,*)
       DO I=1,NTRG
        READ(IU,*) INDX_TRG(I),ETOL(I)      
       ENDDO
-
+      
+      WRITE(*,*) 'CHEMICAL MECHANISM FILE:',TRIM(ADJUSTL(CHEMFL))
+      WRITE(*,*) 'SPECIES FILE:',TRIM(ADJUSTL(SPECFL))
       WRITE(*,*) 'NO TARGETS SPECIES, NO CASES, DATA SIZE, RED. METHOD'
       WRITE(*,*) NTRG,NCASE,NDATA,IRDMETH
       WRITE(*,*) 'TARGET SPECIES INDEX, TARGET SPECIES, TOL:'
       DO I=1,NTRG
-       WRITE(*,*) I,INDX_TRG(I),TRIM(ADJUSTL(SPEC(INDX_TRG(I)))), & 
-                  ETOL(I)       
+       WRITE(*,*) I,INDX_TRG(I),ETOL(I)       
       ENDDO
 
       CLOSE(IU)
+
+      IF(IRDMETH.EQ.1) THEN
+       WRITE(*,*) 'REDUCTION USING DRG WITH DFS'
+      ELSEIF(IRDMETH.EQ.2) THEN
+       WRITE(*,*) 'REDUCTION USING DRGEP WITH DIJIKSTRAS ALGORITHM'
+      ELSEIF(IRDMETH.EQ.3) THEN
+       WRITE(*,*) 'REDUCTION USING JAC-DRGEP WITH DIJIKSTRAS ALGORITHM'
+      ENDIF
+
       WRITE(*,*) '***READ_CONTROL***'
-      
+                 
       RETURN
       END
+      !-----------------------------------------------------------------
+      SUBROUTINE READ_RATES(IDAT,DIR,RNM,NSPEC,NREAC,WIJ,RR,JIJ)
+      USE GLOBAL, ONLY : NSMX
+      USE PRECIS, ONLY : DBL_P
+      IMPLICIT NONE
+      INTEGER I,J,IDAT,NSPEC,NREAC
+      CHARACTER(LEN=*) :: DIR,RNM
+      REAL(KIND=DBL_P) :: WIJ(NREAC,NSPEC),RR(NREAC),JIJ(NSPEC,NSPEC)
+      CHARACTER(LEN=4) :: CDAT
+      CHARACTER(LEN=NSMX) :: FLNM
+      INTEGER :: NSP,NRE
+      REAL(KIND=DBL_P) :: TIME,THETA
+ 
+      !BUILD FILENAMES
+      WRITE(CDAT,'(I4.4)') IDAT     
+      FLNM=DIR//RNM//'_'//CDAT//'.dat'
+
+      OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
+      READ(1) NSP,NRE
+      CLOSE(1)
+      
+      IF(NSP.NE.NSPEC.OR.NRE.NE.NREAC) THEN
+       WRITE(*,*) 'READ_RATES:ERROR, MISMATCH',NSP,NSPEC,NRE,NREAC
+       STOP
+      ELSE
+       OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
+       !TODO READ SPECIES RATES MATRIX DIRECTLY
+       READ(1) NSP,NRE,TIME,THETA,WIJ,RR,JIJ
+       CLOSE(1)
+      ENDIF
+           
+      END SUBROUTINE
       !-----------------------------------------------------------------

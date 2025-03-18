@@ -2,7 +2,7 @@
       MODULE ZDPLASKIN_PARSE
       USE GLOBAL, ONLY : NELEM,NSPEC,NSPEC_BOLSIG,NREAC,ELEM,SPEC, &
                          SPEC_BOLSIG,REAC,REAC_CONST,IS_SPEC_CHARGED, &
-                         IS_SPEC_IN_REAC,REAC_SPEC,RSPEC, &
+                         REAC_SPEC,RSPEC, &
                          NSFLMX,NSMX,NLINEMX,NSPMX,NREMX,NSMX
       IMPLICIT NONE
       CHARACTER(LEN=*), PARAMETER, PRIVATE :: KEY_ELEM='ELEMENTS', &
@@ -35,7 +35,6 @@
       REAC_CONST(1:NREMX)=' '
       REAC_SPEC(1:NREMX,1:NSPMX)=' '
       IS_SPEC_CHARGED(1:NSPMX)=.FALSE.
-      IS_SPEC_IN_REAC(1:NSPMX,1:NREMX)=.FALSE.
       
       !READ 
       CALL READ_LINES(FL,LINES,NLINES)
@@ -63,7 +62,7 @@
       DO I=1,NREAC
        WRITE(*,'(I5XAXAXA)') I,TRIM(ADJUSTL(REAC(I)))
        DO J=1,NSPEC
-        IF(IS_SPEC_IN_REAC(J,I)) WRITE(*,*) TRIM(ADJUSTL(SPEC(J)))
+        IF(RSPEC(I,J).EQ.1) WRITE(*,*) TRIM(ADJUSTL(SPEC(J)))
        ENDDO
       ENDDO
 
@@ -246,8 +245,7 @@
       DO J=1,NREAC
        DO I=1,NSPEC
         IF(ZDP_IS_SPEC_IN_REACTION(REAC_F(J),SPEC(I))) THEN 
-         IS_SPEC_IN_REAC(I,J)=.TRUE.
-         RSPEC(I,J)=1
+         RSPEC(J,I)=1
         ENDIF
        ENDDO
       ENDDO
@@ -258,11 +256,10 @@
       SUBROUTINE ZDP_SET_NEUTRAL_IF_ANY()
       INTEGER :: I,J
       
-      DO I=1,NREAC
-       IF(ZDP_IS_ANY_NEUTRAL_REACTION(REAC_F(I))) THEN
-        DO J=1,NSPEC
-         IF(.NOT.IS_SPEC_CHARGED(J)) THEN
-          IS_SPEC_IN_REAC(J,I)=.TRUE.
+      DO J=1,NREAC
+       IF(ZDP_IS_ANY_NEUTRAL_REACTION(REAC_F(J))) THEN
+        DO I=1,NSPEC
+         IF(.NOT.IS_SPEC_CHARGED(I)) THEN
           RSPEC(J,I)=1
          ENDIF
         ENDDO

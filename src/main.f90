@@ -30,75 +30,51 @@
 !     Contact details: ZachariasMNic@gmail.com
 !
 !----------------------------------------------------------------------- 
-      USE GLOBAL, ONLY: INDIR,RATE_FL,OUTDIR,NSMX,NSPMX,NREMX,SPEC, &
-                        REAC,RSPEC
+      USE GLOBAL, ONLY: INDIR,OUTDIR,RATE_FL,CONTROL_FL,NSMX,NSFLMX, &
+                        NSPMX,NREMX,NSPEC,NREAC,SPEC,REAC,RSPEC
       USE PRECIS, ONLY: DBL_P
       IMPLICIT NONE
-      INTEGER :: NDATA,NCASE,NTRG,CHECK,IRDMETH,NSPEC_SKEL,NREAC_SKEL
-      INTEGER :: INDX_TRG(NSPMX)
-      REAL(KIND=DBL_P) :: ETOL(NSPMX)
-      !-----------------------------------------------------------------
-      INTEGER :: I,J,K,N,NSPEC,NREAC,LCREAC,LCSPEC,IPROD
+      INTEGER :: NDATA,NCASE,NTRG,CHECK,IRDMETH,NSPEC_SKEL,NREAC_SKEL, &
+                 INDX_TRG(NSPMX),I,J,K,N,IPROD
       INTEGER, ALLOCATABLE :: SET_TRG(:,:),SPSET_TRG(:,:), &
                               SPSET_TRGUP(:,:),SPSET_UNION(:), &
                               RESET_UNION(:)
+      REAL(KIND=DBL_P) :: ETOL(NSPMX)
       REAL(KIND=DBL_P), ALLOCATABLE :: WIJ(:,:),DELTANU(:,:),RR(:), &
                                        JIJW(:,:)
-      CHARACTER(LEN=8)  :: DATE
-      CHARACTER(LEN=10) :: TIME
-      CHARACTER(LEN=5)  :: ZONE
-      CHARACTER(LEN=500) :: COMMAND
+      CHARACTER(LEN=NSMX) :: COMMAND
       CHARACTER(LEN=2) :: JCASE
-      CHARACTER(LEN=1000) :: FLCASE
-      
-!
-!-----------------------------------------------------------------------
+      CHARACTER(LEN=NSFLMX) :: FLCASE,CHEMFL,SPECFL
+      !-----------------------------------------------------------------
 
       WRITE(*,*) 'MAIN:'
 
-      !TODO:
-      CALL READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,IRDMETH,INDX_TRG,ETOL)
-    
-      !READ IN ORIGINAL CHEM FILE/SPEC FILE AND KPP PRODUCED SPEC FILE.
-      !CALL READ_CHEM(INDIR,CHEMFILE,SPECFILE)
+      CALL READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,IRDMETH,INDX_TRG,ETOL, &
+                        CHEMFL,SPECFL)  
+      CALL READ_CHEM(INDIR,CHEMFL,SPECFL)
 
-      STOP
-
-      WRITE(*,'(AXI6)') 'NSPEC=',NSPEC
-      WRITE(*,'(AXI6)') 'NREAC=',NREAC
-      WRITE(*,'(AXI6)') 'NCASE=',NCASE
-      WRITE(*,'(AXI6)') 'NSETS=',NDATA
- 
-      IF(IRDMETH.EQ.1) THEN
-       WRITE(*,*) 'REDUCTION USING DRG WITH DFS'
-      ELSEIF(IRDMETH.EQ.2) THEN
-       WRITE(*,*) 'REDUCTION USING DRGEP WITH DIJIKSTRAS ALGORITHM'
-      ELSEIF(IRDMETH.EQ.3) THEN
-       WRITE(*,*) 'REDUCTION USING JAC-DRGEP WITH DIJIKSTRAS ALGORITHM'
-      ENDIF
-
-      WRITE(*,*) '-------------------'
-
-      ALLOCATE( WIJ(NREAC,NSPEC) )
-      ALLOCATE( RR(NREAC) )
-      ALLOCATE( JIJW(NSPEC,NSPEC) )
- 
-      !LOOP THROUGH DATA SETS-PERFORM DRG-UPDATE SPEC AND REAC
-
-      ALLOCATE( SET_TRG(NTRG,NSPEC) )
-      ALLOCATE( SPSET_TRGUP(NTRG,NSPEC) )
-      ALLOCATE( SPSET_UNION(NSPEC) )
-      ALLOCATE( RESET_UNION(NREAC) )
+      ALLOCATE(WIJ(NREAC,NSPEC))
+      ALLOCATE(RR(NREAC))
+      ALLOCATE(JIJW(NSPEC,NSPEC))
+      ALLOCATE(SET_TRG(NTRG,NSPEC))
+      ALLOCATE(SPSET_TRGUP(NTRG,NSPEC))
+      ALLOCATE(SPSET_UNION(NSPEC))
+      ALLOCATE(RESET_UNION(NREAC))
+      WIJ(1:NREAC,1:NSPEC)=0.0e0
+      RR(1:NREAC)=0.0e0
+      JIJW(1:NSPEC,1:NSPEC)=0.0e0
       SPSET_TRGUP(1:NTRG,1:NSPEC)=0
       SPSET_UNION(1:NSPEC)=0
       RESET_UNION(1:NREAC)=0
 
-      WRITE(*,*) 'DRG-LOOPING THROUGH DATASETS'       
+      STOP
+
+      WRITE(*,*) 'LOOPING THROUGH DATASETS'       
       WRITE(*,*) 
       DO N=1,NCASE
        WRITE(*,*) 'CASE',N
        WRITE(JCASE,'(I2.2)') N
-       FLCASE=INDIR//'case'//JCASE//'/'         
+       FLCASE=INDIR//'case_'//JCASE//'/'         
        DO I=1,NDATA
         WRITE(*,*) 'DATASET',I
         WRITE(*,*) '-------------------'
@@ -109,9 +85,9 @@
         !1=MY WAY
         !2=GRAPH SEARCH (PATH DEPENDENT)
         CALL DRIVER_DRG(IRDMETH,NSPEC,NREAC,NTRG,INDX_TRG(1:NTRG), &
-                        ETOL(1:NTRG), &
-                        DELTANU,RSPEC(1:NREAC,1:NSPEC),WIJ,RR, &
-                        JIJW,LCSPEC,LCREAC,SPEC,REAC,SET_TRG)  
+                        ETOL(1:NTRG),DELTANU, &
+                        RSPEC(1:NREAC,1:NSPEC),WIJ,RR, &
+                        JIJW,NSMX,NSMX,SPEC,REAC,SET_TRG)  
         !SAVE PICs
         !UPDATE_SETS
         DO K=1,NSPEC
@@ -241,10 +217,14 @@
       !CALL OUTPUT(NSPEC,NREAC,SPSET_UNION,RESET_UNION,SPEC,CSPECNM_F, &
       !            CREACNM_F,SKELETAL_SPEC_KPP,SKELETAL_CHEM_KPP	)
 
-
       DEALLOCATE(WIJ)
+      DEALLOCATE(RR)
+      DEALLOCATE(JIJW)
       DEALLOCATE(SET_TRG)
-     
+      DEALLOCATE(SPSET_TRGUP)
+      DEALLOCATE(SPSET_UNION)
+      DEALLOCATE(RESET_UNION)
+
       WRITE(*,*) 'SKELETAL MECHANISM SIZE:'
       WRITE(*,*) 'NUNION SPEC=',SUM(SPSET_UNION)
       WRITE(*,*) 'NUNION REAC=',SUM(RESET_UNION)
@@ -253,8 +233,8 @@
       WRITE(*,*) '-------------------'
 
       CALL SYSTEM('cp log_redchem.txt output/')
-      COMMAND='cp'//' '//INDIR//'target.txt'//' '//'output/'
+      COMMAND='cp'//' '//CONTROL_FL//' '//'output/'
       CALL SYSTEM(COMMAND)
-!
+
       STOP
       END
