@@ -219,10 +219,6 @@
       !
       ! AUTHOR: Z. NIKOLAOU     
       !
-      ! DESCRIPTION: 
-      ! RETURNS INDEX OF FIRST OCCURENCE OF 'TEXT' IN 
-      ! 'STRING'.  
-      !
       IMPLICIT NONE
       CHARACTER(LEN=*) :: STRING,TEXT
       INTEGER :: I,NSTR,NTXT,GET_TEXT_COUNT

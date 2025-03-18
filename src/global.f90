@@ -6,7 +6,9 @@
                                      OUTDIR='./output/', &
                                      CONTROL_FL='control.txt', &
                                      RATE_FL='rates.dat', &
+                                     EQ_SEP='=>', &
                                      CHEMRED_FL='reducedChemistry.txt'
+                                     
       INTEGER :: NREAC,NSPEC,NSPEC_BOLSIG,NELEM
       CHARACTER(LEN=NSMX) :: ELEM(NSPMX),SPEC(NSPMX),REAC(NREMX), &
                              SPEC_CHARGE(NSPMX),REACF(NREMX), &
