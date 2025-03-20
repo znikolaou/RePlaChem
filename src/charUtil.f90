@@ -1,4 +1,38 @@
       !-----------------------------------------------------------------
+      LOGICAL FUNCTION IS_DOT(A)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: A
+      CHARACTER, PARAMETER :: CDOT='.'
+
+      IS_DOT=A.EQ.CDOT
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      LOGICAL FUNCTION IS_NUMBER(A)
+      IMPLICIT NONE
+      CHARACTER :: A
+      INTEGER, PARAMETER :: ASCI_IL=48,ASCI_IH=57
+      INTEGER :: IA
+
+      IA=ICHAR(A)
+      IS_NUMBER=.FALSE.
+      IF((IA.GE.ASCI_IL).AND.(IA.LE.ASCI_IH)) THEN
+       IS_NUMBER=.TRUE.
+      ENDIF
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      LOGICAL FUNCTION IS_AZ(A)
+      IMPLICIT NONE
+      LOGICAL :: IS_NUMBER,IS_DOT
+      CHARACTER :: A
+      INTEGER, PARAMETER :: ASCI_IL=65,ASCI_IH=90
+      INTEGER :: IA
+
+      IS_AZ=(.NOT.IS_NUMBER(A)).AND.(.NOT.IS_DOT(A))
+
+      END FUNCTION
+      !-----------------------------------------------------------------
       LOGICAL FUNCTION ISEMPTY(STRING)
       !
       !AUTHOR: Z. NIKOLAOU
@@ -40,6 +74,31 @@
 
       END FUNCTION  
       !-----------------------------------------------------------------
+      SUBROUTINE SPLIT_NUM_AND_CHAR(STR,NS,NUM,CH)
+      IMPLICIT NONE
+      !
+      !SPLITS A STRING OF THE FORM '123.313AFD' INTO 123.313 AND AFD. 
+      !
+      INTEGER I,IAZ,NS,GET_INDEX_FIRST_AZ
+      CHARACTER(LEN=*) :: STR
+      CHARACTER(LEN=NS) :: CH
+      DOUBLE PRECISION :: NUM
+
+      NUM=1.0e0
+      CH=' '
+      IAZ=GET_INDEX_FIRST_AZ(STR)
+      IF(IAZ.EQ.0) THEN         
+       READ(STR,*) NUM
+      ELSEIF(IAZ.EQ.1) THEN
+       CH=STR
+      ELSE
+       READ(STR(1:IAZ-1),*) NUM
+       CH=STR(IAZ:)
+      ENDIF
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
       FUNCTION GET_KEY_INDEX(KEY,NL,STRL,IS)
       !
       !GET INDEX OF (UNIQUE) KEY PRESENT IN LIST STRL
@@ -58,6 +117,22 @@
        ENDIF
       ENDDO
     
+      END FUNCTION
+      !-----------------------------------------------------------------
+      FUNCTION GET_INDEX_FIRST_AZ(STR)
+      IMPLICIT NONE
+      LOGICAL :: IS_AZ
+      INTEGER :: I,GET_INDEX_FIRST_AZ
+      CHARACTER(LEN=*) :: STR
+
+      GET_INDEX_FIRST_AZ=0
+      DO I=1,LEN(STR)
+       IF(IS_AZ(STR(I:I))) THEN
+        GET_INDEX_FIRST_AZ=I
+        EXIT
+       ENDIF
+      ENDDO
+
       END FUNCTION
       !-----------------------------------------------------------------
       FUNCTION GET_INDEX_FIRST_CHAR(STR)

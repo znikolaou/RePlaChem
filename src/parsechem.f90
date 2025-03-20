@@ -28,59 +28,93 @@
       END
       !------------------------------------------------------------------
       SUBROUTINE SET_STOICH_COEFFS()
-      USE GLOBAL, ONLY : NSMX,EQ_SEP
+      USE GLOBAL, ONLY : NSMX,EQ_SEP,NUR,NUP,NSPMX
       USE ZDPLASKIN_PARSE, ONLY: NSPEC,NREAC,SPEC,REAC,RSPEC
       IMPLICIT NONE
-      INTEGER, PARAMETER :: NC=2
-      INTEGER :: I,J,NA,NUR,NUP,GET_TEXT_WITH_SPACES_COUNT
-      CHARACTER(LEN=NSMX) :: COLMS(NC),REACF(NREAC)
+      INTEGER, PARAMETER :: NRP=2
+      INTEGER :: I,J,NA,NAR,NAP,NR
+      CHARACTER(LEN=NSMX) :: COLMSRP(NRP),COLMSR(NSPMX),COLMSP(NSPMX), &
+                             REACF(NREAC),CR,CP
 
+      NUR(1:NREAC,1:NSPEC)=0.0e0
+      NUP(1:NREAC,1:NSPEC)=0.0e0
       WRITE(*,*) 'STOICH. COEFFS:'
-      CALL FORMAT_REACTIONS(NREAC,REAC(1:NREAC),REACF)
       DO I=1,NREAC
-       !TODO:USE REAC RATHER THAN REAC_F
-       CALL SPLIT_STRING(TRIM(ADJUSTL(REACF(I))), &
-                         EQ_SEP,NC,COLMS,NA)
-       WRITE(*,*) I,TRIM(ADJUSTL(REACF(I)))
-       !WRITE(*,*) 'REAC:',TRIM(ADJUSTL(COLMS(1)))
-       !WRITE(*,*) 'PROD:',TRIM(ADJUSTL(COLMS(2)))
-       DO J=1,NSPEC
-        IF(RSPEC(I,J).EQ.1) THEN
-         NUR=GET_TEXT_WITH_SPACES_COUNT(COLMS(1)//' *', &
-                            TRIM(ADJUSTL(SPEC(J))))
-         NUP=GET_TEXT_WITH_SPACES_COUNT('* '//COLMS(2), &
-                            TRIM(ADJUSTL(SPEC(J))))
-         WRITE(*,*) TRIM(ADJUSTL(SPEC(J))),NUR,NUP
-        ENDIF
-       ENDDO
+       CALL SET_REAC_STOICH_COEFFS(I,NSPEC,NREAC,REAC(I),SPEC)
       ENDDO
 
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE FORMAT_REACTIONS(NREAC,REAC,REACF)
-      USE GLOBAL, ONLY: NSMX
+      SUBROUTINE SET_REAC_STOICH_COEFFS(IR,NSPEC,NREAC,REAC,SPEC)
+      !TODO: FIX FOR ANY_NEUTRAL REACTIONS 
+      USE GLOBAL, ONLY : NSMX,NSPMX,NUR,NUP,EQ_SEP,RSPEC
       IMPLICIT NONE
-      INTEGER :: I,NREAC
-      CHARACTER(LEN=*) :: REAC(NREAC),REACF(NREAC)
-      CHARACTER(LEN=NSMX) :: CWRK,C
+      INTEGER :: IR,NSPEC,NREAC,NA,NR,NP,I,J
+      CHARACTER(LEN=*) :: REAC,SPEC(NSPEC)
+      CHARACTER(LEN=NSMX) :: RANDP(2),RLIST(NSPMX),PLIST(NSPMX), &
+                             REACF,CH
+      DOUBLE PRECISION :: NUM
+
+      CALL FORMAT_REACTION(NSMX,REAC,REACF)
+      CALL SPLIT_STRING(REACF,EQ_SEP,2,RANDP,NA)
+      CALL SPLIT_STRING_WITH_SPACES(RANDP(1),NSPMX,RLIST,NR)
+      CALL SPLIT_STRING_WITH_SPACES(RANDP(2),NSPMX,PLIST,NP)
+      WRITE(*,*) TRIM(ADJUSTL(REACF))
     
-      DO I=1,NREAC
-       CALL REPLACE_TEXT(REAC(I),'^+','^POS',CWRK,NSMX)
-       C=CWRK
-       CALL REPLACE_TEXT(C,'^-','^NEG',CWRK,NSMX)
-       C=CWRK
-       CALL REPLACE_TEXT(C,'=>',' => ',CWRK,NSMX)
-       C=CWRK
-       CALL REPLACE_TEXT(C,'+',' + ',CWRK,NSMX)
-       C=CWRK
-       CALL REPLACE_TEXT(C,'NEG','-',CWRK,NSMX)
-       C=CWRK
-       CALL REPLACE_TEXT(C,'POS','+',CWRK,NSMX)
-       C='* '//TRIM(ADJUSTL(CWRK))//' *'
-       REACF(I)=C
+      
+      WRITE(*,*) 'REAC: ',TRIM(ADJUSTL(RANDP(1))) 
+      DO I=1,NR
+       CALL SPLIT_NUM_AND_CHAR(RLIST(I),NSMX,NUM,CH)
+       WRITE(*,*) TRIM(ADJUSTL(CH)),': ',NUM
+       DO J=1,NSPEC
+        IF(TRIM(ADJUSTL(CH)).EQ.TRIM(ADJUSTL(SPEC(J)))) THEN
+         NUR(IR,J)=NUR(IR,J)+NUM
+        ENDIF
+       ENDDO
       ENDDO
 
+      WRITE(*,*) 'PROD: ',TRIM(ADJUSTL(RANDP(2)))
+      DO I=1,NP
+       CALL SPLIT_NUM_AND_CHAR(PLIST(I),NSMX,NUM,CH)
+       WRITE(*,*) TRIM(ADJUSTL(CH)),': ',NUM
+       DO J=1,NSPEC
+        IF(TRIM(ADJUSTL(CH)).EQ.TRIM(ADJUSTL(SPEC(J)))) THEN
+         NUP(IR,J)=NUP(IR,J)+NUM
+        ENDIF
+       ENDDO
+      ENDDO
+
+      DO I=1,NSPEC
+       IF(RSPEC(IR,I).EQ.1) THEN
+        WRITE(*,*) TRIM(ADJUSTL(SPEC(I))),': ','NUR=',NUR(IR,I), &
+                   'NUP=',NUP(IR,I)
+       ENDIF
+      ENDDO
+
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE FORMAT_REACTION(NSMX,REAC,REACF)
+      IMPLICIT NONE
+      INTEGER :: NSMX
+      CHARACTER(LEN=NSMX) :: REAC,REACF,CWRK,C
+    
+      CALL REPLACE_TEXT(REAC,'^+','^POS',CWRK,NSMX)
+      C=CWRK
+      CALL REPLACE_TEXT(C,'^-','^NEG',CWRK,NSMX)
+      C=CWRK
+      CALL REPLACE_TEXT(C,'=>',' => ',CWRK,NSMX)
+      C=CWRK
+      CALL REPLACE_TEXT(C,'+',' ',CWRK,NSMX)
+      C=CWRK
+      CALL REPLACE_TEXT(C,'NEG','-',CWRK,NSMX)
+      C=CWRK
+      CALL REPLACE_TEXT(C,'POS','+',CWRK,NSMX)
+      C=' '//TRIM(ADJUSTL(CWRK))//' '
+      REACF=C
+      
       RETURN
       END
       !-----------------------------------------------------------------
