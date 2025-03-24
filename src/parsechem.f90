@@ -15,9 +15,8 @@
       CALL ZDP_INIT(DIR//CHEMFL)
            !SET BASE VARS:NELEM,NSPEC,NREAC,ELEM,SPEC,REAC,REAC_SPEC,RSPEC
       CALL SET_STOICH_COEFFS()
-           !SET VARS:NUR,NUP
-      CALL CHECK_CHARGE()
-       
+           !SET VARS:NUR,NUP,DELTANU
+      CALL CHECK_CHARGE() 
       !TODO:CALL CHECK_STOICHIOMETRY()
       
       WRITE(*,*) '***READ_CHEM***'
@@ -26,13 +25,14 @@
       END
       !------------------------------------------------------------------
       SUBROUTINE SET_STOICH_COEFFS()
-      USE GLOBAL, ONLY : NUR,NUP
+      USE GLOBAL, ONLY : NUR,NUP,DELTANU
       USE ZDPLASKIN_PARSE, ONLY: NSPEC,NREAC,SPEC,REAC
       IMPLICIT NONE
       INTEGER :: I
 
-      NUR(1:NREAC,1:NSPEC)=0.0e0
-      NUP(1:NREAC,1:NSPEC)=0.0e0
+      NUR(1:NREAC,1:NSPEC)=0.0E0
+      NUP(1:NREAC,1:NSPEC)=0.0E0
+      DELTANU(1:NREAC,1:NSPEC)=0.0E0
       WRITE(*,*) 'REACTION STOICH. COEFFS:'
       DO I=1,NREAC
        CALL SET_REAC_STOICH_COEFFS(I,NSPEC,NREAC,REAC(I),SPEC)
@@ -43,7 +43,8 @@
       !-----------------------------------------------------------------
       SUBROUTINE SET_REAC_STOICH_COEFFS(IR,NSPEC,NREAC,REAC,SPEC)
       !TODO: FIX FOR ANY_NEUTRAL REACTIONS 
-      USE GLOBAL, ONLY : NSMX,NSPMX,NUR,NUP,EQ_SEP,RSPEC
+      USE GLOBAL, ONLY : NSMX,NSPMX,NUR,NUP,DELTANU,EQ_SEP,RSPEC, &
+                         IS_ANY_NEUTRAL_REAC
       IMPLICIT NONE
       INTEGER :: IR,NSPEC,NREAC,NA,NR,NP,I,J
       CHARACTER(LEN=*) :: REAC,SPEC(NSPEC)
@@ -57,36 +58,64 @@
       CALL SPLIT_STRING(REACF,EQ_SEP,2,RANDP,NA)
       CALL SPLIT_STRING_WITH_SPACES(RANDP(1),NSPMX,RLIST,NR)
       CALL SPLIT_STRING_WITH_SPACES(RANDP(2),NSPMX,PLIST,NP)
-      WRITE(*,*) TRIM(ADJUSTL(REACF))
      
-      WRITE(*,*) 'REACTANTS: ',TRIM(ADJUSTL(RANDP(1))) 
-      DO I=1,NR
-       CALL SPLIT_NUM_AND_CHAR(RLIST(I),NSMX,NUM,CH)
-       WRITE(*,*) TRIM(ADJUSTL(CH)),': ',NUM
-       DO J=1,NSPEC
-        IF(TRIM(ADJUSTL(CH)).EQ.TRIM(ADJUSTL(SPEC(J)))) THEN
-         NUR(IR,J)=NUR(IR,J)+NUM
-        ENDIF
-       ENDDO
-      ENDDO
-      WRITE(*,*) 'PRODUCTS: ',TRIM(ADJUSTL(RANDP(2)))
-      DO I=1,NP
-       CALL SPLIT_NUM_AND_CHAR(PLIST(I),NSMX,NUM,CH)
-       WRITE(*,*) TRIM(ADJUSTL(CH)),': ',NUM
-       DO J=1,NSPEC
-        IF(TRIM(ADJUSTL(CH)).EQ.TRIM(ADJUSTL(SPEC(J)))) THEN
-         NUP(IR,J)=NUP(IR,J)+NUM
-        ENDIF
-       ENDDO
-      ENDDO
+      WRITE(*,*) '  REACTANTS: ',TRIM(ADJUSTL(RANDP(1))) 
+      CALL SET_NU_FROM_LIST(IR,NR,RLIST(1:NR),NUR(1:NREAC,1:NSPEC))
+      
+      WRITE(*,*) '  PRODUCTS: ',TRIM(ADJUSTL(RANDP(2)))
+      CALL SET_NU_FROM_LIST(IR,NP,PLIST(1:NP),NUP(1:NREAC,1:NSPEC))
+
+      !TODO: MOVE TO ZDPLASKING PARSE?     
+      CALL SET_NU_FOR_ANY_NEUTRAL_REAC()
+
+      DELTANU(1:NREAC,1:NSPEC)=NUP(1:NREAC,1:NSPEC)-NUR(1:NREAC,1:NSPEC)
 
       DO I=1,NSPEC
        IF(RSPEC(IR,I).EQ.1) THEN
-        WRITE(*,*) TRIM(ADJUSTL(SPEC(I))),': ','NUR=',NUR(IR,I), &
-                   'NUP=',NUP(IR,I)
+        WRITE(*,*) '  ',TRIM(ADJUSTL(SPEC(I))),': ','NUR=',NUR(IR,I), &
+                   'NUP=',NUP(IR,I),'DELTANU=',DELTANU(IR,I)
        ENDIF
       ENDDO
 
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE SET_NU_FOR_ANY_NEUTRAL_REAC()
+      USE GLOBAL, ONLY : NSPEC,NREAC,NUR,NUP,IS_SPEC_CHARGED, &
+                         IS_ANY_NEUTRAL_REAC
+      IMPLICIT NONE
+      INTEGER :: I,J
+
+      DO I=1,NREAC
+       IF(IS_ANY_NEUTRAL_REAC(I)) THEN
+        DO J=1,NSPEC
+         IF(.NOT.IS_SPEC_CHARGED(J)) THEN
+          NUR(I,J)=1.0E0
+          NUP(I,J)=1.0E0
+         ENDIF
+        ENDDO
+       ENDIF        
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE SET_NU_FROM_LIST(IR,NL,NO_AND_CHAR_LIST,NU)
+      USE GLOBAL, ONLY : NSPEC,NREAC,NSMX,SPEC
+      IMPLICIT NONE
+      INTEGER :: I,J,IR,NL
+      DOUBLE PRECISION :: NUM,NU(NREAC,NSPEC)
+      CHARACTER(LEN=NSMX) :: NO_AND_CHAR_LIST(NL),CH
+      
+      DO I=1,NL
+       CALL SPLIT_NUM_AND_CHAR(NO_AND_CHAR_LIST(I),NSMX,NUM,CH)
+       DO J=1,NSPEC
+        IF(TRIM(ADJUSTL(CH)).EQ.TRIM(ADJUSTL(SPEC(J)))) THEN
+         NU(IR,J)=NU(IR,J)+NUM
+        ENDIF
+       ENDDO
+      ENDDO
 
       RETURN
       END
