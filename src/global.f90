@@ -11,11 +11,12 @@
                                      
       INTEGER :: NELEM,NSPEC,NREAC,NSPEC_BOLSIG
       CHARACTER(LEN=NSMX) :: ELEM(NSPMX),SPEC(NSPMX),REAC(NREMX), &
-                             SPEC_CHARGE(NSPMX),REACF(NREMX), &
+                             REACF(NREMX), &
                              SPEC_BOLSIG(NSPMX), REAC_CONST(NREMX), &
                              REAC_SPEC(NREMX,NSPMX)
       LOGICAL :: IS_SPEC_CHARGED(NSPMX),IS_BOLSIG_REAC(NREMX)
       INTEGER :: RSPEC(NREMX,NSPMX)
-      DOUBLE PRECISION :: NUR(NREMX,NSPMX),NUP(NREMX,NSPMX)
+      DOUBLE PRECISION :: NUR(NREMX,NSPMX),NUP(NREMX,NSPMX), &
+                          SPEC_CHARGE(NSPMX)
 
       END MODULE GLOBAL

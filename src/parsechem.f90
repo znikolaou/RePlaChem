@@ -16,9 +16,10 @@
            !SET BASE VARS:NELEM,NSPEC,NREAC,ELEM,SPEC,REAC,REAC_SPEC,RSPEC
       CALL SET_STOICH_COEFFS()
            !SET VARS:NUR,NUP
-      
-      !TODO:CALL CHECK_STOICHIOMETRY()
+      CALL CHECK_CHARGE()
        
+      !TODO:CALL CHECK_STOICHIOMETRY()
+      
       WRITE(*,*) '***READ_CHEM***'
 
       RETURN
@@ -138,4 +139,39 @@
 
       RETURN
       END  
+      !-----------------------------------------------------------------
+      SUBROUTINE CHECK_CHARGE()
+      USE GLOBAL, ONLY: NREAC,REAC
+      IMPLICIT NONE
+      DOUBLE PRECISION :: GET_REACTION_CHARGE,CHARGE
+      INTEGER :: I
+
+      DO I=1,NREAC
+       CHARGE=GET_REACTION_CHARGE(I)
+       IF(CHARGE.NE.0.0E0) THEN
+        WRITE(*,*) '*CHECK_CHARGE: ERROR, CHARGE NOT ZERO FOR REAC:'
+        WRITE(*,*) TRIM(ADJUSTL(REAC(I)))
+        WRITE(*,*) 'CHARGE=',CHARGE
+        WRITE(*,*) 'CHECK CHEM. MECH. TERMINATING ...'
+        STOP
+       ENDIF
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      FUNCTION GET_REACTION_CHARGE(I)
+      USE GLOBAL, ONLY: NSPEC,NUR,NUP,SPEC,SPEC_CHARGE
+      IMPLICIT NONE
+      INTEGER :: I,J
+      DOUBLE PRECISION :: GET_REACTION_CHARGE
+
+      GET_REACTION_CHARGE=0.0E0
+      DO J=1,NSPEC
+       !WRITE(*,*) TRIM(ADJUSTL(SPEC(J))),'CHARGE=',SPEC_CHARGE(J)
+       GET_REACTION_CHARGE=(NUR(I,J)-NUP(I,J))*SPEC_CHARGE(J)+ &
+                           GET_REACTION_CHARGE
+      ENDDO
+
+      END FUNCTION
       !-----------------------------------------------------------------

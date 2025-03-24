@@ -6,15 +6,15 @@
       INTEGER, PARAMETER :: NSPEC=10,NC=100
       INTEGER :: NU(NSPEC,2),I,NA,IEQ
       CHARACTER(LEN=30) :: SPEC(NSPEC),C,CH
-      PARAMETER(STRA='   2A+A+10  B+1.5C + 20B+ 23424_K  10R^++U => D + 34A+ 12B + F')
+      PARAMETER(STRA='   2CH4+A+10H2+1.5C3 + 20B+ 23424_K  10R^++U => D + 34A+ 12B + F')
       CHARACTER(LEN=LEN(STRA)) :: STRF,COLMS(NC)
       DOUBLE PRECISION :: NUM
 
 
-      SPEC(1)='A'
-      SPEC(2)='B'
+      SPEC(1)='CH4'
+      SPEC(2)='C3'
       SPEC(3)='C'
-      SPEC(4)='R'
+      SPEC(4)='R^+'
       SPEC(5)='U'
       SPEC(6)='D'
       SPEC(7)='F'

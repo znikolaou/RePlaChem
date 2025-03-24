@@ -2,7 +2,7 @@
       MODULE ZDPLASKIN_PARSE
       USE GLOBAL, ONLY : NELEM,NSPEC,NSPEC_BOLSIG,NREAC,ELEM,SPEC, &
                          SPEC_BOLSIG,REAC,REAC_CONST,IS_SPEC_CHARGED, &
-                         REAC_SPEC,RSPEC, &
+                         SPEC_CHARGE,REAC_SPEC,RSPEC, &
                          NSFLMX,NSMX,NLINEMX,NSPMX,NREMX,NSMX
       IMPLICIT NONE
       CHARACTER(LEN=*), PARAMETER, PRIVATE :: KEY_ELEM='ELEMENTS', &
@@ -32,6 +32,7 @@
       ELEM(1:NSPMX)=' '
       SPEC(1:NSPMX)=' '
       SPEC_BOLSIG(1:NSPMX)=' '
+      SPEC_CHARGE(1:NSPMX)=0.0E0
       REAC(1:NREMX)=' '
       REAC_CONST(1:NREMX)=' '
       REAC_SPEC(1:NREMX,1:NSPMX)=' '
@@ -324,11 +325,16 @@
       SUBROUTINE ZDP_SET_IS_SPEC_CHARGED()
       IMPLICIT NONE
       INTEGER :: I
+      DOUBLE PRECISION, PARAMETER :: ONE=1.0E0
+      LOGICAL :: IELE,IPOS,INEG
 
       DO I=1,NSPEC
-       IS_SPEC_CHARGED(I)=(INDEX(SPEC(I),'^+').GT.0).OR. &
-                          (INDEX(SPEC(I),'^-').GT.0).OR. &
-                          (TRIM(ADJUSTL(SPEC(I))).EQ.'E')
+       IPOS=INDEX(SPEC(I),'^+').GT.0
+       INEG=INDEX(SPEC(I),'^-').GT.0
+       IELE=TRIM(ADJUSTL(SPEC(I))).EQ.'E'
+       IS_SPEC_CHARGED(I)=IPOS.OR.INEG.OR.IELE
+       IF(IPOS) SPEC_CHARGE(I)=ONE
+       IF(INEG.OR.IELE) SPEC_CHARGE(I)=-ONE
       ENDDO
              
       END
