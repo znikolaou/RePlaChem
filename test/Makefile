@@ -1,7 +1,6 @@
 
-#Source files
 SRC_CHEM=$(SRC_DIR)/global.f90 $(SRC_DIR)/precis.f90 $(SRC_DIR)/zdplaskin_parse.f90 $(SRC_DIR)/charUtil.f90 $(SRC_DIR)/parsechem.f90 $(SRC_DIR)/io.f90 
-OBJS_CHEM=$(SRC_CHEM:%.f90=%.o)
+OBJS_CHEM=$(patsubst $(SRC_DIR)/%.f90,$(BUILD_DIR)/%.o,$(SRC_CHEM))
 
 SRC_T1=testIsBolsigReaction.f90
 SRC_T2=testFormatReactions.f90
@@ -91,13 +90,14 @@ goTestGetIndex: $(OBJS_T15)
 goTestExtractNu: $(OBJS_T16)
 	$(FC) $(FOPT) $(OBJS_T16) -o $@
 
-
+print:
+	@ echo $(OBJS_CHEM) 
 %.o: %.f90
 	$(FC) $(FOPT) -c -o $@ $< 
 
-$(SRC_DIR)/%.o: $(SRC_DIR)/%.f90
+$(BUILD_DIR)/%.o: $(SRC_DIR)/%.f90
 	$(FC) $(FOPT) -c -o $@ $< 
 
 clean:
-	@ rm -f $(SRC_DIR)/*.o  *.o log* go*  *.mod
+	@ rm -f $(BUILD_DIR)/*.o  *.o log* go*  *.mod
 
