@@ -11,7 +11,7 @@
       CHARACTER(LEN=*), PARAMETER, PRIVATE :: KEY_ELEM='ELEMENTS', &
        KEY_SPEC='SPECIES', KEY_REAC='REACTIONS',KEY_BOLS='BOLSIG', &
        KEY_END='END', KEY_SET='SET', KEY_AT='@',KEY_EXCL='!', &
-       KEY_EQ='=',KEY_NEUTRAL='ANY_NEUTRAL', &
+       KEY_EQ='=',KEY_NEUTRAL='ANY_NEUTRAL',KEY_DOLLAR='$', &
        KEY_ANY_ION_POSITIVE='ANY_ION_POSITIVE', & !TODO 
        KEY_ANY_ION_NEGATIVE='ANY_ION_NEGATIVE'    !TODO 
       CHARACTER(LEN=NSMX), PRIVATE :: LINES(NLINEMX)
@@ -55,7 +55,7 @@
       CALL ZDP_READ_BOLSIG_SPECIES()
       CALL ZDP_READ_BOLSIG_SEC_SET_LIST()
       CALL ZDP_READ_AND_FILTER_REACTIONS()
-      !CALL ZDP_READ_REAC_SET_DOLLAR_LIST()
+      CALL ZDP_READ_REAC_SEC_DOLLAR_LIST()
       
       !POST-PROCESS
       CALL ZDP_SET_IS_SPEC_CHARGED()
@@ -140,7 +140,6 @@
       IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
       CALL ZDP_READ_SECTION_SET_LIST(IS,IE,NLINEMX, &
                                      BOLSIG_SEC_SET_LIST,NBOLS_SET)
-
       WRITE(*,*) 'BOLSIG SECTION SET LINES:'
       DO I=1,NBOLS_SET
        WRITE(*,*) TRIM(ADJUSTL(BOLSIG_SEC_SET_LIST(I)))
@@ -162,6 +161,22 @@
       RETURN
       END
       !-----------------------------------------------------------------
+      SUBROUTINE ZDP_READ_REAC_SEC_DOLLAR_LIST() 
+      IMPLICIT NONE
+      INTEGER :: GET_KEY_INDEX,I,IS,IE 
+
+      IS=GET_KEY_INDEX(KEY_REAC,NLINES,LINES(1:NLINES),1)
+      IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
+      WRITE(*,'(A)') 'REACTIONS SET DOLLAR LIST:'
+      CALL ZDP_READ_SECTION_DOLLAR_LIST(IS,IE,NLINEMX, &
+              REAC_SEC_DOLLAR_LIST,NREAC_DOLLAR)
+      DO I=1,NREAC_DOLLAR
+       WRITE(*,*) TRIM(ADJUSTL(REAC_SEC_DOLLAR_LIST(I)))
+      ENDDO
+     
+      RETURN
+      END
+      !----------------------------------------------------------------- 
       SUBROUTINE ZDP_FILTER_REACTIONS()
       IMPLICIT NONE
       INTEGER :: I,NA,NG,ILINE,IREAC
@@ -379,6 +394,15 @@
 
       END FUNCTION
       !-----------------------------------------------------------------
+      FUNCTION ZDP_IS_DOLLAR(LINE)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: LINE
+      LOGICAL :: ZDP_IS_DOLLAR
+
+      ZDP_IS_DOLLAR=INDEX(LINE,KEY_DOLLAR).GT.0
+
+      END FUNCTION
+      !-----------------------------------------------------------------
       FUNCTION ZDP_IS_BOLSIG_REACTION(REAC)
       IMPLICIT NONE
       LOGICAL :: ZDP_IS_BOLSIG_REACTION
@@ -474,6 +498,33 @@
        STOP
       ENDIF
       WRITE(*,*) '***ZDP_READ_SECTION_SET_LIST***'
+
+      RETURN
+      END 
+      !-----------------------------------------------------------------
+      SUBROUTINE ZDP_READ_SECTION_DOLLAR_LIST(LSTART,LEND,NL,LIST,NAL) 
+      IMPLICIT NONE
+      INTEGER :: LSTART,LEND,NL,NAL,I,J
+      CHARACTER(LEN=NSMX) :: LIST(NL)
+      LOGICAL :: ISCOMMENT,ISEMPTY
+
+      WRITE(*,*) '***ZDP_READ_SECTION_SET_LIST***'
+      WRITE(*,'(AXI6XAI6)') 'LINES:',LSTART,'-',LEND
+      NAL=0
+      J=0
+      DO I=LSTART+1,LEND-1
+       IF(ZDP_IS_DOLLAR(LINES(I))) THEN
+         J=J+1
+         LIST(J)=TRIM(ADJUSTL(LINES(I)))
+       ENDIF
+      ENDDO
+      NAL=J
+      IF(NAL.GT.NL) THEN
+       WRITE(*,*) '*ERROR: ZDP_READ_SECTION_DOLLAR_LIST'
+       WRITE(*,*) 'NAL>NL, TERMINATING ...'
+       STOP
+      ENDIF
+      WRITE(*,*) '***ZDP_READ_SECTION_DOLLAR_LIST***'
 
       RETURN
       END 
