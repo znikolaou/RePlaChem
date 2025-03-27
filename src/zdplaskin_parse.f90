@@ -4,12 +4,16 @@
                          SPEC_BOLSIG,REAC,REAC_CONST,IS_SPEC_CHARGED, &
                          SPEC_CHARGE,REAC_SPEC,RSPEC, &
                          IS_ANY_NEUTRAL_REAC, &
-                         NSFLMX,NSMX,NLINEMX,NSPMX,NREMX,NSMX
+                         NSFLMX,NSMX,NLINEMX,NSPMX,NREMX,NSMX, &
+                         BOLSIG_SEC_SET_LIST,REAC_SEC_DOLLAR_LIST, &
+                         NBOLS_SET,NREAC_DOLLAR
       IMPLICIT NONE
       CHARACTER(LEN=*), PARAMETER, PRIVATE :: KEY_ELEM='ELEMENTS', &
        KEY_SPEC='SPECIES', KEY_REAC='REACTIONS',KEY_BOLS='BOLSIG', &
        KEY_END='END', KEY_SET='SET', KEY_AT='@',KEY_EXCL='!', &
-       KEY_EQ='=',KEY_NEUTRAL='ANY_NEUTRAL'
+       KEY_EQ='=',KEY_NEUTRAL='ANY_NEUTRAL', &
+       KEY_ANY_ION_POSITIVE='ANY_ION_POSITIVE', & !TODO 
+       KEY_ANY_ION_NEGATIVE='ANY_ION_NEGATIVE'    !TODO 
       CHARACTER(LEN=NSMX), PRIVATE :: LINES(NLINEMX)
       CHARACTER(LEN=NSMX), PRIVATE :: CHEM_LINES(NREMX)
       CHARACTER(LEN=NSMX) :: REAC_F(NREMX)
@@ -30,6 +34,8 @@
       NSPEC=0
       NREAC=0
       NELEM=0
+      NBOLS_SET=0
+      NREAC_DOLLAR=0
       ELEM(1:NSPMX)=' '
       SPEC(1:NSPMX)=' '
       SPEC_BOLSIG(1:NSPMX)=' '
@@ -39,20 +45,23 @@
       REAC_SPEC(1:NREMX,1:NSPMX)=' '
       IS_SPEC_CHARGED(1:NSPMX)=.FALSE.
       IS_ANY_NEUTRAL_REAC(1:NREMX)=.FALSE.
-      
+      BOLSIG_SEC_SET_LIST=' '
+      REAC_SEC_DOLLAR_LIST=' '
+
       !READ 
       CALL READ_LINES(FL,LINES,NLINES)
       CALL ZDP_READ_ELEMENTS()
       CALL ZDP_READ_SPECIES()
       CALL ZDP_READ_BOLSIG_SPECIES()
-      CALL ZDP_READ_AND_FILTER_REACTIONS() 
-
+      CALL ZDP_READ_BOLSIG_SEC_SET_LIST()
+      CALL ZDP_READ_AND_FILTER_REACTIONS()
+      !CALL ZDP_READ_REAC_SET_DOLLAR_LIST()
+      
       !POST-PROCESS
       CALL ZDP_SET_IS_SPEC_CHARGED()
       CALL ZDP_EXTRACT_REAC_AND_CONST()
       CALL ZDP_SET_REAC_SPEC()
       
-
       WRITE(*,*) 'IS SPEC CHARGED:'
       DO I=1,NSPEC
        WRITE(*,*) I,TRIM(ADJUSTL(SPEC(I))), &
@@ -123,6 +132,23 @@
       RETURN
       END
       !-----------------------------------------------------------------
+      SUBROUTINE ZDP_READ_BOLSIG_SEC_SET_LIST() 
+      IMPLICIT NONE
+      INTEGER :: GET_KEY_INDEX,I,IS,IE 
+
+      IS=GET_KEY_INDEX(KEY_BOLS,NLINES,LINES(1:NLINES),1)
+      IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
+      CALL ZDP_READ_SECTION_SET_LIST(IS,IE,NLINEMX, &
+                                     BOLSIG_SEC_SET_LIST,NBOLS_SET)
+
+      WRITE(*,*) 'BOLSIG SECTION SET LINES:'
+      DO I=1,NBOLS_SET
+       WRITE(*,*) TRIM(ADJUSTL(BOLSIG_SEC_SET_LIST(I)))
+      ENDDO      
+
+      RETURN
+      END
+      !----------------------------------------------------------------- 
       SUBROUTINE ZDP_READ_AND_FILTER_REACTIONS() 
       IMPLICIT NONE
       INTEGER :: GET_KEY_INDEX,I,IS,IE 
@@ -335,7 +361,8 @@
       DO I=1,NSPEC
        IPOS=INDEX(SPEC(I),'^+').GT.0
        INEG=INDEX(SPEC(I),'^-').GT.0
-       IELE=TRIM(ADJUSTL(SPEC(I))).EQ.'E'
+       IELE=(TRIM(ADJUSTL(SPEC(I))).EQ.'E').OR. &
+            (TRIM(ADJUSTL(SPEC(I))).EQ.'e')
        IS_SPEC_CHARGED(I)=IPOS.OR.INEG.OR.IELE
        IF(IPOS) SPEC_CHARGE(I)=ONE
        IF(INEG.OR.IELE) SPEC_CHARGE(I)=-ONE
@@ -416,6 +443,37 @@
        ENDIF
       ENDDO
       WRITE(*,*) '***ZDP_READ_SECTION***'
+
+      RETURN
+      END 
+      !-----------------------------------------------------------------
+      SUBROUTINE ZDP_READ_SECTION_SET_LIST(LSTART,LEND,NL,LIST,NAL) 
+      IMPLICIT NONE
+      INTEGER :: LSTART,LEND,NL,NAL,I,J
+      CHARACTER(LEN=NSMX) :: LIST(NL)
+      LOGICAL :: ISCOMMENT,ISEMPTY
+
+      WRITE(*,*) '***ZDP_READ_SECTION_SET_LIST***'
+      WRITE(*,'(AXI6XAI6)') 'LINES:',LSTART,'-',LEND
+      NAL=0
+      J=0
+      DO I=LSTART+1,LEND-1
+       IF(.NOT.ISCOMMENT(LINES(I))) THEN
+        IF(.NOT.ISEMPTY(LINES(I))) THEN
+         IF(ZDP_ISKEYWORD(LINES(I))) THEN
+          J=J+1
+          LIST(J)=TRIM(ADJUSTL(LINES(I)))
+         ENDIF
+        ENDIF
+       ENDIF
+      ENDDO
+      NAL=J
+      IF(NAL.GT.NL) THEN
+       WRITE(*,*) '*ERROR: ZDP_READ_SECTION_SET_LIST'
+       WRITE(*,*) 'NAL>NL, TERMINATING ...'
+       STOP
+      ENDIF
+      WRITE(*,*) '***ZDP_READ_SECTION_SET_LIST***'
 
       RETURN
       END 

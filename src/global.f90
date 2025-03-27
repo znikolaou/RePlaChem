@@ -4,16 +4,20 @@
                             NLINEMX=10000,NSFLMX=1000
       CHARACTER(LEN=*), PARAMETER :: INDIR='./input/', &
                                      OUTDIR='./output/', &
+                                     RATE_DIR='rates/', &
                                      CONTROL_FL='control.txt', &
-                                     RATE_FL='rates.dat', &
-                                     EQ_SEP='=>', &
-                                     CHEMRED_FL='reducedChemistry.txt'
+                                 CHEMRED_FL='reducedChemistry.txt', &
+                                 RATE_FL='speciesMeanRatesMatrix.dat', &
+                                 REACTION_RATE_FL='reactionRates', &
+                                     EQ_SEP='=>'
                                      
-      INTEGER :: NELEM,NSPEC,NREAC,NSPEC_BOLSIG
+      INTEGER :: NELEM,NSPEC,NREAC,NSPEC_BOLSIG,NBOLS_SET,NREAC_DOLLAR
       CHARACTER(LEN=NSMX) :: ELEM(NSPMX),SPEC(NSPMX),REAC(NREMX), &
                              REACF(NREMX), &
                              SPEC_BOLSIG(NSPMX), REAC_CONST(NREMX), &
-                             REAC_SPEC(NREMX,NSPMX)
+                             REAC_SPEC(NREMX,NSPMX), &
+                             BOLSIG_SEC_SET_LIST(NLINEMX), &
+                             REAC_SEC_DOLLAR_LIST(NLINEMX)
       LOGICAL :: IS_SPEC_CHARGED(NSPMX),IS_BOLSIG_REAC(NREMX), &
                  IS_ANY_NEUTRAL_REAC(NREMX)
       INTEGER :: RSPEC(NREMX,NSPMX)

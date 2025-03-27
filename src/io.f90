@@ -148,6 +148,7 @@
       
       IF(NSP.NE.NSPEC.OR.NRE.NE.NREAC) THEN
        WRITE(*,*) 'READ_RATES:ERROR, MISMATCH',NSP,NSPEC,NRE,NREAC
+       WRITE(*,*) 'TERMINATING ...'
        STOP
       ELSE
        OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
@@ -158,3 +159,69 @@
            
       END SUBROUTINE
       !-----------------------------------------------------------------
+      SUBROUTINE READ_REACTION_RATES(IDAT,DIR,RNM,NREAC,RR)
+      USE GLOBAL, ONLY : NSMX
+      USE PRECIS, ONLY : DBL_P
+      IMPLICIT NONE
+      INTEGER I,J,IDAT,NREAC,TSTEP
+      CHARACTER(LEN=*) :: DIR,RNM
+      REAL(KIND=DBL_P) :: RR(NREAC)
+      CHARACTER(LEN=8) :: CDAT
+      CHARACTER(LEN=NSMX) :: FLNM
+      INTEGER :: NSP,NRE
+      REAL(KIND=DBL_P) :: TIME
+ 
+      !BUILD FILENAMES
+      WRITE(CDAT,'(I8.8)') IDAT     
+      FLNM=TRIM(ADJUSTL(DIR))//RNM//'_'//CDAT//'.dat'
+
+      OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
+      READ(1) TSTEP,TIME,NRE
+      CLOSE(1)
+      
+      IF(NRE.NE.NREAC) THEN
+       WRITE(*,*) 'READ_RATES:ERROR, MISMATCH',NRE,NREAC
+       WRITE(*,*) 'TERMINATING ...'
+       STOP
+      ELSE
+       OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
+       READ(1) TSTEP,TIME,NRE,RR
+       CLOSE(1)
+      ENDIF
+           
+      END SUBROUTINE
+      !-----------------------------------------------------------------
+      SUBROUTINE READ_SPECIES_RATES_MATRIX(IDAT,DIR,RNM,NSPEC,NREAC,WIJ)
+      USE GLOBAL, ONLY : NSMX
+      USE PRECIS, ONLY : DBL_P
+      IMPLICIT NONE
+      INTEGER I,J,IDAT,NSPEC,NREAC
+      CHARACTER(LEN=*) :: DIR,RNM
+      REAL(KIND=DBL_P) :: WIJ(NREAC,NSPEC)
+      CHARACTER(LEN=4) :: CDAT
+      CHARACTER(LEN=NSMX) :: FLNM
+      INTEGER :: NSP,NRE
+      REAL(KIND=DBL_P) :: TIME
+ 
+      !BUILD FILENAMES
+      WRITE(CDAT,'(I4.4)') IDAT     
+      FLNM=TRIM(ADJUSTL(DIR))//RNM
+      
+      WRITE(*,*) 'READING RATES FILE:',TRIM(ADJUSTL(FLNM))
+      OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
+      READ(1) NRE,NSP
+      CLOSE(1)
+      
+      IF(NSP.NE.NSPEC.OR.NRE.NE.NREAC) THEN
+       WRITE(*,*) 'READ_RATES:ERROR, MISMATCH',NSP,NSPEC,NRE,NREAC
+       WRITE(*,*) 'TERMINATING ...'
+       STOP
+      ELSE
+       OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
+       READ(1) NRE,NSP,WIJ
+       CLOSE(1)
+      ENDIF
+           
+      END SUBROUTINE
+      !-----------------------------------------------------------------
+      

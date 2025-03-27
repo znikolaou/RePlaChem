@@ -90,3 +90,89 @@
       CLOSE(1)
 
       END SUBROUTINE
+      !-----------------------------------------------------------------
+      SUBROUTINE WRITE_CHEM_MECH_FMT_ZDP(DIR,FLSKEL,NELEM,NSPEC, &
+                                         NREAC,ELEM,SPEC,REAC, &
+                                         REAC_CONST, &
+                                         SETE,SETSP,SETSP_BOLS,SETRE)
+      IMPLICIT NONE
+      INTEGER :: NELEM,NSPEC,NBOLS,NREAC
+      INTEGER, PARAMETER :: IO=7
+      INTEGER :: SETE(NELEM),SETSP(NSPEC),SETSP_BOLS(NSPEC),SETRE(NREAC)
+      CHARACTER(LEN=*) :: ELEM(NELEM),SPEC(NSPEC), &
+                          REAC(NREAC),REAC_CONST(NREAC),DIR,FLSKEL 
+      CHARACTER(LEN=LEN(DIR)+LEN(FLSKEL)+1) :: FL
+      CHARACTER(LEN=8)  :: DATE
+      CHARACTER(LEN=10) :: TIME
+      CHARACTER(LEN=5)  :: ZONE
+
+      CALL DATETIME(DATE,TIME,ZONE)
+    
+      FL=DIR//'/'//FLSKEL
+      OPEN(UNIT=IO,FILE=FL,STATUS='REPLACE',FORM='FORMATTED')
+
+      WRITE(IO,'(A)') '# PLASEREDCHEM.V01'
+      WRITE(IO,'(A)') '#'
+      WRITE(IO,'(A)') '# AUTHOR: Z. NIKOLAOU'
+      WRITE(IO,'(A)') '#'
+      WRITE(IO,'(A)') '# AUTO-GENERATED FILE: SKELETAL CHEM. MECH.'
+      WRITE(IO,'(A)') '# FORMAT=ZDPlasKin'
+      WRITE(IO,'(4(AX))') '# CREATED: ',TRIM(DATE),TRIM(TIME),TRIM(ZONE)
+      WRITE(IO,'(A)') '#' 
+     
+      CALL WRITE_SECTION_FMT_ZDP(IO,'ELEMENTS',NELEM,ELEM,SETE)
+      CALL WRITE_SECTION_FMT_ZDP(IO,'SPECIES',NSPEC,SPEC,SETSP)
+      CALL WRITE_SECTION_FMT_ZDP(IO,'BOLSIG',NSPEC,SPEC,SETSP_BOLS)
+      !CALL WRITE_SECTION_FMT_ZDP(IO,'BOLSIG',NBOLS,BOLS)
+      CALL WRITE_SECTION_REAC_FMT_ZDP(IO,'REACTIONS',NREAC,REAC, &
+                                      REAC_CONST,SETRE)
+ 
+      CLOSE(IO)
+
+      RETURN
+      END 
+      !-----------------------------------------------------------------
+      SUBROUTINE WRITE_SECTION_FMT_ZDP(IU,SECNAME,N,CLIST,SET)
+      IMPLICIT NONE
+      INTEGER :: IU,N,I,SET(N)
+      CHARACTER(LEN=*) :: SECNAME,CLIST(N)
+
+      WRITE(IU,'(A)') ' ' 
+      WRITE(IU,'(A)') '#'
+      WRITE(IU,'(A)') SECNAME
+      DO I=1,N
+       IF(SET(I).EQ.1) THEN !KEEP
+        WRITE(IU,'(A)') TRIM(ADJUSTL(CLIST(I)))
+       ENDIF
+      ENDDO
+      WRITE(IU,'(A)') 'END'
+      WRITE(IU,'(A)') '#'
+      WRITE(IU,'(A)') ' '
+ 
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE WRITE_SECTION_REAC_FMT_ZDP(IU,SECNAME,N,CLIST,CONST, &
+                                            SET)
+      IMPLICIT NONE
+      INTEGER :: IU,N,I,SET(N)
+      CHARACTER(LEN=*) :: SECNAME,CLIST(N),CONST(N)
+
+      !TODO: WRITE ALSO EXPRESSIONS WITH '$' SIGN WHICH HOLD RATE EXPRESSIONS
+      WRITE(IU,'(A)') ' '
+      WRITE(IU,'(A)') '#'
+      WRITE(IU,'(A)') SECNAME
+      DO I=1,N
+       IF(SET(I).EQ.1) THEN !KEEP
+       WRITE(IU,'(A)') TRIM(ADJUSTL(CLIST(I)))//' !'// & 
+                       TRIM(ADJUSTL(CONST(I))) 
+       ENDIF
+      ENDDO
+      WRITE(IU,'(A)') 'END'
+      WRITE(IU,'(A)') '#'
+      WRITE(IU,'(A)') ' '
+ 
+      RETURN
+      END
+      !-----------------------------------------------------------------
+

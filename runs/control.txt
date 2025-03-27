@@ -1,9 +1,0 @@
-!Chemistry file: 
-kinetAntwerpMethaneNoTabs.inp
-!Species file:
-notUsed
-!NO OF TARGET SPECIES, NO OF CASES, NO OF DATA SETS FOR EACH CASE, REDUCTION METHOD: 1-DRG, 2-DRGEP, 3-JACDRGEP
-   1 1 96 2
-!TARGET SPECIES INDEX, ETOL: [0,1] 
-   72 0.009 
-!END

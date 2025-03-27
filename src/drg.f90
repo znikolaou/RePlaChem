@@ -13,7 +13,7 @@
 !     NTRG             ~NUMBER OF TARGET SPECIES
 !     INDX_TRG(NSPEC)  ~TARGET SPECIES INDICES
 !     ETOL(NTRG)       ~THRESHOLD DRG ERROR
-!     DNU(NREAC,NSPEC) ~DIFFERENCE IN STOICH. COEFFS. (NUP-NUR)
+!     DNU(NSPEC,NREAC) ~DIFFERENCE IN STOICH. COEFFS. (NUP-NUR)
 !     IDB(NREAC,NSPEC) ~1 IF SPEC IN REACTION, O OTHERWISE (NOT USED)
 !     WKJ              ~SPECIES J RATE FROM REACTION K
 !     RR(NREAC)        ~REACTION RATE
@@ -66,11 +66,11 @@
 !
       WRITE(*,*) 'DRIVER_DRG'
       WRITE(*,*) '----------'
-      WRITE(*,*) 'TARGET SPECIES (NO, KPP SPEC INDEX, NAME):'
+      WRITE(*,*) 'TARGET SPECIES INDEX, NAME:'
       DO I=1,NTRG
        WRITE(*,*) I,INDX_TRG(I),TRIM(ADJUSTL(CSPECNM(INDX_TRG(I))))
       ENDDO
-
+      
       SET_TRG(:,:)=0
 
 
@@ -82,8 +82,10 @@
       ELSEIF(ISEARCH.EQ.2) THEN
 
        !DIC-DRGEP 
-       CALL GET_DICEP(NSPEC,NREAC,RR,DNU,CSPECNM,CREACNM, &
-                      DIC,NEIGHB,N_NEIGHB)      
+       WRITE(*,*) 'TEST FOR ISEARCH 2'
+       CALL GET_DICEP(NSPEC,NREAC,RR,DNU,WKJ,CSPECNM,CREACNM, &
+                      DIC,NEIGHB,N_NEIGHB)   
+              
        WRITE(*,*) 'DICs:'
        DO J=1,NSPEC
         WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),N_NEIGHB(J)
@@ -96,7 +98,7 @@
 
       ELSEIF(ISEARCH.EQ.3) THEN !JACOBIAN-BASED DICs
         
-       CALL GET_DICEP(NSPEC,NREAC,RR,DNU,CSPECNM,CREACNM, &
+       CALL GET_DICEP(NSPEC,NREAC,RR,DNU,WKJ,CSPECNM,CREACNM, &
                       DIC,NEIGHB,N_NEIGHB) !ONLY NEIGH,N_NEIGH USED      
 
        !OVER-WRITE DICs
@@ -263,8 +265,8 @@
       END SUBROUTINE
 !-----------------------------------------------------------------------
 !
-      SUBROUTINE GET_DICEP(NSPEC,NREAC,RR,DELTANU,CSPECNM,CREACNM,DIC, &
-                           NEIGHB,N_NEIGHB)
+      SUBROUTINE GET_DICEP(NSPEC,NREAC,RR,DELTANU,WIKMATRIX,CSPECNM, &
+                           CREACNM,DIC,NEIGHB,N_NEIGHB)
 !
 !     AUTHOR: ZACHARIAS M. NIKOLAOU
 !
@@ -290,12 +292,13 @@
       CHARACTER(LEN=*) :: CSPECNM(NSPEC)
       CHARACTER(LEN=*) :: CREACNM(NREAC)
       REAL(KIND=DBL_P) :: DELTANU(NSPEC,NREAC),RR(NREAC), &
-                          DIC(NSPEC,NSPEC)
+                          WIKMATRIX(NREAC,NSPEC),DIC(NSPEC,NSPEC)
+
       !
       LOGICAL :: RIJ_FLAG(NSPEC,NSPEC)
       INTEGER :: I,J,K,N
       REAL(KIND=DBL_P) :: FT,DTRM,PTRM,MXVL,WIK,FTT
-!
+
       !INITIALISE
       RIJ_FLAG(:,:)=.FALSE.
       DO J=1,NSPEC
@@ -309,34 +312,23 @@
       !CALCULATE DIRECT INTERACTION COEFF (DIC_IJ)
       DO J=1,NSPEC
        DO I=1,NSPEC
-
          DTRM=0.0E0
          PTRM=0.0E0
          FT=0.0E0 
          FTT=0.0
-         DO K=1,NREAC
-
-!          WRITE(*,*) '-------------------------------------------------'
-!          WRITE(*,*) TRIM(ADJUSTL(CREACNM(K)))," ", &
-!                     TRIM(ADJUSTL(CSPECNM(I))),",",DELTANU(I,K), &
-!                     TRIM(ADJUSTL(CSPECNM(J))),DELTANU(J,K) 
-!          WRITE(*,*) '-------------------------------------------------'
-                                 
-
+         DO K=1,NREAC                                 
           IF( ABS(DELTANU(I,K)).NE.0.0 ) THEN !SPEC I IN REAC K
 
+           !WIK=WIKMATRIX(K,I)
            WIK=DELTANU(I,K)*RR(K)
+           
            DTRM=DTRM+MAX(-WIK,0.0E0)
            PTRM=PTRM+MAX(WIK,0.0E0)
 
-            FTT=ABS(WIK)+FTT                    
+            !FTT=ABS(WIK)+FTT                    
 
            IF( ABS(DELTANU(J,K)).NE.0.0.AND.J.NE.I ) THEN !SPEC J IN REAC K 
-
-             !WRITE(*,*) 'CHECKING' 
-             !WRITE(*,*) TRIM(ADJUSTL(CREACNM(K)))
-             !WRITE(*,*) TRIM(ADJUSTL(CSPECNM(I))),' ',DELTANU(I,K), &
-             !           ' ',TRIM(ADJUSTL(CSPECNM(J))),DELTANU(J,K)
+ 
             IF( .NOT.(RIJ_FLAG(I,J)) ) THEN
              RIJ_FLAG(I,J)=.TRUE.
              
@@ -355,13 +347,13 @@
          FT=ABS(FT)
 
          !CHEKSUM
-         IF(PTRM+DTRM-FTT.GT.1.0D-6) THEN
-          WRITE(*,*) 'GET_DICEP:ERROR, CHECKSUM'
-          WRITE(*,*) TRIM(ADJUSTL(CSPECNM(I))),' ', &
-                      ' ',TRIM(ADJUSTL(CSPECNM(J))), &
-                      ' ','CHECKSUM ',(PTRM+DTRM-FTT),FTT,PTRM+DTRM
-          STOP
-         ENDIF
+         !IF(PTRM+DTRM-FTT.GT.1.0D-6) THEN
+         ! WRITE(*,*) 'GET_DICEP:ERROR, CHECKSUM'
+         ! WRITE(*,*) TRIM(ADJUSTL(CSPECNM(I))),' ', &
+         !             ' ',TRIM(ADJUSTL(CSPECNM(J))), &
+         !             ' ','CHECKSUM ',(PTRM+DTRM-FTT),FTT,PTRM+DTRM
+         ! STOP
+         !ENDIF
 
          !CALCULATE DIC
          MXVL=MAX(DTRM,PTRM)

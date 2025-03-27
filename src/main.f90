@@ -31,17 +31,20 @@
 !
 !----------------------------------------------------------------------- 
       USE GLOBAL, ONLY: INDIR,OUTDIR,RATE_FL,CONTROL_FL,NSMX,NSFLMX, &
-                        NSPMX,NREMX,NSPEC,NREAC,SPEC,REAC,RSPEC
+                        NSPMX,NREMX,NSPEC,NREAC,SPEC,REAC,RSPEC, &
+                        DELTANU,RATE_DIR,REACTION_RATE_FL,CHEMRED_FL, &
+                        ELEM,NELEM,NSPEC_BOLSIG,REAC_CONST,SPEC_BOLSIG
       USE PRECIS, ONLY: DBL_P
       IMPLICIT NONE
+      LOGICAL :: IS_STRING_PRESENT
       INTEGER :: NDATA,NCASE,NTRG,CHECK,IRDMETH,NSPEC_SKEL,NREAC_SKEL, &
                  INDX_TRG(NSPMX),I,J,K,N,IPROD
       INTEGER, ALLOCATABLE :: SET_TRG(:,:),SPSET_TRG(:,:), &
                               SPSET_TRGUP(:,:),SPSET_UNION(:), &
-                              RESET_UNION(:)
+                              RESET_UNION(:),ELEMSET_UNION(:), &
+                              SPBOLSET_UNION(:)
       REAL(KIND=DBL_P) :: ETOL(NSPMX)
-      REAL(KIND=DBL_P), ALLOCATABLE :: WIJ(:,:),DELTANU(:,:),RR(:), &
-                                       JIJW(:,:)
+      REAL(KIND=DBL_P), ALLOCATABLE :: WIJ(:,:),RR(:),JIJW(:,:)
       CHARACTER(LEN=NSMX) :: COMMAND
       CHARACTER(LEN=2) :: JCASE
       CHARACTER(LEN=NSFLMX) :: FLCASE,CHEMFL,SPECFL
@@ -60,32 +63,38 @@
       ALLOCATE(SPSET_TRGUP(NTRG,NSPEC))
       ALLOCATE(SPSET_UNION(NSPEC))
       ALLOCATE(RESET_UNION(NREAC))
+      ALLOCATE(ELEMSET_UNION(NELEM))
+      ALLOCATE(SPBOLSET_UNION(NSPEC))
+      
       WIJ(1:NREAC,1:NSPEC)=0.0e0
       RR(1:NREAC)=0.0e0
       JIJW(1:NSPEC,1:NSPEC)=0.0e0
       SPSET_TRGUP(1:NTRG,1:NSPEC)=0
       SPSET_UNION(1:NSPEC)=0
       RESET_UNION(1:NREAC)=0
-
-      STOP
+      DO I=1,NELEM
+       ELEMSET_UNION(I)=1.0E0
+       SPBOLSET_UNION(I)=0.0E0
+      ENDDO
 
       WRITE(*,*) 'LOOPING THROUGH DATASETS'       
       WRITE(*,*) 
       DO N=1,NCASE
        WRITE(*,*) 'CASE',N
        WRITE(JCASE,'(I2.2)') N
-       FLCASE=INDIR//'case_'//JCASE//'/'         
+       FLCASE=INDIR//RATE_DIR//'case_'//JCASE//'/'         
        DO I=1,NDATA
         WRITE(*,*) 'DATASET',I
         WRITE(*,*) '-------------------'
 
-        !WRITE(*,*) 'CHECK JIJW ',JIJW
+        !CALL READ_SPECIES_RATES_MATRIX(I,FLCASE,RATE_FL,NSPEC,NREAC,WIJ)
+        CALL READ_REACTION_RATES(I,FLCASE,REACTION_RATE_FL,NREAC,RR)
 
-        CALL READ_RATES(I,FLCASE,RATE_FL,NSPEC,NREAC,WIJ,RR,JIJW)                      
+        !STOP !OK
         !1=MY WAY
         !2=GRAPH SEARCH (PATH DEPENDENT)
         CALL DRIVER_DRG(IRDMETH,NSPEC,NREAC,NTRG,INDX_TRG(1:NTRG), &
-                        ETOL(1:NTRG),DELTANU, &
+                        ETOL(1:NTRG),DELTANU(1:NREAC,1:NSPEC), &
                         RSPEC(1:NREAC,1:NSPEC),WIJ,RR, &
                         JIJW,NSMX,NSMX,SPEC,REAC,SET_TRG)  
         !SAVE PICs
@@ -204,6 +213,14 @@
       ENDDO
       WRITE(*,*) '-------------------'
       
+      DO I=1,NSPEC
+       IF(SPSET_UNION(I).EQ.1) THEN
+        IF(IS_STRING_PRESENT(NSPEC_BOLSIG,SPEC_BOLSIG, &
+                TRIM(ADJUSTL(SPEC(I))))) THEN
+         SPBOLSET_UNION(I)=1.0E0
+        ENDIF
+       ENDIF
+      ENDDO 
 
       NSPEC_SKEL=SUM(SPSET_UNION)
       NREAC_SKEL=SUM(RESET_UNION)
@@ -211,19 +228,12 @@
        WRITE(*,*) 'ERROR: NO SKEL MECH CREATED. TERMINATING ...'
        STOP
       ENDIF
-     
-      !OUTPUT SKELETAL MECHANISM
-      !TODO: ZDP FORMAT OUTPUT
-      !CALL OUTPUT(NSPEC,NREAC,SPSET_UNION,RESET_UNION,SPEC,CSPECNM_F, &
-      !            CREACNM_F,SKELETAL_SPEC_KPP,SKELETAL_CHEM_KPP	)
-
-      DEALLOCATE(WIJ)
-      DEALLOCATE(RR)
-      DEALLOCATE(JIJW)
-      DEALLOCATE(SET_TRG)
-      DEALLOCATE(SPSET_TRGUP)
-      DEALLOCATE(SPSET_UNION)
-      DEALLOCATE(RESET_UNION)
+       
+      CALL WRITE_CHEM_MECH_FMT_ZDP(OUTDIR,CHEMRED_FL, &
+                                   NELEM,NSPEC,NREAC, &
+                                   ELEM,SPEC,REAC,REAC_CONST, &
+                                   ELEMSET_UNION,SPSET_UNION, &
+                                   SPBOLSET_UNION,RESET_UNION)
 
       WRITE(*,*) 'SKELETAL MECHANISM SIZE:'
       WRITE(*,*) 'NUNION SPEC=',SUM(SPSET_UNION)
@@ -232,9 +242,15 @@
       WRITE(*,*) 'RUN COMPLETED SUCCESSFULLY!'
       WRITE(*,*) '-------------------'
 
-      CALL SYSTEM('cp log_redchem.txt output/')
-      COMMAND='cp'//' '//CONTROL_FL//' '//'output/'
-      CALL SYSTEM(COMMAND)
+      DEALLOCATE(WIJ)
+      DEALLOCATE(RR)
+      DEALLOCATE(JIJW)
+      DEALLOCATE(SET_TRG)
+      DEALLOCATE(SPSET_TRGUP)
+      DEALLOCATE(SPSET_UNION)
+      DEALLOCATE(RESET_UNION)
+      DEALLOCATE(ELEMSET_UNION)
+      DEALLOCATE(SPBOLSET_UNION)
 
       STOP
       END
