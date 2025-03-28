@@ -1,1 +1,0 @@
-./goRedChem >logRun.txt 

@@ -24,14 +24,14 @@
       END
       !------------------------------------------------------------------
       SUBROUTINE SET_STOICH_COEFFS()
-      USE GLOBAL, ONLY : NUR,NUP,DELTANU
+      USE GLOBAL, ONLY : NUR,NUP,DELTANU,ZERO
       USE ZDPLASKIN_PARSE, ONLY: NSPEC,NREAC,SPEC,REAC
       IMPLICIT NONE
       INTEGER :: I
 
-      NUR(1:NREAC,1:NSPEC)=0.0E0
-      NUP(1:NREAC,1:NSPEC)=0.0E0
-      DELTANU(1:NREAC,1:NSPEC)=0.0E0
+      NUR(1:NREAC,1:NSPEC)=ZERO
+      NUP(1:NREAC,1:NSPEC)=ZERO
+      DELTANU(1:NREAC,1:NSPEC)=ZERO
       WRITE(*,*) 'REACTION STOICH. COEFFS:'
       DO I=1,NREAC
        CALL SET_REAC_STOICH_COEFFS(I,NSPEC,NREAC,REAC(I),SPEC)
@@ -64,24 +64,20 @@
       WRITE(*,*) '  PRODUCTS: ',TRIM(ADJUSTL(RANDP(2)))
       CALL SET_NU_FROM_LIST(IR,NP,PLIST(1:NP),NUP(1:NREAC,1:NSPEC))
 
-      !TODO: MOVE TO ZDPLASKING PARSE?     
+      !TODO: MOVE TO ZDPLASKIN PARSE?     
       CALL SET_NU_FOR_ANY_NEUTRAL_REAC()
+      CALL SET_NU_FOR_ANY_ION_POS_REAC()
+      CALL SET_NU_FOR_ANY_ION_NEG_REAC()
+      CALL SET_NU_FOR_ANY_SPEC_REAC()
 
       DELTANU(1:NREAC,1:NSPEC)=NUP(1:NREAC,1:NSPEC)-NUR(1:NREAC,1:NSPEC)
-
-      !DO I=1,NSPEC
-      ! IF(RSPEC(IR,I).EQ.1) THEN
-      !  WRITE(*,*) '  ',TRIM(ADJUSTL(SPEC(I))),': ','NUR=',NUR(IR,I), &
-      !             'NUP=',NUP(IR,I),'DELTANU=',DELTANU(IR,I)
-      ! ENDIF
-      !ENDDO
 
       RETURN
       END
       !-----------------------------------------------------------------
       SUBROUTINE SET_NU_FOR_ANY_NEUTRAL_REAC()
       USE GLOBAL, ONLY : NSPEC,NREAC,NUR,NUP,IS_SPEC_CHARGED, &
-                         IS_ANY_NEUTRAL_REAC
+                         IS_ANY_NEUTRAL_REAC,ONE
       IMPLICIT NONE
       INTEGER :: I,J
 
@@ -89,9 +85,67 @@
        IF(IS_ANY_NEUTRAL_REAC(I)) THEN
         DO J=1,NSPEC
          IF(.NOT.IS_SPEC_CHARGED(J)) THEN
-          NUR(I,J)=1.0E0
-          NUP(I,J)=1.0E0
+          NUR(I,J)=ONE
+          NUP(I,J)=ONE
          ENDIF
+        ENDDO
+       ENDIF        
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE SET_NU_FOR_ANY_ION_POS_REAC()
+      USE GLOBAL, ONLY : NSPEC,NREAC,NUR,NUP,SPEC_CHARGE, &
+                         IS_ANY_ION_POS_REAC,ZERO,ONE
+      IMPLICIT NONE
+      INTEGER :: I,J
+
+      DO I=1,NREAC
+       IF(IS_ANY_ION_POS_REAC(I)) THEN
+        DO J=1,NSPEC
+         IF(SPEC_CHARGE(I).GT.ZERO) THEN
+          NUR(I,J)=ONE
+          NUP(I,J)=ONE
+         ENDIF
+        ENDDO
+       ENDIF        
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE SET_NU_FOR_ANY_ION_NEG_REAC()
+      USE GLOBAL, ONLY : NSPEC,NREAC,NUR,NUP,SPEC_CHARGE, &
+                         IS_ANY_ION_NEG_REAC,ZERO,ONE
+      IMPLICIT NONE
+      INTEGER :: I,J
+
+      DO I=1,NREAC
+       IF(IS_ANY_ION_NEG_REAC(I)) THEN
+        DO J=1,NSPEC
+         IF(SPEC_CHARGE(I).LT.ZERO) THEN
+          NUR(I,J)=ONE
+          NUP(I,J)=ONE
+         ENDIF
+        ENDDO
+       ENDIF        
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE SET_NU_FOR_ANY_SPEC_REAC()
+      USE GLOBAL, ONLY : NSPEC,NREAC,NUR,NUP,SPEC_CHARGE, &
+                         IS_ANY_SPEC_REAC,ONE
+      IMPLICIT NONE
+      INTEGER :: I,J
+
+      DO I=1,NREAC
+       IF(IS_ANY_SPEC_REAC(I)) THEN
+        DO J=1,NSPEC
+         NUR(I,J)=ONE
+         NUP(I,J)=ONE
         ENDDO
        ENDIF        
       ENDDO
@@ -168,14 +222,14 @@
       END  
       !-----------------------------------------------------------------
       SUBROUTINE CHECK_CHARGE()
-      USE GLOBAL, ONLY: NREAC,REAC
+      USE GLOBAL, ONLY: NREAC,REAC,ZERO
       IMPLICIT NONE
       DOUBLE PRECISION :: GET_REACTION_CHARGE,CHARGE
       INTEGER :: I
 
       DO I=1,NREAC
        CHARGE=GET_REACTION_CHARGE(I)
-       IF(CHARGE.NE.0.0E0) THEN
+       IF(CHARGE.NE.ZERO) THEN
         WRITE(*,*) '*CHECK_CHARGE: ERROR, CHARGE NOT ZERO FOR REAC:'
         WRITE(*,*) TRIM(ADJUSTL(REAC(I)))
         WRITE(*,*) 'CHARGE=',CHARGE
@@ -188,12 +242,12 @@
       END
       !-----------------------------------------------------------------
       FUNCTION GET_REACTION_CHARGE(I)
-      USE GLOBAL, ONLY: NSPEC,NUR,NUP,SPEC,SPEC_CHARGE
+      USE GLOBAL, ONLY: NSPEC,NUR,NUP,SPEC,SPEC_CHARGE,ZERO
       IMPLICIT NONE
       INTEGER :: I,J
       DOUBLE PRECISION :: GET_REACTION_CHARGE
 
-      GET_REACTION_CHARGE=0.0E0
+      GET_REACTION_CHARGE=ZERO
       DO J=1,NSPEC
        GET_REACTION_CHARGE=(NUR(I,J)-NUP(I,J))*SPEC_CHARGE(J)+ &
                            GET_REACTION_CHARGE

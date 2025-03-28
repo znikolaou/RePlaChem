@@ -1,22 +1,17 @@
       !-----------------------------------------------------------------
       MODULE ZDPLASKIN_PARSE
-      USE GLOBAL, ONLY : NELEM,NSPEC,NSPEC_BOLSIG,NREAC,ELEM,SPEC, &
-                         SPEC_BOLSIG,REAC,REAC_CONST,IS_SPEC_CHARGED, &
-                         SPEC_CHARGE,REAC_SPEC,RSPEC, &
-                         IS_ANY_NEUTRAL_REAC, &
-                         NSFLMX,NSMX,NLINEMX,NSPMX,NREMX,NSMX, &
-                         BOLSIG_SEC_SET_LIST,REAC_SEC_DOLLAR_LIST, &
-                         NBOLS_SET,NREAC_DOLLAR
+      USE GLOBAL
       IMPLICIT NONE
+      
       CHARACTER(LEN=*), PARAMETER, PRIVATE :: KEY_ELEM='ELEMENTS', &
        KEY_SPEC='SPECIES', KEY_REAC='REACTIONS',KEY_BOLS='BOLSIG', &
        KEY_END='END', KEY_SET='SET', KEY_AT='@',KEY_EXCL='!', &
        KEY_EQ='=',KEY_NEUTRAL='ANY_NEUTRAL',KEY_DOLLAR='$', &
-       KEY_ANY_ION_POSITIVE='ANY_ION_POSITIVE', & !TODO 
-       KEY_ANY_ION_NEGATIVE='ANY_ION_NEGATIVE'    !TODO 
-      CHARACTER(LEN=NSMX), PRIVATE :: LINES(NLINEMX)
-      CHARACTER(LEN=NSMX), PRIVATE :: CHEM_LINES(NREMX)
-      CHARACTER(LEN=NSMX) :: REAC_F(NREMX)
+       KEY_ANY_ION_POS='ANY_ION_POSITIVE', & 
+       KEY_ANY_ION_NEG='ANY_ION_NEGATIVE', &
+       KEY_ANY_SPECIES='ANY_SPECIES'
+      CHARACTER(LEN=NSMX), PRIVATE :: LINES(NLINEMX), &
+                                      CHEM_LINES(NREMX),REAC_F(NREMX)
       INTEGER, PRIVATE :: NLINES,NREAC_RAW
       
       CONTAINS
@@ -27,24 +22,30 @@
       INTEGER :: I,J
       CHARACTER(LEN=*) :: FL
       
-      WRITE(*,*) '***MODULE ZPDLASKIN_PARSE***'
+      WRITE(*,*)
+      WRITE(*,'(A)') '***MODULE ZPDLASKIN_PARSE***'
+      WRITE(*,'(A)') 'PARSING CHEM. MECHANISM ...' 
 
       CALL REMOVE_TABS_FROM_FILE(FL)
 
-      NSPEC=0
-      NREAC=0
       NELEM=0
+      NSPEC=0
+      NSPEC_BOLSIG=0
+      NREAC=0
       NBOLS_SET=0
       NREAC_DOLLAR=0
       ELEM(1:NSPMX)=' '
       SPEC(1:NSPMX)=' '
       SPEC_BOLSIG(1:NSPMX)=' '
-      SPEC_CHARGE(1:NSPMX)=0.0E0
+      SPEC_CHARGE(1:NSPMX)=ZERO
       REAC(1:NREMX)=' '
       REAC_CONST(1:NREMX)=' '
-      REAC_SPEC(1:NREMX,1:NSPMX)=' '
+      RSPEC(1:NREMX,1:NSPMX)=0
       IS_SPEC_CHARGED(1:NSPMX)=.FALSE.
       IS_ANY_NEUTRAL_REAC(1:NREMX)=.FALSE.
+      IS_ANY_SPEC_REAC(1:NREMX)=.FALSE.
+      IS_ANY_ION_POS_REAC(1:NREMX)=.FALSE.
+      IS_ANY_ION_NEG_REAC(1:NREMX)=.FALSE.
       BOLSIG_SEC_SET_LIST=' '
       REAC_SEC_DOLLAR_LIST=' '
 
@@ -55,31 +56,28 @@
       CALL ZDP_READ_BOLSIG_SPECIES()
       CALL ZDP_READ_BOLSIG_SEC_SET_LIST()
       CALL ZDP_READ_AND_FILTER_REACTIONS()
-      CALL ZDP_READ_REAC_SEC_DOLLAR_LIST()
-      
+      CALL ZDP_READ_REAC_SEC_DOLLAR_LIST() 
       !POST-PROCESS
       CALL ZDP_SET_IS_SPEC_CHARGED()
       CALL ZDP_EXTRACT_REAC_AND_CONST()
       CALL ZDP_SET_REAC_SPEC()
       
-      WRITE(*,*) 'IS SPEC CHARGED:'
-      DO I=1,NSPEC
-       WRITE(*,*) I,TRIM(ADJUSTL(SPEC(I))), &
-                         IS_SPEC_CHARGED(I)
-      ENDDO
       WRITE(*,*) 'EXTRACTED REACTIONS AND RATE CONSTANTS:'
       DO I=1,NREAC
        WRITE(*,'(I5XAXAXA)') I,TRIM(ADJUSTL(REAC(I))),'RATE CONST:', &
-                           TRIM(ADJUSTL(REAC_CONST(I)))
+                             TRIM(ADJUSTL(REAC_CONST(I)))
       ENDDO
+
       WRITE(*,*) 'REACTION SPECIES'
       DO I=1,NREAC
        WRITE(*,'(I5XAXAXA)') I,TRIM(ADJUSTL(REAC(I)))
        DO J=1,NSPEC
-        IF(RSPEC(I,J).EQ.1) WRITE(*,*) TRIM(ADJUSTL(SPEC(J)))
+        IF(RSPEC(I,J).EQ.1) WRITE(*,'(A)') TRIM(ADJUSTL(SPEC(J)))
        ENDDO
       ENDDO
 
+      WRITE(*,*) 
+      WRITE(*,'(A)') 'PARSING COMPLETE!' 
       WRITE(*,*) 
       WRITE(*,*) '***MODULE ZPDLASKIN_PARSE***'
 
@@ -155,7 +153,8 @@
       IS=GET_KEY_INDEX(KEY_REAC,NLINES,LINES(1:NLINES),1)
       IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
       WRITE(*,'(A)') 'REACTIONS:'
-      CALL ZDP_READ_SECTION(IS,IE,NREMX,NSMX,CHEM_LINES,NREAC_RAW,.FALSE.)
+      CALL ZDP_READ_SECTION(IS,IE,NREMX,NSMX,CHEM_LINES,NREAC_RAW, &
+                            .FALSE.)
       CALL ZDP_FILTER_REACTIONS()
      
       RETURN
@@ -180,26 +179,26 @@
       SUBROUTINE ZDP_FILTER_REACTIONS()
       IMPLICIT NONE
       INTEGER :: I,NA,NG,ILINE,IREAC
-      CHARACTER(LEN=NSMX) :: R,ATLIST(NSPMX),GLIST(NSPMX,NSPMX)
+      CHARACTER(LEN=NSMX) :: LINE,ATLIST(NSPMX),GLIST(NSPMX,NSPMX)
 
       IREAC=0
       ILINE=1
       DO WHILE(ILINE.LE.NREAC_RAW)  
-       R=CHEM_LINES(ILINE)
-       IF(ZDP_IS_GROUP_SPEC_REAC(R)) THEN
-        WRITE(*,'(4XAXA)') '*GROUP REAC FOUND: '//TRIM(ADJUSTL(R))
+       LINE=CHEM_LINES(ILINE)
+       IF(ZDP_IS_GROUP_SPEC_REAC(LINE)) THEN
+        WRITE(*,'(4XAXA)') '*GROUP REAC FOUND: '//TRIM(ADJUSTL(LINE))
         CALL ZDP_EXTRACT_REAC_GROUP_SPEC(ILINE,NSPMX,ATLIST,GLIST,NA,NG) 
         !GENERATE NEW REAC FOR EACH GROUP 
         DO I=1,NG
          IREAC=IREAC+1
-         CALL ZDP_GENERATE_REAC_FOR_GROUP(R,NA,ATLIST(1:NA), &
+         CALL ZDP_GENERATE_REAC_FOR_GROUP(LINE,NA,ATLIST(1:NA), &
                  GLIST(1:NA,I), REAC(IREAC))
          WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
         ENDDO
         ILINE=ILINE+NA+1
        ELSE   
         IREAC=IREAC+1  
-        REAC(IREAC)=R   
+        REAC(IREAC)=LINE   
         ILINE=ILINE+1
         WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
        ENDIF
@@ -280,6 +279,9 @@
       CALL ZDP_SET_REAC_F()
       CALL ZDP_SET_SPECIES_FROM_LIST()
       CALL ZDP_SET_NEUTRAL_IF_ANY()
+      CALL ZDP_SET_ION_POS_IF_ANY()
+      CALL ZDP_SET_ION_NEG_IF_ANY()
+      CALL ZDP_SET_ANY_SPEC_IF_ANY()
 
       RETURN
       END
@@ -310,6 +312,53 @@
           RSPEC(J,I)=1
          ENDIF
         ENDDO
+       ENDIF
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE ZDP_SET_ION_POS_IF_ANY()
+      INTEGER :: I,J
+      
+      DO J=1,NREAC
+       IF(ZDP_IS_ANY_ION_POS_REACTION(REAC_F(J))) THEN
+        IS_ANY_ION_POS_REAC(J)=.TRUE.
+        DO I=1,NSPEC
+         IF(SPEC_CHARGE(I).GT.ZERO) THEN
+          RSPEC(J,I)=1
+         ENDIF
+        ENDDO
+       ENDIF
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE ZDP_SET_ION_NEG_IF_ANY()
+      INTEGER :: I,J
+      
+      DO J=1,NREAC
+       IF(ZDP_IS_ANY_ION_NEG_REACTION(REAC_F(J))) THEN
+        IS_ANY_ION_NEG_REAC(J)=.TRUE.
+        DO I=1,NSPEC
+         IF(SPEC_CHARGE(I).LT.ZERO) THEN
+          RSPEC(J,I)=1
+         ENDIF
+        ENDDO
+       ENDIF
+      ENDDO
+
+      RETURN
+      END
+      !----------------------------------------------------------------- 
+      SUBROUTINE ZDP_SET_ANY_SPEC_IF_ANY()
+      INTEGER :: I,J
+      
+      DO J=1,NREAC
+       IF(ZDP_IS_ANY_SPEC_REACTION(REAC_F(J))) THEN
+        IS_ANY_SPEC_REAC(J)=.TRUE.
+        RSPEC(J,1:NSPEC)=1
        ENDIF
       ENDDO
 
@@ -370,7 +419,6 @@
       SUBROUTINE ZDP_SET_IS_SPEC_CHARGED()
       IMPLICIT NONE
       INTEGER :: I
-      DOUBLE PRECISION, PARAMETER :: ONE=1.0E0
       LOGICAL :: IELE,IPOS,INEG
 
       DO I=1,NSPEC
@@ -394,6 +442,33 @@
 
       END FUNCTION
       !-----------------------------------------------------------------
+      FUNCTION ZDP_IS_ANY_ION_POS_REACTION(REAC)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: REAC
+      LOGICAL :: ZDP_IS_ANY_ION_POS_REACTION
+
+      ZDP_IS_ANY_ION_POS_REACTION=INDEX(REAC,KEY_ANY_ION_POS).GT.0
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      FUNCTION ZDP_IS_ANY_ION_NEG_REACTION(REAC)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: REAC
+      LOGICAL :: ZDP_IS_ANY_ION_NEG_REACTION
+
+      ZDP_IS_ANY_ION_NEG_REACTION=INDEX(REAC,KEY_ANY_ION_NEG).GT.0
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      FUNCTION ZDP_IS_ANY_SPEC_REACTION(REAC)
+      IMPLICIT NONE
+      CHARACTER(LEN=*) :: REAC
+      LOGICAL :: ZDP_IS_ANY_SPEC_REACTION
+
+      ZDP_IS_ANY_SPEC_REACTION=INDEX(REAC,KEY_ANY_SPECIES).GT.0
+
+      END FUNCTION
+      !-----------------------------------------------------------------  
       FUNCTION ZDP_IS_DOLLAR(LINE)
       IMPLICIT NONE
       CHARACTER(LEN=*) :: LINE
@@ -540,6 +615,8 @@
       ZDP_GET_LINE_NO=I
 
       END FUNCTION
-      !-----------------------------------------------------------------     
+      !----------------------------------------------------------------- 
+
       END MODULE
+  
       !-----------------------------------------------------------------
