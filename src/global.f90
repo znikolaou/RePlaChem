@@ -7,8 +7,7 @@
                         CONTROL_FL='control.txt',      &
                         CHEMRED_FL='reducedChemistry.txt', &
                         RATE_FL='speciesMeanRatesMatrix.dat', &
-                        REACTION_RATE_FL='reactionRates', &
-                        EQ_SEP='=>'
+                        REACTION_RATE_FL='reactionRates'
 
       INTEGER, PARAMETER :: NREMX=6000,    &
                             NSPMX=300,     &
@@ -21,7 +20,6 @@
       !-----------------------------------------------------------------                                     
       INTEGER :: NELEM,NSPEC,NREAC,NSPEC_BOLSIG,NBOLS_SET,NREAC_DOLLAR
       CHARACTER(LEN=NSMX) :: ELEM(NSPMX),SPEC(NSPMX),REAC(NREMX), &
-                             REACF(NREMX), &
                              SPEC_BOLSIG(NSPMX), REAC_CONST(NREMX), &
                              BOLSIG_SEC_SET_LIST(NLINEMX), &
                              REAC_SEC_DOLLAR_LIST(NLINEMX)

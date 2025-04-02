@@ -439,6 +439,7 @@
       !LAST PART
       STRWRK(IS+1:)=STRING(IL:LSTR)
 
+      RETURN 
       END
       !------------------------------------------------------------------
       SUBROUTINE SPLIT_STRING_WITH_SPACES(STRING,N,COLMS,NA)

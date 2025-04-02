@@ -30,7 +30,7 @@
       SUBROUTINE REMOVE_TABS_FROM_FILE(FL)
       IMPLICIT NONE
       CHARACTER(LEN=*) :: FL
-            
+       
       CALL SYSTEM("sed -i 's/\t/\ /g'"//' '//FL) 
       CALL SYSTEM("sed -i 's/\t/\ /g'"//' '//FL)
        
@@ -43,9 +43,6 @@
       CHARACTER(NSMX) :: L,LINES(NLINEMX)
       INTEGER, PARAMETER :: ID=1
       INTEGER :: IOS,I,NL
-
-      WRITE(*,*) '***READ_LINES:***'
-      WRITE(*,'(AXA)') 'FILE:',TRIM(ADJUSTL(FL))
 
       OPEN(UNIT=ID,FILE=FL,STATUS='OLD',FORM='FORMATTED',IOSTAT=IOS)
 
@@ -65,7 +62,7 @@
        ENDIF
       ENDDO
       WRITE(*,'(AXI6)') 'NO OF LINES:',NL
-
+      
       REWIND(ID)
       DO I=1,NL
        READ(ID,'(A)') LINES(I)
@@ -73,8 +70,6 @@
 
       CLOSE(ID)
             
-      WRITE(*,*) '***READ_LINES:***'
-
       END
       !-----------------------------------------------------------------
       SUBROUTINE READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,IRDMETH, &

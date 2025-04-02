@@ -3,12 +3,13 @@
       IMPLICIT NONE
       INTEGER :: I
       CHARACTER(LEN=*), PARAMETER :: &
-      FL='../input_chemistry/argon2step/kinet2stepArgon.inp', &
-      FLA='../input_chemistry/methaneAntwerp/'//&
-              'kinetAntwerpMethaneNoTabs.inp'
+      FLA='./input_chemistry/argon2step/kinet2stepArgonModified.inp', &
+      FLB='./input_chemistry/methaneAntwerp/'//&
+              'kinetAntwerpMethaneNoTabs.inp', &
+      FLC='./input_chemistry/chemkinFormatGri3/grimech3.txt'
 
-      CALL REMOVE_TABS_FROM_FILE(FLA)
-      CALL ZDP_INIT(FLA)
+      
+      CALL ZDP_INIT(FLB)
 
       STOP
       END
