@@ -9,7 +9,7 @@
       FLC='./input_chemistry/chemkinFormatGri3/grimech3.txt'
 
       
-      CALL ZDP_INIT(FLB)
+      CALL ZDP_INIT(FLC)
 
       STOP
       END

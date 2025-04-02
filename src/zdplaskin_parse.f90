@@ -2,8 +2,7 @@
       MODULE ZDPLASKIN_PARSE
       USE GLOBAL
       IMPLICIT NONE
-      !TODO : SET NU FOR KEYWORDS ANY_SPECIES, ANY_ION_POSITIVE, 
-      !       ANY_ION_NEGATIVE
+      !TODO : SET NU FOR THIRD BODY SPECIES
       CHARACTER(LEN=*), PARAMETER, PRIVATE :: KEY_ELEM='ELEMENTS', &
        KEY_SPEC='SPECIES', KEY_REAC='REACTIONS',KEY_BOLS='BOLSIG', &
        KEY_END='END', KEY_SET='SET', KEY_AT='@',KEY_EXCL='!', &
@@ -61,28 +60,30 @@
       NUP(1:NREAC,1:NSPEC)=ZERO
       DELTANU(1:NREAC,1:NSPEC)=ZERO
 
-      !READ 
       CALL READ_LINES(FL,LINES,NLINES)
       CALL ZDP_READ_ELEMENTS()
       CALL ZDP_READ_SPECIES()
       CALL ZDP_READ_BOLSIG_SPECIES()
       CALL ZDP_READ_BOLSIG_SEC_SET_LIST()
-      CALL ZDP_READ_AND_FILTER_REACTIONS()
+      CALL ZDP_READ_AND_FILTER_REACTIONS() !TODO: FIX FOR TROE REACITON WITH ONLY LOW KEYWORD
       CALL ZDP_READ_REAC_SEC_DOLLAR_LIST()
+
       WRITE(*,'(A)') 
       WRITE(*,'(A)') 'FINISHED READING FILE'
       WRITE(*,*) 
       WRITE(*,'(A)') 'POST-PROCESSING ...'
       WRITE(*,*)  
-      !POST-PROCESS
+      
       CALL ZDP_SET_IS_SPEC_CHARGED()
       CALL ZDP_SET_REAC_INFO()
       CALL ZDP_EXTRACT_REAC_AND_CONST()
       CALL ZDP_SET_STOICH_COEFFS() !SET VARS:NUR,NUP,DELTANU
-      CALL CHECK_CHARGE() 
+      CALL ZDP_CHECK_CHARGE() 
+      
       !TODO:CALL CHECK_STOICHIOMETRY()
        
       WRITE(*,'(A)') 'EXTRACTED REACTIONS AND RATE CONSTANTS:'
+      WRITE(*,'(A)') '---------------------------------------'
       DO I=1,NREAC
        WRITE(*,'(I5XAXAXA)') I,TRIM(ADJUSTL(REAC(I))), &
                                  'RATE CONST:', &
@@ -91,6 +92,7 @@
 
       WRITE(*,*) 
       WRITE(*,'(A)') 'STOICHIOMETRIC COEFFS:'
+      WRITE(*,'(A)') '----------------------'
       DO I=1,NREAC
        WRITE(*,'(I5XAXAXAXA)') I,TRIM(ADJUSTL(REAC(I))), &
                                  '( '//TRIM(ADJUSTL(REAC_F(I)))//' )'
@@ -253,7 +255,7 @@
       !----------------------------------------------------------------- 
       SUBROUTINE ZDP_FILTER_REACTIONS()
       IMPLICIT NONE
-      INTEGER :: I,NA,NG,ILINE,IREAC
+      INTEGER :: I,NA,NG,ILINE,IREAC,ILADD
       CHARACTER(LEN=NSMX) :: LINE,ATLIST(NSPMX),GLIST(NSPMX,NSPMX)
 
       IREAC=0
@@ -271,17 +273,24 @@
          WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
         ENDDO
         ILINE=ILINE+NA+1
-       ELSEIF(ZDP_IS_THIRD_BODY_LIND_REAC(LINE)) THEN
+       ELSEIF(ZDP_IS_THIRD_BODY_LIND_REACTION(LINE)) THEN
         WRITE(*,'(A)') 'THIRD BODY (LINDEMAN FORM) REAC FOUND:'
         IREAC=IREAC+1
         REAC(IREAC)=LINE
         ILINE=ILINE+2
+        !CALL ZPD_READ_LIND_SPEC(ILINE+1)
+         
         WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
-       ELSEIF(ZDP_IS_THIRD_BODY_TROE_REAC(LINE)) THEN
+       ELSEIF(ZDP_IS_THIRD_BODY_TROE_REACTION(LINE)) THEN
         WRITE(*,'(A)') 'THIRD BODY (TROE FORM) REAC FOUND:'
         IREAC=IREAC+1
         REAC(IREAC)=LINE
-        ILINE=ILINE+4
+        !TODO: FIX FOR ONLY LOW
+        IF(ZDP_IS_THREE_TROE_LINES(ILINE)) THEN
+         ILINE=ILINE+4
+        ELSE
+         ILINE=ILINE+3
+        ENDIF
         WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
        ELSE   
         IREAC=IREAC+1  
@@ -515,6 +524,17 @@
              
       END
       !-----------------------------------------------------------------
+      FUNCTION ZDP_IS_THREE_TROE_LINES(ILINE)
+      IMPLICIT NONE
+      INTEGER :: ILINE
+      LOGICAL :: ZDP_IS_THREE_TROE_LINES
+
+      ZDP_IS_THREE_TROE_LINES= &
+              INDEX(CHEM_LINES(ILINE+1),'LOW').GT.0.AND. &
+              INDEX(CHEM_LINES(ILINE+2),'TROE').GT.0
+
+      END FUNCTION
+      !-----------------------------------------------------------------
       FUNCTION ZDP_IS_ANY_NEUTRAL_REACTION(REAC)
       IMPLICIT NONE
       CHARACTER(LEN=*) :: REAC
@@ -550,7 +570,27 @@
       ZDP_IS_ANY_SPEC_REACTION=INDEX(REAC,KEY_ANY_SPECIES).GT.0
 
       END FUNCTION
-      !-----------------------------------------------------------------  
+      !-----------------------------------------------------------------
+      FUNCTION ZDP_IS_THIRD_BODY_LIND_REACTION(R)
+      IMPLICIT NONE
+      LOGICAL :: ZDP_IS_THIRD_BODY_LIND_REACTION
+      CHARACTER(LEN=*) :: R
+
+      ZDP_IS_THIRD_BODY_LIND_REACTION= &
+       (INDEX(R,KEY_THIRD_BODY_LIND).NE.0).AND. &
+       (.NOT.ZDP_IS_THIRD_BODY_TROE_REACTION(R))
+
+      END FUNCTION
+      !-----------------------------------------------------------------
+      FUNCTION ZDP_IS_THIRD_BODY_TROE_REACTION(R)
+      IMPLICIT NONE
+      LOGICAL :: ZDP_IS_THIRD_BODY_TROE_REACTION
+      CHARACTER(LEN=*) :: R
+
+      ZDP_IS_THIRD_BODY_TROE_REACTION=INDEX(R,KEY_THIRD_BODY_TROE).NE.0
+
+      END FUNCTION
+      !-----------------------------------------------------------------
       FUNCTION ZDP_IS_DOLLAR(LINE)
       IMPLICIT NONE
       CHARACTER(LEN=*) :: LINE
@@ -579,26 +619,6 @@
       CHARACTER(LEN=*) :: R
 
       ZDP_IS_GROUP_SPEC_REAC=INDEX(R,KEY_AT).NE.0
-
-      END FUNCTION
-      !-----------------------------------------------------------------
-      FUNCTION ZDP_IS_THIRD_BODY_LIND_REAC(R)
-      IMPLICIT NONE
-      LOGICAL :: ZDP_IS_THIRD_BODY_LIND_REAC
-      CHARACTER(LEN=*) :: R
-
-      ZDP_IS_THIRD_BODY_LIND_REAC= &
-       (INDEX(R,KEY_THIRD_BODY_LIND).NE.0).AND. &
-       (.NOT.ZDP_IS_THIRD_BODY_TROE_REAC(R))
-
-      END FUNCTION
-      !-----------------------------------------------------------------
-      FUNCTION ZDP_IS_THIRD_BODY_TROE_REAC(R)
-      IMPLICIT NONE
-      LOGICAL :: ZDP_IS_THIRD_BODY_TROE_REAC
-      CHARACTER(LEN=*) :: R
-
-      ZDP_IS_THIRD_BODY_TROE_REAC=INDEX(R,KEY_THIRD_BODY_TROE).NE.0
 
       END FUNCTION
       !-----------------------------------------------------------------
@@ -726,36 +746,37 @@
       INTEGER :: I
 
       DO I=1,NREAC
-       CALL SET_REAC_STOICH_COEFFS(I)
+       CALL ZDP_SET_REAC_STOICH_COEFFS(I)
       ENDDO
 
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE SET_REAC_STOICH_COEFFS(IR)
+      SUBROUTINE ZDP_SET_REAC_STOICH_COEFFS(IR)
       IMPLICIT NONE
       INTEGER :: IR,NA,NR,NP,I,J
       CHARACTER(LEN=NSMX) :: RANDP(2),RLIST(NSPMX),PLIST(NSPMX),CH
       DOUBLE PRECISION :: NUM
 
-      CALL FORMAT_REACTION(IR)
+      CALL ZDP_FORMAT_REACTION(IR)
       CALL SPLIT_STRING(REAC_F(IR),KEY_EQ_SEP_F,2,RANDP,NA)
       CALL SPLIT_STRING_WITH_SPACES(RANDP(1),NSPMX,RLIST,NR)
       CALL SPLIT_STRING_WITH_SPACES(RANDP(2),NSPMX,PLIST,NP)
      
-      CALL SET_NU_FROM_LIST(IR,NR,RLIST(1:NR),NUR(1:NREAC,1:NSPEC))
-      CALL SET_NU_FROM_LIST(IR,NP,PLIST(1:NP),NUP(1:NREAC,1:NSPEC))
-      CALL SET_NU_FOR_ANY_NEUTRAL_REAC()
-      CALL SET_NU_FOR_ANY_ION_POS_REAC()
-      CALL SET_NU_FOR_ANY_ION_NEG_REAC()
-      CALL SET_NU_FOR_ANY_SPEC_REAC()
+      CALL ZDP_SET_NU_FROM_LIST(IR,NR,RLIST(1:NR),NUR(1:NREAC,1:NSPEC))
+      CALL ZDP_SET_NU_FROM_LIST(IR,NP,PLIST(1:NP),NUP(1:NREAC,1:NSPEC))
+      CALL ZDP_SET_NU_FOR_ANY_NEUTRAL_REAC()
+      CALL ZDP_SET_NU_FOR_ANY_ION_POS_REAC()
+      CALL ZDP_SET_NU_FOR_ANY_ION_NEG_REAC()
+      CALL ZDP_SET_NU_FOR_ANY_SPEC_REAC()
+      CALL ZDP_SET_NU_FOR_THIRD_BODY_REAC()
 
       DELTANU(1:NREAC,1:NSPEC)=NUP(1:NREAC,1:NSPEC)-NUR(1:NREAC,1:NSPEC)
 
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE SET_NU_FOR_ANY_NEUTRAL_REAC()
+      SUBROUTINE ZDP_SET_NU_FOR_ANY_NEUTRAL_REAC()
       IMPLICIT NONE
       INTEGER :: I,J
 
@@ -773,7 +794,7 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE SET_NU_FOR_ANY_ION_POS_REAC()
+      SUBROUTINE ZDP_SET_NU_FOR_ANY_ION_POS_REAC()
       IMPLICIT NONE
       INTEGER :: I,J
 
@@ -791,7 +812,7 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE SET_NU_FOR_ANY_ION_NEG_REAC()
+      SUBROUTINE ZDP_SET_NU_FOR_ANY_ION_NEG_REAC()
       IMPLICIT NONE
       INTEGER :: I,J
 
@@ -809,7 +830,7 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE SET_NU_FOR_ANY_SPEC_REAC()
+      SUBROUTINE ZDP_SET_NU_FOR_ANY_SPEC_REAC()
       IMPLICIT NONE
       INTEGER :: I,J
 
@@ -825,7 +846,24 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE SET_NU_FROM_LIST(IR,NL,NO_AND_CHAR_LIST,NU)
+      SUBROUTINE ZDP_SET_NU_FOR_THIRD_BODY_REAC()
+      IMPLICIT NONE
+      INTEGER :: I,J
+
+      !TODO
+      DO I=1,NREAC
+       !IF(IS_THIRD_BODY_REAC(I)) THEN
+        DO J=1,NSPEC
+         !NUR(I,J)=ONE
+         !NUP(I,J)=ONE
+        ENDDO
+       !ENDIF        
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE ZDP_SET_NU_FROM_LIST(IR,NL,NO_AND_CHAR_LIST,NU)
       IMPLICIT NONE
       INTEGER :: I,J,IR,NL
       DOUBLE PRECISION :: NUM,NU(NREAC,NSPEC)
@@ -843,7 +881,7 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE FORMAT_REACTION(I)
+      SUBROUTINE ZDP_FORMAT_REACTION(I)
       IMPLICIT NONE
       INTEGER :: I
       CHARACTER(LEN=NSMX) :: CWRK,C
@@ -856,52 +894,42 @@
       C=CWRK
       CALL REPLACE_TEXT(C,KEY_EQ_SEP_SINGLE,' -> ',CWRK,NSMX)
       C=CWRK
+      CALL REPLACE_TEXT(C,'(+M)','+(M)',CWRK,NSMX)
+      C=CWRK
       CALL REPLACE_TEXT(C,'+',' ',CWRK,NSMX)
       C=CWRK
       CALL REPLACE_TEXT(C,'NEG','-',CWRK,NSMX)
       C=CWRK
       CALL REPLACE_TEXT(C,'POS','+',CWRK,NSMX)
-      C=' '//TRIM(ADJUSTL(CWRK))//' '
-      REAC_F(I)=C
+      REAC_F(I)=' '//TRIM(ADJUSTL(CWRK))//' '
       
       RETURN
       END
       !-----------------------------------------------------------------
-      FUNCTION GET_SPECIES_INDEX(SP)
+      FUNCTION ZDP_GET_SPECIES_INDEX(SP)
       IMPLICIT NONE
       CHARACTER(LEN=*) :: SP
-      INTEGER :: I,GET_SPECIES_INDEX
+      INTEGER :: I,ZDP_GET_SPECIES_INDEX
 
-      GET_SPECIES_INDEX=0
+      ZDP_GET_SPECIES_INDEX=0
       DO I=1,NSPEC
        IF(TRIM(ADJUSTL(SP)).EQ.TRIM(ADJUSTL(SPEC(I)))) THEN
-         GET_SPECIES_INDEX=I
+         ZDP_GET_SPECIES_INDEX=I
          EXIT
        ENDIF
       ENDDO
       
       END FUNCTION
       !-----------------------------------------------------------------
-      SUBROUTINE REMOVE_DUPLICATE_REACTIONS(NREAC,CREAC,CREAC_F,NF)
-      IMPLICIT NONE
-      INTEGER :: NREAC,NF
-      CHARACTER(LEN=*) :: CREAC(NREAC),CREAC_F(NREAC)
-
-      CALL REMOVE_DUPLICATE_STRINGS(NREAC,CREAC,CREAC_F,NF)
-      WRITE(*,*) 'REMOVED',NREAC-NF,'DUPLICATE REACTIONS'
-
-      RETURN
-      END  
-      !-----------------------------------------------------------------
-      SUBROUTINE CHECK_CHARGE()
+      SUBROUTINE ZDP_CHECK_CHARGE()
       IMPLICIT NONE
       DOUBLE PRECISION :: CHARGE
       INTEGER :: I
 
       DO I=1,NREAC
-       CHARGE=GET_REACTION_CHARGE(I)
+       CHARGE=ZDP_GET_REACTION_CHARGE(I)
        IF(CHARGE.NE.ZERO) THEN
-        WRITE(*,*) '*CHECK_CHARGE: ERROR, CHARGE NOT ZERO FOR REAC:'
+        WRITE(*,*) '*ZDP_CHECK_CHARGE: ERROR, CHARGE NOT ZERO FOR REAC:'
         WRITE(*,*) TRIM(ADJUSTL(REAC(I)))
         WRITE(*,*) 'CHARGE=',CHARGE
         WRITE(*,*) 'CHECK CHEM. MECH. TERMINATING ...'
@@ -912,15 +940,15 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      FUNCTION GET_REACTION_CHARGE(I)
+      FUNCTION ZDP_GET_REACTION_CHARGE(I)
       IMPLICIT NONE
       INTEGER :: I,J
-      DOUBLE PRECISION :: GET_REACTION_CHARGE
+      DOUBLE PRECISION :: ZDP_GET_REACTION_CHARGE
 
-      GET_REACTION_CHARGE=ZERO
+      ZDP_GET_REACTION_CHARGE=ZERO
       DO J=1,NSPEC
-       GET_REACTION_CHARGE=(NUR(I,J)-NUP(I,J))*SPEC_CHARGE(J)+ &
-                           GET_REACTION_CHARGE
+       ZDP_GET_REACTION_CHARGE=(NUR(I,J)-NUP(I,J))*SPEC_CHARGE(J)+ &
+                           ZDP_GET_REACTION_CHARGE
       ENDDO
 
       END FUNCTION
