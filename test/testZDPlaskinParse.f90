@@ -7,9 +7,8 @@
       FLB='./input_chemistry/methaneAntwerp/'//&
               'kinetAntwerpMethaneNoTabs.inp', &
       FLC='./input_chemistry/chemkinFormatGri3/grimech3.txt'
-
-      
-      CALL ZDP_INIT(FLC)
+ 
+      CALL ZDP_INIT(FLA)
 
       STOP
       END

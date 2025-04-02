@@ -2,23 +2,32 @@
       MODULE ZDPLASKIN_PARSE
       USE GLOBAL
       IMPLICIT NONE
-      !TODO : SET NU FOR THIRD BODY SPECIES
-      CHARACTER(LEN=*), PARAMETER, PRIVATE :: KEY_ELEM='ELEMENTS', &
-       KEY_SPEC='SPECIES', KEY_REAC='REACTIONS',KEY_BOLS='BOLSIG', &
-       KEY_END='END', KEY_SET='SET', KEY_AT='@',KEY_EXCL='!', &
-       KEY_EQ='=',KEY_NEUTRAL='ANY_NEUTRAL',KEY_DOLLAR='$', &
+      INTEGER, PRIVATE :: NLINES,NREAC_RAW
+      CHARACTER(LEN=NSMX), PRIVATE :: LINES(NLINEMX),REAC_F(NREMX), &
+                                      CHEM_LINES(NREMX)
+      CHARACTER(LEN=*), PARAMETER, PRIVATE :: &
+       KEY_ELEM='ELEMENTS', &
+       KEY_SPEC='SPECIES', &
+       KEY_REAC='REACTIONS', &
+       KEY_BOLS='BOLSIG', &
+       KEY_END='END', &
+       KEY_SET='SET', &
+       KEY_NEUTRAL='ANY_NEUTRAL', &
        KEY_ANY_ION_POS='ANY_ION_POSITIVE', & 
        KEY_ANY_ION_NEG='ANY_ION_NEGATIVE', &
-       KEY_ANY_SPECIES='ANY_SPECIES',KEY_THIRD_BODY_LIND='M', &
-       KEY_THIRD_BODY_TROE='(+M)',KEY_DUPLICATE='DUPLICATE'
-      CHARACTER(LEN=*), PARAMETER :: KEY_EQ_SEP_F='->', &
-                                     KEY_EQ_SEP_DOUBLE='<=>', &
-                                     KEY_EQ_SEP_SINGLE='=>', &
-                                     KEY_SLASH='/'
-      CHARACTER(LEN=NSMX), PRIVATE :: LINES(NLINEMX), &
-                                      CHEM_LINES(NREMX),REAC_F(NREMX)
-      INTEGER, PRIVATE :: NLINES,NREAC_RAW
-      
+       KEY_ANY_SPECIES='ANY_SPECIES', &
+       KEY_DUPLICATE='DUPLICATE', &
+       KEY_THIRD_BODY_LIND='M', &
+       KEY_THIRD_BODY_TROE='(+M)', &
+       KEY_EQ_SEP_F='->', &
+       KEY_EQ_SEP_DOUBLE='<=>', &
+       KEY_EQ_SEP_SINGLE='=>', &
+       KEY_SLASH='/', &
+       KEY_AT='@', &
+       KEY_EXCL='!', &
+       KEY_EQ='=', &
+       KEY_DOLLAR='$'
+
       CONTAINS
 
       !-----------------------------------------------------------------
@@ -81,6 +90,7 @@
       CALL ZDP_SET_REAC_INFO()
       CALL ZDP_EXTRACT_REAC_AND_CONST()
       CALL ZDP_SET_STOICH_COEFFS() !SET VARS:NUR,NUP,DELTANU
+      CALL ZDP_SET_RSPEC() 
       CALL ZDP_CHECK_CHARGE() 
       
       !TODO:CALL CHECK_STOICHIOMETRY()
@@ -794,6 +804,23 @@
 
       DO I=1,NREAC
        CALL ZDP_SET_REAC_STOICH_COEFFS(I)
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE ZDP_SET_RSPEC()
+      IMPLICIT NONE
+      INTEGER :: I,J
+
+      DO I=1,NREAC
+       DO J=1,NSPEC
+        IF(NUR(I,J).NE.ZERO.OR.NUP(I,J).NE.ZERO) THEN 
+         RSPEC(I,J)=1
+        ELSE
+         RSPEC(I,J)=0
+        ENDIF
+       ENDDO
       ENDDO
 
       RETURN
