@@ -13,7 +13,8 @@
        KEY_THIRD_BODY_TROE='(+M)',KEY_DUPLICATE='DUPLICATE'
       CHARACTER(LEN=*), PARAMETER :: KEY_EQ_SEP_F='->', &
                                      KEY_EQ_SEP_DOUBLE='<=>', &
-                                     KEY_EQ_SEP_SINGLE='=>'
+                                     KEY_EQ_SEP_SINGLE='=>', &
+                                     KEY_SLASH='/'
       CHARACTER(LEN=NSMX), PRIVATE :: LINES(NLINEMX), &
                                       CHEM_LINES(NREMX),REAC_F(NREMX)
       INTEGER, PRIVATE :: NLINES,NREAC_RAW
@@ -255,7 +256,7 @@
       !----------------------------------------------------------------- 
       SUBROUTINE ZDP_FILTER_REACTIONS()
       IMPLICIT NONE
-      INTEGER :: I,NA,NG,ILINE,IREAC,ILADD
+      INTEGER :: I,NA,NG,ILINE,IREAC,ITHIRD,NTHIRD
       CHARACTER(LEN=NSMX) :: LINE,ATLIST(NSPMX),GLIST(NSPMX,NSPMX)
 
       IREAC=0
@@ -277,21 +278,35 @@
         WRITE(*,'(A)') 'THIRD BODY (LINDEMAN FORM) REAC FOUND:'
         IREAC=IREAC+1
         REAC(IREAC)=LINE
-        ILINE=ILINE+2
-        !CALL ZPD_READ_LIND_SPEC(ILINE+1)
-         
+        CALL ZDP_READ_THIRD_BODY_SPEC(ILINE+1,NTHIRD, &
+                                      THIRD_SPEC(IREAC,1:NSPEC))
         WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
+        DO I=1,NTHIRD
+         WRITE(*,'(A)') TRIM(ADJUSTL(THIRD_SPEC(IREAC,I)))
+        ENDDO 
+        ILINE=ILINE+2
+      
        ELSEIF(ZDP_IS_THIRD_BODY_TROE_REACTION(LINE)) THEN
         WRITE(*,'(A)') 'THIRD BODY (TROE FORM) REAC FOUND:'
         IREAC=IREAC+1
         REAC(IREAC)=LINE
-        !TODO: FIX FOR ONLY LOW
+        
+        WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
+        
         IF(ZDP_IS_THREE_TROE_LINES(ILINE)) THEN
+         ITHIRD=ILINE+3
          ILINE=ILINE+4
         ELSE
+         ITHIRD=ILINE+2
          ILINE=ILINE+3
         ENDIF
-        WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
+        
+        CALL ZDP_READ_THIRD_BODY_SPEC(ITHIRD,NTHIRD, &
+                                      THIRD_SPEC(IREAC,1:NSPEC))
+        DO I=1,NTHIRD
+         WRITE(*,'(A)') TRIM(ADJUSTL(THIRD_SPEC(IREAC,I)))
+        ENDDO 
+
        ELSE   
         IREAC=IREAC+1  
         REAC(IREAC)=LINE   
@@ -704,6 +719,22 @@
 
       RETURN
       END 
+      !-----------------------------------------------------------------
+      SUBROUTINE ZDP_READ_THIRD_BODY_SPEC(ILINE,NTHIRD,THIRD_SPEC)
+      IMPLICIT NONE
+      INTEGER :: IREAC,ILINE,NTHIRD,JSLASH,I,J
+      CHARACTER(LEN=NSMX) :: COLMS(2*NSPEC),THIRD_SPEC(NSPEC)
+           
+      CALL SPLIT_STRING(CHEM_LINES(ILINE),KEY_SLASH,2*NSPEC,COLMS, &
+                                    NTHIRD)
+      J=0
+      DO I=1,NTHIRD,2
+       J=J+1
+       THIRD_SPEC(J)=TRIM(ADJUSTL(COLMS(I)))
+      ENDDO
+      NTHIRD=J
+ 
+      END
       !-----------------------------------------------------------------
       SUBROUTINE ZDP_READ_SECTION_DOLLAR_LIST(LSTART,LEND,NL,LIST,NAL) 
       IMPLICIT NONE

@@ -23,7 +23,7 @@
                              SPEC_BOLSIG(NSPMX), REAC_CONST(NREMX), &
                              BOLSIG_SEC_SET_LIST(NLINEMX), &
                              REAC_SEC_DOLLAR_LIST(NLINEMX), &
-                             THIRD_BODY_SPEC(NREMX,NSPMX)
+                             THIRD_SPEC(NREMX,NSPMX)
       LOGICAL :: IS_SPEC_CHARGED(NSPMX),IS_BOLSIG_REAC(NREMX), &
                  IS_ANY_NEUTRAL_REAC(NREMX), &
                  IS_ANY_ION_POS_REAC(NREMX), &
