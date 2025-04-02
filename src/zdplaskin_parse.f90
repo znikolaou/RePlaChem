@@ -55,18 +55,20 @@
       IS_ANY_SPEC_REAC(1:NREMX)=.FALSE.
       IS_ANY_ION_POS_REAC(1:NREMX)=.FALSE.
       IS_ANY_ION_NEG_REAC(1:NREMX)=.FALSE.
+      IS_THIRD_BODY_REAC(1:NREMX)=.FALSE.
       BOLSIG_SEC_SET_LIST=' '
       REAC_SEC_DOLLAR_LIST=' '
-      NUR(1:NREAC,1:NSPEC)=ZERO
-      NUP(1:NREAC,1:NSPEC)=ZERO
-      DELTANU(1:NREAC,1:NSPEC)=ZERO
+      NUR(1:NREMX,1:NSPMX)=ZERO
+      NUP(1:NREMX,1:NSPMX)=ZERO
+      DELTANU(1:NREMX,1:NSPMX)=ZERO
+      THIRD_BODY_SPEC(1:NREMX,1:NSPMX)=' '
 
       CALL READ_LINES(FL,LINES,NLINES)
       CALL ZDP_READ_ELEMENTS()
       CALL ZDP_READ_SPECIES()
       CALL ZDP_READ_BOLSIG_SPECIES()
       CALL ZDP_READ_BOLSIG_SEC_SET_LIST()
-      CALL ZDP_READ_AND_FILTER_REACTIONS() !TODO: FIX FOR TROE REACITON WITH ONLY LOW KEYWORD
+      CALL ZDP_READ_AND_FILTER_REACTIONS() 
       CALL ZDP_READ_REAC_SEC_DOLLAR_LIST()
 
       WRITE(*,'(A)') 
@@ -264,6 +266,7 @@
       DO WHILE(ILINE.LE.NREAC_RAW)  
        LINE=CHEM_LINES(ILINE)
        IF(ZDP_IS_GROUP_SPEC_REAC(LINE)) THEN
+        
         WRITE(*,'(4XAXA)') '*GROUP REAC FOUND: '//TRIM(ADJUSTL(LINE))
         CALL ZDP_EXTRACT_REAC_GROUP_SPEC(ILINE,NSPMX,ATLIST,GLIST,NA,NG) 
         !GENERATE NEW REAC FOR EACH GROUP 
@@ -274,24 +277,29 @@
          WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
         ENDDO
         ILINE=ILINE+NA+1
+       
        ELSEIF(ZDP_IS_THIRD_BODY_LIND_REACTION(LINE)) THEN
-        WRITE(*,'(A)') 'THIRD BODY (LINDEMAN FORM) REAC FOUND:'
+        
         IREAC=IREAC+1
         REAC(IREAC)=LINE
+        IS_THIRD_BODY_REAC(IREAC)=.TRUE.
+       
+        WRITE(*,'(A)') 'THIRD BODY (LINDEMAN FORM) REAC FOUND:'
+        WRITE(*,'(XI4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
+       
         CALL ZDP_READ_THIRD_BODY_SPEC(ILINE+1,NTHIRD, &
-                                      THIRD_SPEC(IREAC,1:NSPEC))
-        WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
-        DO I=1,NTHIRD
-         WRITE(*,'(A)') TRIM(ADJUSTL(THIRD_SPEC(IREAC,I)))
-        ENDDO 
+                                      THIRD_BODY_SPEC(IREAC,1:NSPEC))
+      
         ILINE=ILINE+2
       
        ELSEIF(ZDP_IS_THIRD_BODY_TROE_REACTION(LINE)) THEN
-        WRITE(*,'(A)') 'THIRD BODY (TROE FORM) REAC FOUND:'
+       
         IREAC=IREAC+1
         REAC(IREAC)=LINE
+        IS_THIRD_BODY_REAC(IREAC)=.TRUE.
         
-        WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
+        WRITE(*,'(A)') 'THIRD BODY (TROE FORM) REAC FOUND:'
+        WRITE(*,'(XI4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
         
         IF(ZDP_IS_THREE_TROE_LINES(ILINE)) THEN
          ITHIRD=ILINE+3
@@ -302,17 +310,17 @@
         ENDIF
         
         CALL ZDP_READ_THIRD_BODY_SPEC(ITHIRD,NTHIRD, &
-                                      THIRD_SPEC(IREAC,1:NSPEC))
-        DO I=1,NTHIRD
-         WRITE(*,'(A)') TRIM(ADJUSTL(THIRD_SPEC(IREAC,I)))
-        ENDDO 
+                                      THIRD_BODY_SPEC(IREAC,1:NSPEC))
+       
+       ELSE 
 
-       ELSE   
         IREAC=IREAC+1  
         REAC(IREAC)=LINE   
         ILINE=ILINE+1
         WRITE(*,'(I4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
+       
        ENDIF
+      
       ENDDO
       NREAC=IREAC
 
@@ -720,19 +728,27 @@
       RETURN
       END 
       !-----------------------------------------------------------------
-      SUBROUTINE ZDP_READ_THIRD_BODY_SPEC(ILINE,NTHIRD,THIRD_SPEC)
+      SUBROUTINE ZDP_READ_THIRD_BODY_SPEC(ILINE,NTHIRD,THIRD_BODY_SPEC)
       IMPLICIT NONE
       INTEGER :: IREAC,ILINE,NTHIRD,JSLASH,I,J
-      CHARACTER(LEN=NSMX) :: COLMS(2*NSPEC),THIRD_SPEC(NSPEC)
+      CHARACTER(LEN=NSMX) :: COLMS(2*NSPEC),THIRD_BODY_SPEC(NSPEC)
            
       CALL SPLIT_STRING(CHEM_LINES(ILINE),KEY_SLASH,2*NSPEC,COLMS, &
                                     NTHIRD)
+      
       J=0
-      DO I=1,NTHIRD,2
+      I=1
+      DO WHILE(TRIM(ADJUSTL(COLMS(I))).NE.' ')
        J=J+1
-       THIRD_SPEC(J)=TRIM(ADJUSTL(COLMS(I)))
+       THIRD_BODY_SPEC(J)=TRIM(ADJUSTL(COLMS(I)))
+       I=I+2
       ENDDO
       NTHIRD=J
+      WRITE(*,'(XA)') 'THIRD BODY SPECIES:'
+      DO I=1,NTHIRD
+       WRITE(*,'(I3XA)') I,TRIM(ADJUSTL(THIRD_BODY_SPEC(I)))
+      ENDDO 
+
  
       END
       !-----------------------------------------------------------------
@@ -879,16 +895,18 @@
       !-----------------------------------------------------------------
       SUBROUTINE ZDP_SET_NU_FOR_THIRD_BODY_REAC()
       IMPLICIT NONE
-      INTEGER :: I,J
+      INTEGER :: I,J,INDX
 
-      !TODO
       DO I=1,NREAC
-       !IF(IS_THIRD_BODY_REAC(I)) THEN
-        DO J=1,NSPEC
-         !NUR(I,J)=ONE
-         !NUP(I,J)=ONE
+       IF(IS_THIRD_BODY_REAC(I)) THEN
+        J=1       
+        DO WHILE(THIRD_BODY_SPEC(I,J).NE.' ')
+         INDX=ZDP_GET_SPECIES_INDEX(THIRD_BODY_SPEC(I,J))
+         NUR(I,INDX)=ONE
+         NUP(I,INDX)=ONE
+         J=J+1
         ENDDO
-       !ENDIF        
+       ENDIF        
       ENDDO
 
       RETURN

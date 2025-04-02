@@ -23,12 +23,13 @@
                              SPEC_BOLSIG(NSPMX), REAC_CONST(NREMX), &
                              BOLSIG_SEC_SET_LIST(NLINEMX), &
                              REAC_SEC_DOLLAR_LIST(NLINEMX), &
-                             THIRD_SPEC(NREMX,NSPMX)
+                             THIRD_BODY_SPEC(NREMX,NSPMX)
       LOGICAL :: IS_SPEC_CHARGED(NSPMX),IS_BOLSIG_REAC(NREMX), &
                  IS_ANY_NEUTRAL_REAC(NREMX), &
                  IS_ANY_ION_POS_REAC(NREMX), &
                  IS_ANY_ION_NEG_REAC(NREMX), &
-                 IS_ANY_SPEC_REAC(NREMX)
+                 IS_ANY_SPEC_REAC(NREMX), &
+                 IS_THIRD_BODY_REAC(NREMX)
       INTEGER :: RSPEC(NREMX,NSPMX)
       DOUBLE PRECISION :: NUR(NREMX,NSPMX),NUP(NREMX,NSPMX), &
                           DELTANU(NREMX,NSPMX),SPEC_CHARGE(NSPMX)
