@@ -1,5 +1,5 @@
 
-***MODULE ZPDLASKIN_PARSE***
+***MODULE CHEM_PARSE***
 
 FILE: ./input_chemistry/argon2step/kinet2stepArgonModified.inp
 
@@ -46,18 +46,18 @@ EXTRACTED REACTIONS AND RATE CONSTANTS:
 STOICHIOMETRIC COEFFS:
 ----------------------
     1 e + Ar => 2e + Ar^+ ( e   Ar  ->  2e   Ar^+ )
-REACTANTS:
+ REACTANTS:
  e   1.0000000000000000     
  Ar   1.0000000000000000     
-PRODUCTS:
+ PRODUCTS:
  e   2.0000000000000000     
  Ar^+   1.0000000000000000     
     2 e + Ar^+ + Ar => 2Ar ( e   Ar^+   Ar  ->  2Ar )
-REACTANTS:
+ REACTANTS:
  e   1.0000000000000000     
  Ar   1.0000000000000000     
  Ar^+   1.0000000000000000     
-PRODUCTS:
+ PRODUCTS:
  Ar   2.0000000000000000     
 
 PARSING COMPLETE!

@@ -1,5 +1,5 @@
       PROGRAM TEST_ZDPLASKIN
-      USE ZDPLASKIN_PARSE
+      USE CHEM_PARSE
       IMPLICIT NONE
       INTEGER :: I
       CHARACTER(LEN=*), PARAMETER :: &
@@ -8,7 +8,7 @@
               'kinetAntwerpMethaneNoTabs.inp', &
       FLC='./input_chemistry/chemkinFormatGri3/grimech3.txt'
  
-      CALL ZDP_INIT(FLA)
+      CALL CM_INIT(FLA)
 
       STOP
       END
