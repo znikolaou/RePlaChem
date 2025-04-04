@@ -17,7 +17,7 @@
        KEY_ANY_ION_NEG='ANY_ION_NEGATIVE', &
        KEY_ANY_SPECIES='ANY_SPECIES', &
        KEY_DUPLICATE='DUPLICATE', &
-       KEY_THIRD_BODY_LIND='M', &
+       KEY_THIRD_BODY_LIND='+M', &
        KEY_THIRD_BODY_TROE='(+M)', &
        KEY_EQ_SEP_F='->', &
        KEY_EQ_SEP_DOUBLE='<=>', &
@@ -293,7 +293,7 @@
         IREAC=IREAC+1
         REAC(IREAC)=LINE
         IS_THIRD_BODY_REAC(IREAC)=.TRUE.
-       
+        
         WRITE(*,'(A)') 'THIRD BODY (LINDEMAN FORM) REAC FOUND:'
         WRITE(*,'(XI4XA)') IREAC,TRIM(ADJUSTL(REAC(IREAC)))
        
@@ -302,7 +302,7 @@
       
         ILINE=ILINE+2
       
-       ELSEIF(CM_IS_THIRD_BODY_TROE_REACTION(LINE)) THEN
+        ELSEIF(CM_IS_THIRD_BODY_TROE_REACTION(LINE)) THEN
        
         IREAC=IREAC+1
         REAC(IREAC)=LINE
@@ -927,6 +927,7 @@
       DO I=1,NREAC
        IF(IS_THIRD_BODY_REAC(I)) THEN
         J=1       
+        WRITE(*,*) TRIM(ADJUSTL(REAC(I)))
         DO WHILE(THIRD_BODY_SPEC(I,J).NE.' ')
          INDX=CM_GET_SPECIES_INDEX(THIRD_BODY_SPEC(I,J))
          NUR(I,INDX)=ONE
