@@ -4,10 +4,7 @@
       !
       !-----------------------------------------------------------------
       PROGRAM MAIN_REDCHEM        
-      USE GLOBAL, ONLY: INDIR,OUTDIR,RATE_FL,CONTROL_FL,NSMX,NSFLMX, &
-                        NSPMX,NREMX,NSPEC,NREAC,SPEC,REAC,RSPEC, &
-                        DELTANU,RATE_DIR,REACTION_RATE_FL,CHEMRED_FL, &
-                        ELEM,NELEM,NSPEC_BOLSIG,REAC_CONST,SPEC_BOLSIG
+      USE GLOBAL
       USE CHEM_PARSE, ONLY : CM_INIT
       IMPLICIT NONE
       LOGICAL :: IS_STRING_PRESENT
@@ -17,13 +14,12 @@
                               SPSET_TRGUP(:,:),SPSET_UNION(:), &
                               RESET_UNION(:),ELEMSET_UNION(:), &
                               SPBOLSET_UNION(:)
-      DOUBLE PRECISION :: ETOL(NSPMX)
       DOUBLE PRECISION, ALLOCATABLE :: WIJ(:,:),RR(:),JIJW(:,:)
+      DOUBLE PRECISION :: ETOL(NSPMX)
       CHARACTER(LEN=NSMX) :: COMMAND
       CHARACTER(LEN=2) :: JCASE
       CHARACTER(LEN=NSFLMX) :: FLCASE,CHEMFL,SPECFL
-      !-----------------------------------------------------------------
-
+      
       WRITE(*,*) 'MAIN:'
 
       CALL READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,IRDMETH,INDX_TRG,ETOL, &
@@ -40,33 +36,31 @@
       ALLOCATE(ELEMSET_UNION(NELEM))
       ALLOCATE(SPBOLSET_UNION(NSPEC))
       
-      WIJ(1:NREAC,1:NSPEC)=0.0e0
-      RR(1:NREAC)=0.0e0
-      JIJW(1:NSPEC,1:NSPEC)=0.0e0
+      WIJ(1:NREAC,1:NSPEC)=ZERO
+      RR(1:NREAC)=ZERO
+      JIJW(1:NSPEC,1:NSPEC)=ZERO
       SPSET_TRGUP(1:NTRG,1:NSPEC)=0
       SPSET_UNION(1:NSPEC)=0
       RESET_UNION(1:NREAC)=0
       DO I=1,NELEM
-       ELEMSET_UNION(I)=1.0E0
-       SPBOLSET_UNION(I)=0.0E0
+       ELEMSET_UNION(I)=ONE
+       SPBOLSET_UNION(I)=ZERO
       ENDDO
 
-      WRITE(*,*) 'LOOPING THROUGH DATASETS'       
+      WRITE(*,*) 'GOING THROUGH DATASETS'       
       WRITE(*,*) 
       DO N=1,NCASE
        WRITE(*,*) 'CASE',N
        WRITE(JCASE,'(I2.2)') N
        FLCASE=INDIR//RATE_DIR//'case_'//JCASE//'/'         
        DO I=1,NDATA
-        WRITE(*,*) 'DATASET',I
+        WRITE(*,*) ' -->DATASET',I
         WRITE(*,*) '-------------------'
-
-        !CALL READ_SPECIES_RATES_MATRIX(I,FLCASE,RATE_FL,NSPEC,NREAC,WIJ)
+        !TODO: DO NOT PASS RATEFL
         CALL READ_REACTION_RATES(I,FLCASE,REACTION_RATE_FL,NREAC,RR)
-
-        !STOP !OK
         !1=MY WAY
         !2=GRAPH SEARCH (PATH DEPENDENT)
+        !TODO: DO NOT PASS COM VARS
         CALL DRIVER_DRG(IRDMETH,NSPEC,NREAC,NTRG,INDX_TRG(1:NTRG), &
                         ETOL(1:NTRG),DELTANU(1:NREAC,1:NSPEC), &
                         RSPEC(1:NREAC,1:NSPEC),WIJ,RR, &
@@ -91,6 +85,8 @@
       ENDDO
       WRITE(*,*) '-------------------'
 
+      !TODO: WRITE AS SEPARATE ROUTINE
+      !TODO: GET BOSLIG_SPECIES UNION SET FROM REDUCED SPECIES SET
       !GET UNION SET
       SPSET_UNION(1:NSPEC)=0
       DO I=1,NTRG
