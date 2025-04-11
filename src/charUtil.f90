@@ -1,3 +1,7 @@
+      !----------------------------------------------------------------
+      !
+      !AUTHOR: Z. NIKOLAOU
+      !
       !-----------------------------------------------------------------
       LOGICAL FUNCTION IS_DOT(A)
       IMPLICIT NONE
@@ -34,9 +38,6 @@
       END FUNCTION
       !-----------------------------------------------------------------
       LOGICAL FUNCTION ISEMPTY(STRING)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !
       IMPLICIT NONE
       CHARACTER(LEN=*) STRING
        
@@ -44,10 +45,7 @@
 
       END FUNCTION
       !-----------------------------------------------------------------
-      LOGICAL FUNCTION ISCOMMENT(STRING)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !    
+      LOGICAL FUNCTION ISCOMMENT(STRING) 
       IMPLICIT NONE
       CHARACTER(LEN=*) STRING
 
@@ -57,9 +55,6 @@
       END FUNCTION
       !-----------------------------------------------------------------
       LOGICAL FUNCTION IS_STRING_PRESENT(N,STRL,STRING)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !      
       IMPLICIT NONE
       INTEGER :: N,I
       CHARACTER(LEN=*) :: STRL(N),STRING
@@ -100,11 +95,7 @@
       END
       !-----------------------------------------------------------------
       FUNCTION GET_KEY_INDEX(KEY,NL,STRL,IS)
-      !
       !GET INDEX OF (UNIQUE) KEY PRESENT IN LIST STRL
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !      
       IMPLICIT NONE
       CHARACTER(LEN=*) :: KEY,STRL(NL)
       INTEGER :: GET_KEY_INDEX,I,NL,IS
@@ -136,9 +127,6 @@
       END FUNCTION
       !-----------------------------------------------------------------
       FUNCTION GET_INDEX_FIRST_CHAR(STR)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !      
       IMPLICIT NONE
       CHARACTER(LEN=*) :: STR
       INTEGER :: GET_INDEX_FIRST_CHAR,I
@@ -153,12 +141,8 @@
       
       END FUNCTION
       !-----------------------------------------------------------------
-      SUBROUTINE GET_INDEX(STR,TXT,N,IARR,NA)
-      !         
+      SUBROUTINE GET_INDEX(STR,TXT,N,IARR,NA)         
       !GET ALL STARTING INDICES OF TXT IN STR
-      ! 
-      !AUTHOR: Z. NIKOLAOU
-      !      
       IMPLICIT NONE
       CHARACTER(LEN=*) :: STR,TXT
       INTEGER :: N,NA,IARR(N,2),IS,IP,IE,J,LT
@@ -182,9 +166,6 @@
       END
       !-----------------------------------------------------------------
       SUBROUTINE GET_SUBTEXT_LIST(STR,TXT,N,SLIST,NS)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !
       IMPLICIT NONE
       INTEGER :: N,NS,I,IAR(N,2)
       CHARACTER(LEN=*) :: STR,TXT,SLIST(N)
@@ -199,9 +180,6 @@
       END
       !-----------------------------------------------------------------
       SUBROUTINE GET_SUBTEXT_DISTINCT_LIST(STR,TXT,N,SLIST,ND)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !
       IMPLICIT NONE
       INTEGER :: N,ND,I,LTXT,NA,IAR(N,2)
       CHARACTER(LEN=*) :: STR,TXT,SLIST(N)
@@ -221,9 +199,6 @@
       END
       !-----------------------------------------------------------------
       SUBROUTINE GET_SUBTEXTP1_DISTINCT_LIST(STR,TXT,N,SLIST,ND)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !
       IMPLICIT NONE
       INTEGER :: N,ND,I,LTXT,NA,IAR(N,2)
       CHARACTER(LEN=*) :: STR,TXT,SLIST(N)
@@ -242,10 +217,7 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      FUNCTION GET_INDEX_FIRST_SPACE(STR)
-      ! 
-      !AUTHOR: Z. NIKOLAOU
-      ! 
+      FUNCTION GET_INDEX_FIRST_SPACE(STR) 
       IMPLICIT NONE
       CHARACTER(LEN=*) :: STR
       CHARACTER(LEN=*), PARAMETER :: SPACE=' '
@@ -291,9 +263,6 @@
       END FUNCTION 
       !----------------------------------------------------------------- 
       FUNCTION GET_TEXT_COUNT(STRING,TEXT)
-      !
-      ! AUTHOR: Z. NIKOLAOU     
-      !
       IMPLICIT NONE
       CHARACTER(LEN=*) :: STRING,TEXT
       INTEGER :: I,NSTR,NTXT,GET_TEXT_COUNT
@@ -311,9 +280,6 @@
       END FUNCTION
       !-----------------------------------------------------------------
       FUNCTION STR2NUM(C)
-      !
-      ! AUTHOR: Z. NIKOLAOU
-      !
       IMPLICIT NONE
       INTEGER :: LENC
       CHARACTER(LEN=*) :: C
@@ -326,9 +292,6 @@
       END FUNCTION
       !-----------------------------------------------------------------
       SUBROUTINE REMOVE_SPACES(L,STRING,LS) 
-      !
-      ! AUTHOR: Z. NIKOLAOU
-      !
       IMPLICIT NONE
       INTEGER :: L,LS,I,J
       CHARACTER(LEN=L) :: STRING,STRWRK
@@ -347,10 +310,7 @@
 
       END
       !-----------------------------------------------------------------
-      SUBROUTINE REMOVE_DUPLICATE_STRINGS(N,STRL,STRLF,NF)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !      
+      SUBROUTINE REMOVE_DUPLICATE_STRINGS(N,STRL,STRLF,NF)    
       IMPLICIT NONE
       INTEGER :: N,NF,I,J
       CHARACTER(LEN=*) :: STRL(N),STRLF(N)
@@ -369,12 +329,7 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE REPLACE_TEXT_IN_STRING(STRING,TEXT,NEWTEXT)
-      !
-      ! TODO: SOME BUG HERE NEWTEXT OVERWRITES ORIGINAL STRING IF LENGTH NOT
-      ! EQUAL TO TEXT!
-      ! AUTHOR: Z. NIKOLAOU     
-      ! 
+      SUBROUTINE REPLACE_TEXT_IN_STRING(STRING,TEXT,NEWTEXT) 
       IMPLICIT NONE
       CHARACTER(LEN=*) :: STRING,TEXT,NEWTEXT
       INTEGER :: I,NSTR,NTXT,NNEWTXT
@@ -400,9 +355,6 @@
       END SUBROUTINE
       !-----------------------------------------------------------------
       SUBROUTINE REPLACE_TEXT(STRING,TEXT,NEWTEXT,STRWRK,LWRK)
-      !
-      ! AUTHOR: Z. NIKOLAOU     
-      !
       IMPLICIT NONE
       INTEGER :: LSTR,LTXT,LTXTN,LWRK,I,IL,IR,IS,DIFF,NOCC,LENNEW
       CHARACTER(LEN=*) :: STRING,TEXT,NEWTEXT
@@ -441,10 +393,7 @@
       RETURN 
       END
       !------------------------------------------------------------------
-      SUBROUTINE SPLIT_STRING_WITH_SPACES(STRING,N,COLMS,NA)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !       
+      SUBROUTINE SPLIT_STRING_WITH_SPACES(STRING,N,COLMS,NA)      
       IMPLICIT NONE
       INTEGER :: N,NA,IS,IE,J,GET_INDEX_FIRST_CHAR, &
                  ISC,GET_INDEX_FIRST_SPACE
@@ -484,10 +433,7 @@
         
       END 
       !-----------------------------------------------------------------
-      SUBROUTINE SPLIT_STRING(STRING,SEP,N,COLMS,NA)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !      
+      SUBROUTINE SPLIT_STRING(STRING,SEP,N,COLMS,NA)     
       IMPLICIT NONE
       INTEGER :: N,NA,I,IS,IE,INEXT,ISNEW,INE,NTRIM,LSEP
       CHARACTER(LEN=*) :: STRING,SEP,COLMS(N)
@@ -522,11 +468,6 @@
       END
       !-----------------------------------------------------------------
       SUBROUTINE SEPARATE_STRING(STRING,SEP,STRLIST)
-      !
-      !AUTHOR: Z. NIKOLAOU
-      !      
-      !SEPARATES STRING WITH SINGLE SEPARATOR=SEP    
-      !    
       IMPLICIT NONE
       CHARACTER(LEN=*) :: STRING,SEP,STRLIST(2)
       INTEGER ISEPS,ISEPE

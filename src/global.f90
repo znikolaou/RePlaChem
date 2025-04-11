@@ -1,5 +1,9 @@
+      !-----------------------------------------------------------------
+      !
+      ! AUTHOR: Z. NIKOLAOU
+      !
+      !-----------------------------------------------------------------
       MODULE GLOBAL
-      
       CHARACTER(LEN=*), PARAMETER :: &
                         INDIR='./input/',   &
                         OUTDIR='./output/', &
@@ -14,10 +18,9 @@
                             NSMX=500,      &
                             NLINEMX=10000, &
                             NSFLMX=1000 
-
       DOUBLE PRECISION, PARAMETER :: ZERO=0.0E0, &
-                                     ONE=1.0E0
-      !-----------------------------------------------------------------                                     
+                                     ONE=1.0E0 
+      !                             
       INTEGER :: NELEM,NSPEC,NREAC,NSPEC_BOLSIG,NBOLS_SET,NREAC_DOLLAR
       CHARACTER(LEN=NSMX) :: ELEM(NSPMX),SPEC(NSPMX),REAC(NREMX), &
                              SPEC_BOLSIG(NSPMX), REAC_CONST(NREMX), &
@@ -34,6 +37,5 @@
       INTEGER :: RSPEC(NREMX,NSPMX)
       DOUBLE PRECISION :: NUR(NREMX,NSPMX),NUP(NREMX,NSPMX), &
                           DELTANU(NREMX,NSPMX),SPEC_CHARGE(NSPMX)
-      !-----------------------------------------------------------------            
-
       END MODULE GLOBAL
+      !-----------------------------------------------------------------

@@ -1,4 +1,8 @@
       !-----------------------------------------------------------------
+      !
+      ! AUTHOR: Z. NIKOLAOU
+      !
+      !-----------------------------------------------------------------
       MODULE CHEM_PARSE
       USE GLOBAL
       IMPLICIT NONE
@@ -478,10 +482,7 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE CM_SET_REAC_F()
-      !
-      ! AUTHOR: Z. NIKOLAOU  
-      !  
+      SUBROUTINE CM_SET_REAC_F() 
       IMPLICIT NONE
       INTEGER :: I
       CHARACTER(LEN=NSMX) :: C,CWRK

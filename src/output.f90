@@ -1,9 +1,12 @@
+      !-----------------------------------------------------------------
+      !
+      ! AUTHOR: Z. NIKOLAOU
+      !
+      !-----------------------------------------------------------------
       SUBROUTINE OUTPUT(NSPEC,NREAC,SETSP,SETRE,CSPNM,CSPNMF, &
                         CRENMF,FLSP_KPP,FLRE_KPP)
-!
       USE GLOBAL, ONLY :NSMX
       IMPLICIT NONE 
-!
       INTEGER :: I,J,K,INDX,NSPEC,NREAC,LS
       INTEGER :: SETSP(NSPEC),SETRE(NREAC)
       CHARACTER(LEN=*) :: CSPNM(NSPEC),CSPNMF(NSPEC),CRENMF(NREAC), &
@@ -14,7 +17,6 @@
       CHARACTER(LEN=10) :: TIME
       CHARACTER(LEN=5)  :: ZONE
 
-!     
       CALL DATETIME(DATE,TIME,ZONE)
 
       NSPEC_SKEL=SUM(SETSP)  
@@ -89,7 +91,7 @@
       WRITE(1,'(A)') '//' 
       CLOSE(1)
 
-      END SUBROUTINE
+      END
       !-----------------------------------------------------------------
       SUBROUTINE WRITE_CHEM_MECH_FMT_ZDP(DIR,FLSKEL,NELEM,NSPEC, &
                                          NREAC,ELEM,SPEC,REAC, &

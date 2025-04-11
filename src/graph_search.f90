@@ -1,53 +1,24 @@
+      !-----------------------------------------------------------------
+      !
+      ! AUTHOR: Z. NIKOLAOU
+      ! 
+      !-----------------------------------------------------------------
       MODULE GRAPH_SEARCH
-!-----------------------------------------------------------------------
-!     
-!     This file is part of <REDCHEM_v0.0>
-!     Copyright (C) <2018>  <Zacharias M. Nikolaou>
-!
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
-!     the Free Software Foundation, either version 3 of the License, or
-!     (at your option) any later version.
-!
-!     This program is distributed in the hope that it will be useful,
-!     but WITHOUT ANY WARRANTY; without even the implied warranty of
-!     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!     GNU General Public License for more details.
-!
-!     You should have received a copy of the GNU General Public License
-!     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-!
-!     Contact details: ZachariasMNic@gmail.com
-!
-!-----------------------------------------------------------------------
-      !
       IMPLICIT NONE
-      !
+     
       CONTAINS
-      !
+      !-----------------------------------------------------------------
       SUBROUTINE GRPH_DIJKSTRA(NODES,WEIGHTS,NEIGHBS,N_NEIGHBS,TARG,PIC)
       IMPLICIT NONE
-      !
-      !AUTHOR: Z.M. NIKOLAOU
-      !
-      !DESCRIPTION: PERFORMS GRAPH SEARCH USING DIJKSTRA'S ALGORITHM
+      ! PERFORMS GRAPH SEARCH USING DIJKSTRA'S ALGORITHM
       !             ->MODIFIED VERSION FOR CHEMISTRY APPLICATIONS.
       !
-      !REFERENCES: 
-      ! E. Dijkstra. Numer. Math. 1 (1959) 261–271.
-      ! T. Lu, C. Law. Proc. Combust. Inst. 30 (2005) 1333-1341.
-      ! K. Niemeyer, C. Sung., M. Raju. Combust. Flame 157 (2010) 1760-1770.
-      ! P. Desjardins, H. Pitsch. Combust. Flame 154 (2008) 67-81. 
+      ! REFERENCES: 
+      !  E. Dijkstra. Numer. Math. 1 (1959) 261–271.
+      !  T. Lu, C. Law. Proc. Combust. Inst. 30 (2005) 1333-1341.
+      !  K. Niemeyer, C. Sung., M. Raju. Combust. Flame 157 (2010) 1760-1770.
+      !  P. Desjardins, H. Pitsch. Combust. Flame 154 (2008) 67-81. 
       !
-      !INPUT:
-      !        NODES                  ~NO OF SPECIES 
-      !        WEIGHTS(NODES,NODES)   ~WIJ I->J
-      !        NEIGHBS(NODES,NODES)   ~I->J,I->K,I->L ETC.
-      !        N_NEIGHBS(NODES)       ~NO OF NEIGHBS FOR EACH NODE
-      !        TARG                   ~TARGET NODE INDEX
-      !OUTPUT:
-      !        PIC(NODES)             ~MAX PATH INTERACTION COEFF. FOR TRG NODE
-      ! 
       INTEGER :: I,J,K,N,NODES,II,KK
       INTEGER :: NEIGHBS(NODES,NODES),N_NEIGHBS(NODES),TARG,IARR(NODES)
       DOUBLE PRECISION :: WEIGHTS(NODES,NODES),PIC(NODES),MXVL
@@ -107,7 +78,7 @@
 
       RETURN
 
-      END SUBROUTINE
+      END 
       !-----------------------------------------------------------------
-      !
       END MODULE GRAPH_SEARCH
+      !-----------------------------------------------------------------

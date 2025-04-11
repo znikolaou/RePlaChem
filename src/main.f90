@@ -1,35 +1,9 @@
-      PROGRAM MAIN_REDCHEM
-!
-!     <REDCHEM_v0.0>
-! 
-!     AUTHOR: Z. NIKOLAOU
-!
-!     DESCRIPTION: PRODUCES SKELETAL CHEMISTRY FOR KPP-STYLE
-!                  CHEMICAL MECHANISMS.
-!
-!     INPUT: AS BELOW.
-!
-!-----------------------------------------------------------------------
-!     
-!     <REDCHEM_v0.0>
-!     Copyright (C) <2018>  <Zacharias M. Nikolaou>
-!
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
-!     the Free Software Foundation, either version 3 of the License, or
-!     (at your option) any later version.
-!
-!     This program is distributed in the hope that it will be useful,
-!     but WITHOUT ANY WARRANTY; without even the implied warranty of
-!     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!     GNU General Public License for more details.
-!
-!     You should have received a copy of the GNU General Public License
-!     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-!
-!     Contact details: ZachariasMNic@gmail.com
-!
-!----------------------------------------------------------------------- 
+      !-----------------------------------------------------------------
+      !
+      ! AUTHOR: Z. NIKOLAOU
+      !
+      !-----------------------------------------------------------------
+      PROGRAM MAIN_REDCHEM        
       USE GLOBAL, ONLY: INDIR,OUTDIR,RATE_FL,CONTROL_FL,NSMX,NSFLMX, &
                         NSPMX,NREMX,NSPEC,NREAC,SPEC,REAC,RSPEC, &
                         DELTANU,RATE_DIR,REACTION_RATE_FL,CHEMRED_FL, &

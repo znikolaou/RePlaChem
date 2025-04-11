@@ -1,55 +1,13 @@
+      !-----------------------------------------------------------------
+      !
+      ! AUTHOR: Z. NIKOLAOU
+      !
+      !-----------------------------------------------------------------
       SUBROUTINE DRIVER_DRG(ISEARCH,NSPEC,NREAC,NTRG,INDX_TRG,ETOL, &
                             DNU,IDB,WKJ,RR,JIJW, &
                             LEN_CSP,LEN_CRE,CSPECNM,CREACNM,SET_TRG)        
-!
-!     AUTHOR: ZACHARIAS M. NIKOLAOU
-! 
-!     DESCRIPTION: DRIVER SUBROUTINE FOR DRG. 
-!
-!     INPUT:
-!     ISEARCH          ~SEARCH METHOD
-!     NSPEC            ~NUMBER OF SPECIES
-!     NREAC            ~NUMBER OF REACTIONS
-!     NTRG             ~NUMBER OF TARGET SPECIES
-!     INDX_TRG(NSPEC)  ~TARGET SPECIES INDICES
-!     ETOL(NTRG)       ~THRESHOLD DRG ERROR
-!     DNU(NSPEC,NREAC) ~DIFFERENCE IN STOICH. COEFFS. (NUP-NUR)
-!     IDB(NREAC,NSPEC) ~1 IF SPEC IN REACTION, O OTHERWISE (NOT USED)
-!     WKJ              ~SPECIES J RATE FROM REACTION K
-!     RR(NREAC)        ~REACTION RATE
-!     JIJW(NSPEC,NSPEC)~JACOBIAN DEFINED DIC
-!     LEN_CSP          ~LENGTH OF SPECIES STRING NAMES
-!     LEN_CRE          ~LENGTH OF REACTION STRING NAMES  
-!     CSPECNM(NSPEC)   ~SPECIES NAMES
-!     CREACNM(NREAC)   ~REACTION NAMES
-!
-!     OUTPUT:
-!     SET_TRG(NSPEC)   ~TARGET SPECIES SET
-! 
-!-----------------------------------------------------------------------
-!
-!     This file is part of <REDCHEM_v0.0>     
-!     Copyright (C) <2018>  <Zacharias M. Nikolaou>
-!
-!     This program is free software: you can redistribute it and/or modify
-!     it under the terms of the GNU General Public License as published by
-!     the Free Software Foundation, either version 3 of the License, or
-!     (at your option) any later version.
-!
-!     This program is distributed in the hope that it will be useful,
-!     but WITHOUT ANY WARRANTY; without even the implied warranty of
-!     MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-!     GNU General Public License for more details.
-!
-!     You should have received a copy of the GNU General Public License
-!     along with this program.  If not, see <https://www.gnu.org/licenses/>.
-!
-!     Contact details: ZachariasMNic@gmail.com
-!
-!-----------------------------------------------------------------------
       USE GRAPH_SEARCH
       IMPLICIT NONE
-!
       INTEGER :: ISEARCH,NSPEC,NREAC,NTRG,INDX_TRG(NTRG), &
                  LEN_CSP,LEN_CRE,IDB(NREAC,NSPEC), &
                  SETA(NSPEC),SET_TRG(NTRG,NSPEC)      
@@ -57,12 +15,10 @@
       CHARACTER(LEN=LEN_CRE) :: CREACNM(NREAC)
       DOUBLE PRECISION :: ETOL(NTRG),WKJ(NREAC,NSPEC),RR(NREAC), &
                           DNU(NSPEC,NREAC),JIJW(NSPEC,NSPEC),MXVL
-      !
       INTEGER :: I,J,K,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC)   
       DOUBLE PRECISION :: DIC(NSPEC,NSPEC),DIC_PATH(NTRG,NSPEC), &
                           SRT_DIC(NSPEC)
-      !
-!
+  
       WRITE(*,*) 'DRIVER_DRG'
       WRITE(*,*) '----------'
       WRITE(*,*) 'TARGET SPECIES INDEX, NAME:'
@@ -126,8 +82,6 @@
                                                     !DIC(NSPEC,NSPEC)
                                                     !NEIGHB(NSPEC,NSPEC)
                                                     !N_NEIGHB(NSPEC)
-      !-----------------------------------------------------------------
- 
       !GET TARGET SPEC SET
       IF(ISEARCH.EQ.1) THEN !MY WAY
 
@@ -187,8 +141,6 @@
        
       ENDIF
                                                     !SET_TRG(NTRG,NSPEC)
-      !-----------------------------------------------------------------
-
       !OUTPUT SETS
       !DO I=1,NTRG             
       ! WRITE(*,'(A,X,A,X,I5)') 'SET SIZE FOR TARGET ', &
@@ -204,38 +156,14 @@
       WRITE(*,*) 'EXITING DRIVER DRG'
       WRITE(*,*) '------------------'
             
-      END SUBROUTINE
-!-----------------------------------------------------------------------
-!
+      END
+      !-----------------------------------------------------------------
       SUBROUTINE GET_RIJ(NSPEC,NREAC,WKI,IDB,RIJ)
-!
-!     AUTHOR: ZACHARIAS M. NIKOLAOU
-!
-!     DESCRIPTION:  
-!     CALCULATES ALL SPECIES INTER-DEPENDENCIES RIJ
-!     RIJ=SUM_K |DELTA_{JK}*W_{KI}| / SUM_K |W_KI|
-!
-!     INPUT: 
-!     NSPEC           ~TOTAL NUMBER OF SPECIES
-!     NREAC           ~TOTAL NUMBER OF REACTIONS
-!     WKI(NREAC,NSPEC) ~SPECIES I RATE IN REACTION K
-!     IDB(NREAC,NSPEC)    ~INDEX:
-!                         ~1=SPECIES IN REACTION K
-!                         ~0=SPECIES NOT IN REACTION K
-!
-!     OUTPUT:            
-!     RIJ(NSPEC,NSPEC)
-! 
       IMPLICIT NONE
-      INTEGER :: NSPEC,NREAC,IDB(NREAC,NSPEC)
-      DOUBLE PRECISION :: WKI(NREAC,NSPEC)
-      !
-      INTEGER :: I,J,K
-      DOUBLE PRECISION :: RIJ(NSPEC,NSPEC),FT,FB,ETHR
+      INTEGER :: NSPEC,NREAC,IDB(NREAC,NSPEC),I,J,K
+      DOUBLE PRECISION :: WKI(NREAC,NSPEC),RIJ(NSPEC,NSPEC),FT,FB,ETHR
       PARAMETER(ETHR=1.0E-20)
-!
-!
-      !INITIALISE
+
       DO J=1,NSPEC
        DO I=1,NSPEC
         RIJ(I,J)=0.0E0
@@ -258,41 +186,20 @@
          !WRITE(*,*) J,RIJ(J,1:NSPEC)
        ENDDO
       ENDDO
-!      
-      END SUBROUTINE
-!-----------------------------------------------------------------------
-!
+      
+      END
+      !-----------------------------------------------------------------
       SUBROUTINE GET_DICEP(NSPEC,NREAC,RR,DELTANU,WIKMATRIX,CSPECNM, &
                            CREACNM,DIC,NEIGHB,N_NEIGHB)
-!
-!     AUTHOR: ZACHARIAS M. NIKOLAOU
-!
-!     DESCRIPTION:  
-!     CALCULATES ALL SPECIES INTER-DEPENDENCIES RIJ
-!     DIJ=SUM_K |DELTA_{JK}*W_{KI}| / MAX(|PI|,|DI|)
-!
-!     INPUT: 
-!     NSPEC                ~TOTAL NUMBER OF SPECIES
-!     NREAC                ~TOTAL NUMBER OF REACTIONS
-!     RR(NREAC)            ~REACTION RATE
-!     DELTANU(NREAC,NSPEC) 
-!
-!     OUTPUT:            
-!     DIC(NSPEC,NSPEC)    ~DIC
-!     NEIGHB(NSPEC,NSPEC) ~NEIGHBOURS LIST
-!     N_NEIGHB(NSPEC)     ~NO OF NEIGHBOURS 
-! 
       IMPLICIT NONE
-      INTEGER :: NSPEC,NREAC,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC)
+      INTEGER :: NSPEC,NREAC,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC),I,J,K,N
       CHARACTER(LEN=*) :: CSPECNM(NSPEC)
       CHARACTER(LEN=*) :: CREACNM(NREAC)
       DOUBLE PRECISION :: DELTANU(NSPEC,NREAC),RR(NREAC), &
-                          WIKMATRIX(NREAC,NSPEC),DIC(NSPEC,NSPEC)
+                          WIKMATRIX(NREAC,NSPEC),DIC(NSPEC,NSPEC), &
+                          FT,DTRM,PTRM,MXVL,WIK,FTT
 
-      !
       LOGICAL :: RIJ_FLAG(NSPEC,NSPEC)
-      INTEGER :: I,J,K,N
-      DOUBLE PRECISION :: FT,DTRM,PTRM,MXVL,WIK,FTT
 
       !INITIALISE
       RIJ_FLAG(:,:)=.FALSE.
@@ -314,7 +221,6 @@
          DO K=1,NREAC                                 
           IF( ABS(DELTANU(I,K)).NE.0.0 ) THEN !SPEC I IN REAC K
 
-           !WIK=WIKMATRIX(K,I)
            WIK=DELTANU(I,K)*RR(K)
            
            DTRM=DTRM+MAX(-WIK,0.0E0)
@@ -372,34 +278,16 @@
 
        ENDDO
       ENDDO
-!      
-      END SUBROUTINE
-!-----------------------------------------------------------------------
-!
+      
+      END
+      !-----------------------------------------------------------------
       SUBROUTINE GET_SETA(ITRG,NSPEC,ETOL,RAB,LEN_CSP,CSPECNM,SETA)
-!
-!     AUTHOR: ZACHARIAS M. NIKOLAOU
-!       
-!     DESCRIPTION:
-!     SEARCHES THROUGH DEPENENCY MATRIX TO FORM THE DRG
-!
-!     INPUT:
-!     ITRG  ~TARGET SPECIES INDEX
-!     NSPEC ~NO OF SPECIES
-!     ETOL  ~DRG ERROR
-!     RAB   ~DEPENDENCE INDICATOR A -> B
-!     LEN_CSP ~LENGTH OF SPECIES STRING
-!     CSPECNM ~SPECIES NAMES
-!     OUTPUT:
-!
       IMPLICIT NONE
-!
-      INTEGER :: ITRG,NSPEC,LEN_CSP
+      INTEGER :: ITRG,NSPEC,LEN_CSP,I,J,K,DIFF,SETA(NSPEC), &
+                 SET_TRG(NSPEC),SET_TRGO(NSPEC)
       CHARACTER(LEN=LEN_CSP), DIMENSION(NSPEC) :: CSPECNM
       DOUBLE PRECISION :: ETOL,RAB(NSPEC,NSPEC)
-! 
-      INTEGER :: I,J,K,DIFF,SETA(NSPEC),SET_TRG(NSPEC),SET_TRGO(NSPEC)
-!
+
       SETA(1:NSPEC)=0
       SET_TRG(1:NSPEC)=0
       SET_TRG(ITRG)=1 
@@ -452,29 +340,14 @@
       ! IF(SETA(I).EQ.1) WRITE(*,*) CSPECNM(I)
       !ENDDO              
       
-      END SUBROUTINE
-!-----------------------------------------------------------------------
-!
+      END
+      !-----------------------------------------------------------------
       SUBROUTINE GET_SETS(NSPEC,NREAC,IDB,ISP_SET,ISP_SET_UPD, &
                           IRE_SET_UPD)      
-!
-!     AUTHOR: ZACHARIAS M. NIKOLAOU
-!
-!     DESCRIPTION: 
-!     UPDATES SPECIES AND REACTION SETS GIVEN THE SETS OF IMPORTANT
-!     SPECIES AND REACTIONS FOR EVERY SAMPLE POINT.
-!
-!     INPUT: 
-!     NSPEC ~NO OF SPECIES
-!     NREAC ~NO OF REACTIONS
-!     IDB(NSPEC,NSPEC) ~ 1 IF SPEC IN REAC, 0 OTHERWISE
-!     ISP_SET(NSPEC) ~DEPEDENT SPEC SET
-!
-      IMPLICIT NONE
-! 
-      INTEGER :: NSPEC,NREAC,IDB(NREAC,NSPEC)
-      INTEGER :: I,J,ISP_SET(NSPEC),IRE_SET(NREAC)
-      INTEGER :: ISP_SET_UPD(NSPEC),IRE_SET_UPD(NREAC),IWRK,NRSPEC
+      IMPLICIT NONE 
+      INTEGER :: NSPEC,NREAC,IDB(NREAC,NSPEC),I,J,ISP_SET(NSPEC), &
+                 IRE_SET(NREAC),ISP_SET_UPD(NSPEC), &
+                 IRE_SET_UPD(NREAC),IWRK,NRSPEC
       
       !*SPECIES AND REACTION ARRAYS ZEROED IN MAIN FUNCTION 
 
@@ -497,5 +370,5 @@
        IF(IWRK.EQ.NRSPEC) IRE_SET_UPD(J)=1
       ENDDO
          
-!
-      END SUBROUTINE
+      END
+      !-----------------------------------------------------------------
