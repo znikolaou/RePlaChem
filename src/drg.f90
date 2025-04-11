@@ -28,16 +28,12 @@
       
       SET_TRG(:,:)=0
 
+      IF(ISEARCH.EQ.1) THEN !DIC-DRG
 
-      IF(ISEARCH.EQ.1) THEN
-
-       !DIC-DRG
        CALL GET_RIJ(NSPEC,NREAC,WKJ,IDB,DIC)
 
-      ELSEIF(ISEARCH.EQ.2) THEN
+      ELSEIF(ISEARCH.EQ.2) THEN !DIC-DRGEP 
 
-       !DIC-DRGEP 
-       WRITE(*,*) 'TEST FOR ISEARCH 2'
        CALL GET_DICEP(NSPEC,NREAC,RR,DNU,WKJ,CSPECNM,CREACNM, &
                       DIC,NEIGHB,N_NEIGHB)   
               
@@ -83,9 +79,9 @@
                                                     !NEIGHB(NSPEC,NSPEC)
                                                     !N_NEIGHB(NSPEC)
       !GET TARGET SPEC SET
-      IF(ISEARCH.EQ.1) THEN !MY WAY
+      IF(ISEARCH.EQ.1) THEN 
 
-       WRITE(*,*) 'SEARCHING...MY WAY'
+       WRITE(*,*) 'SEARCHING...'
        DO I=1,NTRG
         CALL GET_SETA(INDX_TRG(I),NSPEC,ETOL(I),DIC,LEN_CSP, &
                       CSPECNM,SETA) 
@@ -93,9 +89,9 @@
         SET_TRG(I,INDX_TRG(I))=1
        ENDDO
 
-      ELSEIF(ISEARCH.EQ.2.OR.ISEARCH.EQ.3) THEN !GRAPH SEARCH
+      ELSEIF(ISEARCH.EQ.2.OR.ISEARCH.EQ.3) THEN
 
-       WRITE(*,*) 'SEARCHING...GRAPH SEARCH'            
+       WRITE(*,*) 'SEARCHING... (GRAPH SEARCH)'            
        DO I=1,NTRG
         CALL GRPH_DIJKSTRA(NSPEC,DIC,NEIGHB,N_NEIGHB,INDX_TRG(I), &
                          DIC_PATH(I,:)) !STRONGEST PATH FOUND (MAXIMUM PRODUCT OF DICs)
@@ -116,11 +112,8 @@
                            DIC_PATH(I,J)
          ENDIF
         ENDDO 
-        WRITE(*,*)
-        ! 
-        ! 
-        !SORT OVERALL DICs FOR EACH TARGET
-        
+       
+        !SORT OVERALL DICs FOR EACH TARGET     
         CALL SORT(NSPEC,LEN_CSP,DIC_PATH(I,:),CSPECNM,SRT_DIC, &
                   SRT_SPECNM)
         WRITE(*,*) 'SORTED OICs'
