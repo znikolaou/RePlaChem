@@ -317,7 +317,6 @@
       IMPLICIT NONE
       INTEGER :: LENC
       CHARACTER(LEN=*) :: C
-      !REAL(KIND=DBL_P) :: CHAR2R
       REAL :: STR2NUM,A
 
       READ(C,'(G12.5)') A

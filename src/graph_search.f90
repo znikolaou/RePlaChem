@@ -21,8 +21,6 @@
 !
 !-----------------------------------------------------------------------
       !
-      USE PRECIS, ONLY : DBL_P
-      !
       IMPLICIT NONE
       !
       CONTAINS
@@ -52,7 +50,7 @@
       ! 
       INTEGER :: I,J,K,N,NODES,II,KK
       INTEGER :: NEIGHBS(NODES,NODES),N_NEIGHBS(NODES),TARG,IARR(NODES)
-      REAL(KIND=DBL_P) :: WEIGHTS(NODES,NODES),PIC(NODES),MXVL
+      DOUBLE PRECISION :: WEIGHTS(NODES,NODES),PIC(NODES),MXVL
       !
       IF(NODES.LE.0) THEN
        WRITE(*,*) ' '
