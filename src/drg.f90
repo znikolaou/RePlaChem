@@ -3,12 +3,12 @@
       ! AUTHOR: Z. NIKOLAOU
       !
       !-----------------------------------------------------------------
-      SUBROUTINE DRIVER_DRG(ISEARCH,NSPEC,NREAC,NTRG,INDX_TRG,ETOL, &
+      SUBROUTINE DRIVER_DRG(NSPEC,NREAC,NTRG,INDX_TRG,ETOL, &
                             DNU,IDB,WKJ,RR,JIJW, &
                             LEN_CSP,LEN_CRE,CSPECNM,CREACNM,SET_TRG)        
       USE GRAPH_SEARCH
       IMPLICIT NONE
-      INTEGER :: ISEARCH,NSPEC,NREAC,NTRG,INDX_TRG(NTRG), &
+      INTEGER :: NSPEC,NREAC,NTRG,INDX_TRG(NTRG), &
                  LEN_CSP,LEN_CRE,IDB(NREAC,NSPEC), &
                  SETA(NSPEC),SET_TRG(NTRG,NSPEC)      
       CHARACTER(LEN=LEN_CSP) :: CSPECNM(NSPEC),SRT_SPECNM(NSPEC)
@@ -19,83 +19,41 @@
       DOUBLE PRECISION :: DIC(NSPEC,NSPEC),DIC_PATH(NTRG,NSPEC), &
                           SRT_DIC(NSPEC)
   
-      WRITE(*,*) 'DRIVER_DRG'
-      WRITE(*,*) '----------'
-      WRITE(*,*) 'TARGET SPECIES INDEX, NAME:'
-      DO I=1,NTRG
-       WRITE(*,*) I,INDX_TRG(I),TRIM(ADJUSTL(CSPECNM(INDX_TRG(I))))
+      WRITE(*,*)
+      WRITE(*,*) '***DRIVER_DRG***'
+      WRITE(*,*) 
+
+      SET_TRG(1:NTRG,1:NSPEC)=0
+      CALL GET_DICEP(NSPEC,NREAC,RR,DNU,WKJ,CSPECNM,CREACNM,DIC, &
+                     NEIGHB,N_NEIGHB)       
+      WRITE(*,*) 'DICs:'
+      DO J=1,NSPEC
+       WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),N_NEIGHB(J)
+        DO I=1,N_NEIGHB(J)
+         WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),'->', &
+                    TRIM(ADJUSTL(CSPECNM(NEIGHB(J,I)))), &
+                    DIC(J,NEIGHB(J,I))
+        ENDDO
       ENDDO
-      
-      SET_TRG(:,:)=0
 
-      IF(ISEARCH.EQ.1) THEN !DIC-DRG
+      WRITE(*,*) 'SEARCHING FOR STRONGEST PATH ...'
 
-       CALL GET_RIJ(NSPEC,NREAC,WKJ,IDB,DIC)
+      !IF(ISEARCH.EQ.1) THEN
+      !
+      ! DO I=1,NTRG
+      !  CALL GET_SETA(INDX_TRG(I),NSPEC,ETOL(I),DIC,LEN_CSP, &
+      !                CSPECNM,SETA) 
+      !  SET_TRG(I,:)=SETA(:)
+      !  SET_TRG(I,INDX_TRG(I))=1
+      ! ENDDO
+      !
+      !ELSEIF(ISEARCH.EQ.2.OR.ISEARCH.EQ.3) THEN !GRAPH SEARCH
 
-      ELSEIF(ISEARCH.EQ.2) THEN !DIC-DRGEP 
-
-       CALL GET_DICEP(NSPEC,NREAC,RR,DNU,WKJ,CSPECNM,CREACNM, &
-                      DIC,NEIGHB,N_NEIGHB)   
-              
-       WRITE(*,*) 'DICs:'
-       DO J=1,NSPEC
-        WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),N_NEIGHB(J)
-        DO I=1,N_NEIGHB(J)
-         WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),'->', &
-                    TRIM(ADJUSTL(CSPECNM(NEIGHB(J,I)))), &
-                    DIC(J,NEIGHB(J,I))
-        ENDDO
-       ENDDO
-
-      ELSEIF(ISEARCH.EQ.3) THEN !JACOBIAN-BASED DICs
-        
-       CALL GET_DICEP(NSPEC,NREAC,RR,DNU,WKJ,CSPECNM,CREACNM, &
-                      DIC,NEIGHB,N_NEIGHB) !ONLY NEIGH,N_NEIGH USED      
-
-       !OVER-WRITE DICs
-       DIC(:,:)=0.0D0
-       DO I=1,NSPEC
-        MXVL=MAXVAL(ABS(JIJW(I,:)))
-        IF(MXVL.NE.0.0) THEN
-         DIC(I,:)=ABS(JIJW(I,:))/MXVL
-        ELSE
-         DIC(I,:)=0.0D0
-        ENDIF         
-       ENDDO
-
-       WRITE(*,*) 'DICs:'
-       DO J=1,NSPEC
-        WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),N_NEIGHB(J)
-        DO I=1,N_NEIGHB(J)
-         WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),'->', &
-                    TRIM(ADJUSTL(CSPECNM(NEIGHB(J,I)))), &
-                    DIC(J,NEIGHB(J,I))
-        ENDDO
-       ENDDO
-
-      ENDIF
-
-                                                    !DIC(NSPEC,NSPEC)
-                                                    !NEIGHB(NSPEC,NSPEC)
-                                                    !N_NEIGHB(NSPEC)
-      !GET TARGET SPEC SET
-      IF(ISEARCH.EQ.1) THEN 
-
-       WRITE(*,*) 'SEARCHING...'
-       DO I=1,NTRG
-        CALL GET_SETA(INDX_TRG(I),NSPEC,ETOL(I),DIC,LEN_CSP, &
-                      CSPECNM,SETA) 
-        SET_TRG(I,:)=SETA(:)
-        SET_TRG(I,INDX_TRG(I))=1
-       ENDDO
-
-      ELSEIF(ISEARCH.EQ.2.OR.ISEARCH.EQ.3) THEN
-
-       WRITE(*,*) 'SEARCHING... (GRAPH SEARCH)'            
-       DO I=1,NTRG
-        CALL GRPH_DIJKSTRA(NSPEC,DIC,NEIGHB,N_NEIGHB,INDX_TRG(I), &
+      DO I=1,NTRG
+       CALL GRPH_DIJKSTRA(NSPEC,DIC,NEIGHB,N_NEIGHB,INDX_TRG(I), &
                          DIC_PATH(I,:)) !STRONGEST PATH FOUND (MAXIMUM PRODUCT OF DICs)
           
+        !TODO: WRITE AS SEPARATE ROUTINE         
         DO J=1,NSPEC
          IF(DIC_PATH(I,J).GT.ETOL(I)) THEN
           SET_TRG(I,J)=1
@@ -104,11 +62,13 @@
          ENDIF
          SET_TRG(I,INDX_TRG(I))=1
         ENDDO         
-        WRITE(*,*) 'TARGET=',TRIM(ADJUSTL(CSPECNM(INDX_TRG(I)))),',', &
+
+        WRITE(*,*) 'STRONGEST PATH FOUND, TARGET: ', &
+                   TRIM(ADJUSTL(CSPECNM(INDX_TRG(I)))),',', &
                    'NO OF CONNECTIONS=',SUM(SET_TRG(I,:))         
         DO J=1,NSPEC
          IF(SET_TRG(I,J).EQ.1) THEN
-          WRITE(*,*) '->',TRIM(ADJUSTL(CSPECNM(J))), &
+          WRITE(*,*) ' ->',TRIM(ADJUSTL(CSPECNM(J))), &
                            DIC_PATH(I,J)
          ENDIF
         ENDDO 
@@ -116,23 +76,14 @@
         !SORT OVERALL DICs FOR EACH TARGET     
         CALL SORT(NSPEC,LEN_CSP,DIC_PATH(I,:),CSPECNM,SRT_DIC, &
                   SRT_SPECNM)
+
         WRITE(*,*) 'SORTED OICs'
         DO J=1,NSPEC
-         WRITE(*,'(A,G12.5)') TRIM(ADJUSTL(SRT_SPECNM(J))), &
-                                SRT_DIC(J)
+         WRITE(*,*) TRIM(ADJUSTL(SRT_SPECNM(J))),SRT_DIC(J)
         ENDDO
 
-        !DO J=1,N_NEIGHB(INDX_TRG(I))
-        ! WRITE(*,*) J,'->', &
-        !              TRIM(ADJUSTL(CSPECNM(NEIGHB(INDX_TRG(I),J)))), &
-        !              DIC_PATH(I,NEIGHB(INDX_TRG(I),J)), &
-        !              DIC(INDX_TRG(I),NEIGHB(INDX_TRG(I),J)), &
-        !              SET_TRG(I,NEIGHB(INDX_TRG(I),J))
-        !ENDDO
-        
-       ENDDO 
+      ENDDO !FOR TARGET SPECIES 
        
-      ENDIF
                                                     !SET_TRG(NTRG,NSPEC)
       !OUTPUT SETS
       !DO I=1,NTRG             
@@ -146,8 +97,7 @@
       ! WRITE(*,*) '--------------------------'
       !ENDDO
  
-      WRITE(*,*) 'EXITING DRIVER DRG'
-      WRITE(*,*) '------------------'
+      WRITE(*,*) '***DRIVER DRG***'
             
       END
       !-----------------------------------------------------------------
@@ -335,6 +285,7 @@
       
       END
       !-----------------------------------------------------------------
+      !TODO: UNUSED (REMOVE?)
       SUBROUTINE GET_SETS(NSPEC,NREAC,IDB,ISP_SET,ISP_SET_UPD, &
                           IRE_SET_UPD)      
       IMPLICIT NONE 
