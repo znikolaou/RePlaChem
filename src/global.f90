@@ -11,7 +11,7 @@
                         CONTROL_FL='control.txt',      &
                         CHEMRED_FL='reducedChemistry.txt', &
                         RATE_FL='speciesMeanRatesMatrix.dat', &
-                        REACTION_RATE_FL='reactionRates'
+                        REAC_RATE_FL='reactionRates'
 
       INTEGER, PARAMETER :: NREMX=6000,    &
                             NSPMX=300,     &
