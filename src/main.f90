@@ -59,7 +59,7 @@
         CALL DRIVER_DRG(NSPEC,NREAC,NTRG,INDX_TRG(1:NTRG), &
                         ETOL(1:NTRG),DELTANU(1:NREAC,1:NSPEC), &
                         RSPEC(1:NREAC,1:NSPEC),WIJ,RR, &
-                        JIJW,NSMX,NSMX,SPEC,REAC,SET_TRG)  
+                        NSMX,NSMX,SPEC,REAC,SET_TRG)  
         !SAVE PICs
         !UPDATE_SETS
         DO K=1,NSPEC

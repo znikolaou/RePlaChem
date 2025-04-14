@@ -4,7 +4,7 @@
       !
       !-----------------------------------------------------------------
       SUBROUTINE DRIVER_DRG(NSPEC,NREAC,NTRG,INDX_TRG,ETOL, &
-                            DNU,IDB,WKJ,RR,JIJW, &
+                            DNU,IDB,WKJ,RR, &
                             LEN_CSP,LEN_CRE,CSPECNM,CREACNM,SET_TRG)        
       USE GRAPH_SEARCH
       IMPLICIT NONE
@@ -14,7 +14,7 @@
       CHARACTER(LEN=LEN_CSP) :: CSPECNM(NSPEC),SRT_SPECNM(NSPEC)
       CHARACTER(LEN=LEN_CRE) :: CREACNM(NREAC)
       DOUBLE PRECISION :: ETOL(NTRG),WKJ(NREAC,NSPEC),RR(NREAC), &
-                          DNU(NSPEC,NREAC),JIJW(NSPEC,NSPEC),MXVL
+                          DNU(NSPEC,NREAC),MXVL
       INTEGER :: I,J,K,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC)   
       DOUBLE PRECISION :: DIC(NSPEC,NSPEC),DIC_PATH(NTRG,NSPEC), &
                           SRT_DIC(NSPEC)
