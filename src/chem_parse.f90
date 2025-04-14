@@ -106,6 +106,17 @@
                                  TRIM(ADJUSTL(REAC_CONST(I)))
       ENDDO
 
+      WRITE(*,*) 'REACTION SPECIES'
+      WRITE(*,*) '----------------'
+      DO I=1,NREAC
+       WRITE(*,*) I,TRIM(ADJUSTL(REAC(I)))
+       DO J=1,NSPEC
+        IF(RSPEC(I,J).NE.0) THEN
+         WRITE(*,*) '   ',TRIM(ADJUSTL(SPEC(J)))
+        ENDIF
+       ENDDO
+      ENDDO
+
       WRITE(*,*) 
       WRITE(*,'(A)') 'STOICHIOMETRIC COEFFS:'
       WRITE(*,'(A)') '----------------------'

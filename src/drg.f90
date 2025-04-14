@@ -24,7 +24,7 @@
       WRITE(*,*) 
 
       SET_TRG(1:NTRG,1:NSPEC)=0
-      CALL GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DNU,CSPECNM, &
+      CALL GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DNU,IDB,CSPECNM, &
                                  CREACNM,DIC,NEIGHB,N_NEIGHB)       
       WRITE(*,*) 'DIRECT INTER. COEFFS:'
       DO J=1,NSPEC
@@ -112,11 +112,12 @@
       
       END
       !-----------------------------------------------------------------
-      SUBROUTINE GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DELTANU, &
+      SUBROUTINE GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DELTANU,IDB, &
                                         CSPECNM,CREACNM,DIC, &
                                         NEIGHB,N_NEIGHB)
       IMPLICIT NONE
-      INTEGER :: NSPEC,NREAC,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC),I,J,K,N
+      INTEGER :: NSPEC,NREAC,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC), &
+                 IDB(NREAC,NSPEC),I,J,K,N
       CHARACTER(LEN=*) :: CSPECNM(NSPEC)
       CHARACTER(LEN=*) :: CREACNM(NREAC)
       DOUBLE PRECISION :: DELTANU(NSPEC,NREAC),RR(NREAC), &
@@ -138,15 +139,15 @@
           WIK=DELTANU(I,K)*RR(K)          
           DTRM=DTRM+MAX(-WIK,ZERO)
           PTRM=PTRM+MAX(WIK,ZERO)                 
-           !TODO: CHANGE CONDITION HERE 
-           IF(ABS(DELTANU(J,K)).NE.ZERO.AND.J.NE.I) THEN !SPEC J IN REAC K 
-            FT=WIK+FT                    
-            IF(.NOT.(RIJ_FLAG(I,J))) THEN
-             RIJ_FLAG(I,J)=.TRUE.
-             N_NEIGHB(I)=N_NEIGHB(I)+1
-             NEIGHB(I,N_NEIGHB(I))=J       
-            ENDIF
-           ENDIF 
+          !IF(ABS(DELTANU(J,K)).NE.ZERO.AND.J.NE.I) THEN !SPEC J IN REAC K
+          IF(IDB(K,J).EQ.1.AND.J.NE.I) THEN                   
+           FT=WIK+FT                    
+           IF(.NOT.(RIJ_FLAG(I,J))) THEN
+            RIJ_FLAG(I,J)=.TRUE.
+            N_NEIGHB(I)=N_NEIGHB(I)+1
+            NEIGHB(I,N_NEIGHB(I))=J       
+           ENDIF
+          ENDIF 
          ENDDO !REAC
 
          FT=ABS(FT)
