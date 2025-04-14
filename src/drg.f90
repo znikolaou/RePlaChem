@@ -26,7 +26,7 @@
       SET_TRG(1:NTRG,1:NSPEC)=0
       CALL GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DNU,CSPECNM, &
                                  CREACNM,DIC,NEIGHB,N_NEIGHB)       
-      WRITE(*,*) 'DICs:'
+      WRITE(*,*) 'DIRECT INTER. COEFFS:'
       DO J=1,NSPEC
        WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),N_NEIGHB(J)
         DO I=1,N_NEIGHB(J)
@@ -121,75 +121,43 @@
       CHARACTER(LEN=*) :: CREACNM(NREAC)
       DOUBLE PRECISION :: DELTANU(NSPEC,NREAC),RR(NREAC), &
                           DIC(NSPEC,NSPEC),FT,DTRM,PTRM,MXVL,WIK,FTT
-
+      DOUBLE PRECISION, PARAMETER :: ZERO=0.0E0,ONE=1.0E0
       LOGICAL :: RIJ_FLAG(NSPEC,NSPEC)
 
-      !INITIALISE
-      RIJ_FLAG(:,:)=.FALSE.
+      RIJ_FLAG(1:NSPEC,1:NSPEC)=.FALSE.
+      N_NEIGHB(1:NSPEC)=0
+      NEIGHB(1:NSPEC,1:NSPEC)=0
+      DIC(1:NSPEC,1:NSPEC)=ZERO
+
       DO J=1,NSPEC
-       N_NEIGHB(J)=0
-       DO I=1,NSPEC
-        NEIGHB(I,J)=0
-        DIC(I,J)=0.0E0
-       ENDDO
-      ENDDO
-
-      !CALCULATE DIRECT INTERACTION COEFF (DIC_IJ)
-      DO J=1,NSPEC
-       DO I=1,NSPEC
-         DTRM=0.0E0
-         PTRM=0.0E0
-         FT=0.0E0 
-         FTT=0.0
-         DO K=1,NREAC                                 
-          IF( ABS(DELTANU(I,K)).NE.0.0 ) THEN !SPEC I IN REAC K
-
-           WIK=DELTANU(I,K)*RR(K)
-           
-           DTRM=DTRM+MAX(-WIK,0.0E0)
-           PTRM=PTRM+MAX(WIK,0.0E0)
-
-            !FTT=ABS(WIK)+FTT                    
-
-           IF( ABS(DELTANU(J,K)).NE.0.0.AND.J.NE.I ) THEN !SPEC J IN REAC K 
- 
-            IF( .NOT.(RIJ_FLAG(I,J)) ) THEN
+       DO I=1,NSPEC !TARGETS
+         DTRM=ZERO
+         PTRM=ZERO
+         FT=ZERO
+         DO K=1,NREAC    
+          WIK=DELTANU(I,K)*RR(K)          
+          DTRM=DTRM+MAX(-WIK,ZERO)
+          PTRM=PTRM+MAX(WIK,ZERO)                 
+           !TODO: CHANGE CONDITION HERE 
+           IF(ABS(DELTANU(J,K)).NE.ZERO.AND.J.NE.I) THEN !SPEC J IN REAC K 
+            FT=WIK+FT                    
+            IF(.NOT.(RIJ_FLAG(I,J))) THEN
              RIJ_FLAG(I,J)=.TRUE.
-             
              N_NEIGHB(I)=N_NEIGHB(I)+1
              NEIGHB(I,N_NEIGHB(I))=J       
             ENDIF
-
-            FT=WIK+FT                    
-
-           ENDIF !SPEC J IN REAC K 
-
-          ENDIF !SPEC I IN REAC K
-                  
-         ENDDO!REAC LOOP
+           ENDIF 
+         ENDDO !REAC
 
          FT=ABS(FT)
-
-         !CHEKSUM
-         !IF(PTRM+DTRM-FTT.GT.1.0D-6) THEN
-         ! WRITE(*,*) 'GET_DIRECT_INTER_COEFF:ERROR, CHECKSUM'
-         ! WRITE(*,*) TRIM(ADJUSTL(CSPECNM(I))),' ', &
-         !             ' ',TRIM(ADJUSTL(CSPECNM(J))), &
-         !             ' ','CHECKSUM ',(PTRM+DTRM-FTT),FTT,PTRM+DTRM
-         ! STOP
-         !ENDIF
-
-         !CALCULATE DIC
          MXVL=MAX(DTRM,PTRM)
-
-         IF(MXVL.LT.0.0) THEN
+         IF(MXVL.LT.ZERO) THEN
           WRITE(*,*) 'GET_DIRECT_INTER_COEFF:ERROR, MXVL.LT.0.0'
           STOP
          ENDIF
-
-         IF(MXVL.NE.0.0) THEN 
+         IF(MXVL.NE.ZERO) THEN 
           DIC(I,J)=FT/MXVL         
-          IF(DIC(I,J).GT.1.0D0) THEN
+          IF(DIC(I,J).GT.ONE) THEN
            WRITE(*,*) 'GET_DIRECT_INTER_COEFF:ERROR, DIC > 1.0'
            WRITE(*,*) TRIM(ADJUSTL(CSPECNM(I))),' ', &
                       ' ',TRIM(ADJUSTL(CSPECNM(J))), &
