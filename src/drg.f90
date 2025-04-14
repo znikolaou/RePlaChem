@@ -4,7 +4,7 @@
       !
       !-----------------------------------------------------------------
       SUBROUTINE DRIVER_DRG(NSPEC,NREAC,NTRG,INDX_TRG,ETOL, &
-                            DNU,IDB,WKJ,RR, &
+                            DNU,IDB,RR, &
                             LEN_CSP,LEN_CRE,CSPECNM,CREACNM,SET_TRG)        
       USE GRAPH_SEARCH
       IMPLICIT NONE
@@ -13,7 +13,7 @@
                  SETA(NSPEC),SET_TRG(NTRG,NSPEC)      
       CHARACTER(LEN=LEN_CSP) :: CSPECNM(NSPEC),SRT_SPECNM(NSPEC)
       CHARACTER(LEN=LEN_CRE) :: CREACNM(NREAC)
-      DOUBLE PRECISION :: ETOL(NTRG),WKJ(NREAC,NSPEC),RR(NREAC), &
+      DOUBLE PRECISION :: ETOL(NTRG),RR(NREAC), &
                           DNU(NSPEC,NREAC),MXVL
       INTEGER :: I,J,K,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC)   
       DOUBLE PRECISION :: DIC(NSPEC,NSPEC),DIC_PATH(NTRG,NSPEC), &
@@ -24,7 +24,7 @@
       WRITE(*,*) 
 
       SET_TRG(1:NTRG,1:NSPEC)=0
-      CALL GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DNU,WKJ,CSPECNM, &
+      CALL GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DNU,CSPECNM, &
                                  CREACNM,DIC,NEIGHB,N_NEIGHB)       
       WRITE(*,*) 'DICs:'
       DO J=1,NSPEC
@@ -113,15 +113,14 @@
       END
       !-----------------------------------------------------------------
       SUBROUTINE GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DELTANU, &
-                                        WIKMATRIX,CSPECNM,CREACNM,DIC, &
+                                        CSPECNM,CREACNM,DIC, &
                                         NEIGHB,N_NEIGHB)
       IMPLICIT NONE
       INTEGER :: NSPEC,NREAC,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC),I,J,K,N
       CHARACTER(LEN=*) :: CSPECNM(NSPEC)
       CHARACTER(LEN=*) :: CREACNM(NREAC)
       DOUBLE PRECISION :: DELTANU(NSPEC,NREAC),RR(NREAC), &
-                          WIKMATRIX(NREAC,NSPEC),DIC(NSPEC,NSPEC), &
-                          FT,DTRM,PTRM,MXVL,WIK,FTT
+                          DIC(NSPEC,NSPEC),FT,DTRM,PTRM,MXVL,WIK,FTT
 
       LOGICAL :: RIJ_FLAG(NSPEC,NSPEC)
 

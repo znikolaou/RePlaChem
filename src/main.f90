@@ -14,7 +14,7 @@
                               SPSET_TRGUP(:,:),SPSET_UNION(:), &
                               RESET_UNION(:),ELEMSET_UNION(:), &
                               SPBOLSET_UNION(:)
-      DOUBLE PRECISION, ALLOCATABLE :: WIJ(:,:),RR(:),JIJW(:,:)
+      DOUBLE PRECISION, ALLOCATABLE :: RR(:)
       DOUBLE PRECISION :: ETOL(NSPMX)
       CHARACTER(LEN=NSMX) :: COMMAND
       CHARACTER(LEN=2) :: JCASE
@@ -26,9 +26,7 @@
                         CHEMFL,SPECFL)  
       CALL CM_INIT(INDIR//CHEMFL)
       
-      ALLOCATE(WIJ(NREAC,NSPEC))
       ALLOCATE(RR(NREAC))
-      ALLOCATE(JIJW(NSPEC,NSPEC))
       ALLOCATE(SET_TRG(NTRG,NSPEC))
       ALLOCATE(SPSET_TRGUP(NTRG,NSPEC))
       ALLOCATE(SPSET_UNION(NSPEC))
@@ -36,9 +34,7 @@
       ALLOCATE(ELEMSET_UNION(NELEM))
       ALLOCATE(SPBOLSET_UNION(NSPEC))
       
-      WIJ(1:NREAC,1:NSPEC)=ZERO
       RR(1:NREAC)=ZERO
-      JIJW(1:NSPEC,1:NSPEC)=ZERO
       SPSET_TRGUP(1:NTRG,1:NSPEC)=0
       SPSET_UNION(1:NSPEC)=0
       RESET_UNION(1:NREAC)=0
@@ -58,7 +54,7 @@
         CALL READ_REACTION_RATES(I,FLCASE,NREAC,RR)
         CALL DRIVER_DRG(NSPEC,NREAC,NTRG,INDX_TRG(1:NTRG), &
                         ETOL(1:NTRG),DELTANU(1:NREAC,1:NSPEC), &
-                        RSPEC(1:NREAC,1:NSPEC),WIJ,RR, &
+                        RSPEC(1:NREAC,1:NSPEC),RR, &
                         NSMX,NSMX,SPEC,REAC,SET_TRG)  
         !SAVE PICs
         !UPDATE_SETS
@@ -207,9 +203,7 @@
       WRITE(*,*) 'RUN COMPLETED SUCCESSFULLY!'
       WRITE(*,*) '-------------------'
 
-      DEALLOCATE(WIJ)
       DEALLOCATE(RR)
-      DEALLOCATE(JIJW)
       DEALLOCATE(SET_TRG)
       DEALLOCATE(SPSET_TRGUP)
       DEALLOCATE(SPSET_UNION)
