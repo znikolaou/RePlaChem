@@ -8,7 +8,7 @@
       USE CHEM_PARSE, ONLY : CM_INIT
       IMPLICIT NONE
       LOGICAL :: IS_STRING_PRESENT
-      INTEGER :: NDATA,NCASE,NTRG,CHECK,IRDMETH,NSPEC_SKEL,NREAC_SKEL, &
+      INTEGER :: NDATA,NCASE,NTRG,CHECK,NSPEC_SKEL,NREAC_SKEL, &
                  INDX_TRG(NSPMX),I,J,K,N,IPROD
       INTEGER, ALLOCATABLE :: SET_TRG(:,:),SPSET_TRG(:,:), &
                               SPSET_TRGUP(:,:),SPSET_UNION(:), &
@@ -22,7 +22,7 @@
       
       WRITE(*,*) 'MAIN:'
 
-      CALL READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,IRDMETH,INDX_TRG,ETOL, &
+      CALL READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,INDX_TRG,ETOL, &
                         CHEMFL,SPECFL)  
       CALL CM_INIT(INDIR//CHEMFL)
       
@@ -54,12 +54,8 @@
        WRITE(JCASE,'(I2.2)') N
        FLCASE=INDIR//RATE_DIR//'case_'//JCASE//'/'         
        DO I=1,NDATA
-        WRITE(*,*) ' -->DATASET',I
-        WRITE(*,*) '-------------------'
+        WRITE(*,*) 'DATASET',I
         CALL READ_REACTION_RATES(I,FLCASE,NREAC,RR)
-        !1=MY WAY
-        !2=GRAPH SEARCH (PATH DEPENDENT)
-        !TODO: DO NOT PASS COM VARS
         CALL DRIVER_DRG(NSPEC,NREAC,NTRG,INDX_TRG(1:NTRG), &
                         ETOL(1:NTRG),DELTANU(1:NREAC,1:NSPEC), &
                         RSPEC(1:NREAC,1:NSPEC),WIJ,RR, &

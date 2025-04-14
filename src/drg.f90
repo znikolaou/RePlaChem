@@ -24,8 +24,8 @@
       WRITE(*,*) 
 
       SET_TRG(1:NTRG,1:NSPEC)=0
-      CALL GET_DICEP(NSPEC,NREAC,RR,DNU,WKJ,CSPECNM,CREACNM,DIC, &
-                     NEIGHB,N_NEIGHB)       
+      CALL GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DNU,WKJ,CSPECNM, &
+                                 CREACNM,DIC,NEIGHB,N_NEIGHB)       
       WRITE(*,*) 'DICs:'
       DO J=1,NSPEC
        WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),N_NEIGHB(J)
@@ -37,17 +37,6 @@
       ENDDO
 
       WRITE(*,*) 'SEARCHING FOR STRONGEST PATH ...'
-
-      !IF(ISEARCH.EQ.1) THEN
-      !
-      ! DO I=1,NTRG
-      !  CALL GET_SETA(INDX_TRG(I),NSPEC,ETOL(I),DIC,LEN_CSP, &
-      !                CSPECNM,SETA) 
-      !  SET_TRG(I,:)=SETA(:)
-      !  SET_TRG(I,INDX_TRG(I))=1
-      ! ENDDO
-      !
-      !ELSEIF(ISEARCH.EQ.2.OR.ISEARCH.EQ.3) THEN !GRAPH SEARCH
 
       DO I=1,NTRG
        CALL GRPH_DIJKSTRA(NSPEC,DIC,NEIGHB,N_NEIGHB,INDX_TRG(I), &
@@ -83,22 +72,13 @@
         ENDDO
 
       ENDDO !FOR TARGET SPECIES 
-       
-                                                    !SET_TRG(NTRG,NSPEC)
-      !OUTPUT SETS
-      !DO I=1,NTRG             
-      ! WRITE(*,'(A,X,A,X,I5)') 'SET SIZE FOR TARGET ', &
-      !             TRIM(ADJUSTL(CSPECNM(INDX_TRG(I)))),SUM(SET_TRG(I,:))
-      ! DO J=1,NSPEC
-      !  IF(SET_TRG(I,J).EQ.1) THEN
-      !   WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),'->',DIC_PATH(I,J)
-      !  ENDIF
-      ! ENDDO              
-      ! WRITE(*,*) '--------------------------'
-      !ENDDO
- 
-      WRITE(*,*) '***DRIVER DRG***'
             
+            !SET_TRG(NTRG,NSPEC)
+
+      WRITE(*,*) 
+      WRITE(*,*) '***DRIVER DRG***'
+      WRITE(*,*)       
+
       END
       !-----------------------------------------------------------------
       SUBROUTINE GET_RIJ(NSPEC,NREAC,WKI,IDB,RIJ)
@@ -132,8 +112,9 @@
       
       END
       !-----------------------------------------------------------------
-      SUBROUTINE GET_DICEP(NSPEC,NREAC,RR,DELTANU,WIKMATRIX,CSPECNM, &
-                           CREACNM,DIC,NEIGHB,N_NEIGHB)
+      SUBROUTINE GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DELTANU, &
+                                        WIKMATRIX,CSPECNM,CREACNM,DIC, &
+                                        NEIGHB,N_NEIGHB)
       IMPLICIT NONE
       INTEGER :: NSPEC,NREAC,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC),I,J,K,N
       CHARACTER(LEN=*) :: CSPECNM(NSPEC)
@@ -192,7 +173,7 @@
 
          !CHEKSUM
          !IF(PTRM+DTRM-FTT.GT.1.0D-6) THEN
-         ! WRITE(*,*) 'GET_DICEP:ERROR, CHECKSUM'
+         ! WRITE(*,*) 'GET_DIRECT_INTER_COEFF:ERROR, CHECKSUM'
          ! WRITE(*,*) TRIM(ADJUSTL(CSPECNM(I))),' ', &
          !             ' ',TRIM(ADJUSTL(CSPECNM(J))), &
          !             ' ','CHECKSUM ',(PTRM+DTRM-FTT),FTT,PTRM+DTRM
@@ -203,14 +184,14 @@
          MXVL=MAX(DTRM,PTRM)
 
          IF(MXVL.LT.0.0) THEN
-          WRITE(*,*) 'GET_DICEP:ERROR, MXVL.LT.0.0'
+          WRITE(*,*) 'GET_DIRECT_INTER_COEFF:ERROR, MXVL.LT.0.0'
           STOP
          ENDIF
 
          IF(MXVL.NE.0.0) THEN 
           DIC(I,J)=FT/MXVL         
           IF(DIC(I,J).GT.1.0D0) THEN
-           WRITE(*,*) 'GET_DICEP:ERROR, DIC > 1.0'
+           WRITE(*,*) 'GET_DIRECT_INTER_COEFF:ERROR, DIC > 1.0'
            WRITE(*,*) TRIM(ADJUSTL(CSPECNM(I))),' ', &
                       ' ',TRIM(ADJUSTL(CSPECNM(J))), &
                        DTRM,PTRM,MXVL,DTRM+PTRM-FT,DIC(I,J)
