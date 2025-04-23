@@ -14,7 +14,7 @@
       CHARACTER(LEN=LEN_CSP) :: CSPECNM(NSPEC),SRT_SPECNM(NSPEC)
       CHARACTER(LEN=LEN_CRE) :: CREACNM(NREAC)
       DOUBLE PRECISION :: ETOL(NTRG),RR(NREAC), &
-                          DNU(NSPEC,NREAC),MXVL
+                          DNU(NREAC,NSPEC),MXVL
       INTEGER :: I,J,K,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC)   
       DOUBLE PRECISION :: DIC(NSPEC,NSPEC),DIC_PATH(NTRG,NSPEC), &
                           SRT_DIC(NSPEC)
@@ -121,7 +121,7 @@
                  IDB(NREAC,NSPEC),I,J,K,N
       CHARACTER(LEN=*) :: CSPECNM(NSPEC)
       CHARACTER(LEN=*) :: CREACNM(NREAC)
-      DOUBLE PRECISION :: DELTANU(NSPEC,NREAC),RR(NREAC), &
+      DOUBLE PRECISION :: DELTANU(NREAC,NSPEC),RR(NREAC), &
                           DIC(NSPEC,NSPEC),FT,DTRM,PTRM,MXVL, &
                           WKI(NREAC,NSPEC),FTT
       DOUBLE PRECISION, PARAMETER :: ZERO=0.0E0,ONE=1.0E0
@@ -137,7 +137,7 @@
        DTRM=ZERO
        PTRM=ZERO
        DO K=1,NREAC    
-        WKI(K,I)=DELTANU(I,K)*RR(K)          
+        WKI(K,I)=DELTANU(K,I)*RR(K)          
         DTRM=DTRM+MAX(-WKI(K,I),ZERO)
         PTRM=PTRM+MAX(WKI(K,I),ZERO)                 
        ENDDO
@@ -146,7 +146,7 @@
        DO J=1,NSPEC
         FT=ZERO
         DO K=1,NREAC
-         !IF(ABS(DELTANU(J,K)).NE.ZERO.AND.J.NE.I) THEN !SPEC J IN REAC K
+         !IF(ABS(DELTANU(K,J)).NE.ZERO.AND.J.NE.I) THEN !SPEC J IN REAC K
          IF(IDB(K,J).EQ.1.AND.J.NE.I) THEN                   
           FT=WKI(K,I)+FT                    
           IF(.NOT.(RIJ_FLAG(I,J))) THEN

@@ -123,19 +123,16 @@
       DO I=1,NREAC
        WRITE(*,'(I5XAXAXAXA)') I,TRIM(ADJUSTL(REAC(I))), &
                                  '( '//TRIM(ADJUSTL(REAC_F(I)))//' )'
-       WRITE(*,'(XA)') 'REACTANTS:'
        DO J=1,NSPEC
-        IF(NUR(I,J).GT.0) THEN
-         WRITE(*,*) TRIM(ADJUSTL(SPEC(J))),NUR(I,J)
-        ENDIF
-       ENDDO
-       WRITE(*,'(XA)') 'PRODUCTS:'
-       DO J=1,NSPEC
-        IF(NUP(I,J).GT.0) THEN
-         WRITE(*,*) TRIM(ADJUSTL(SPEC(J))),NUP(I,J)
+        IF(RSPEC(I,J).EQ.1) THEN
+         WRITE(*,*) TRIM(ADJUSTL(SPEC(J))),NUR(I,J),NUP(I,J), &
+                    DELTANU(I,J)
         ENDIF
        ENDDO
       ENDDO
+      
+
+
       WRITE(*,*) 
       WRITE(*,'(A)') 'PARSING COMPLETE!' 
       WRITE(*,*) 
