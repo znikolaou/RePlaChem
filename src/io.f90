@@ -74,7 +74,7 @@
       !-----------------------------------------------------------------
       SUBROUTINE READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,INDX_TRG,ETOL, &
                               CHEMFL,SPECFL)
-      USE GLOBAL, ONLY: SPEC,CONTROL_FL
+      USE GLOBAL, ONLY: ZERO,SPEC,CONTROL_FL
       IMPLICIT NONE
       CHARACTER(LEN=*) :: CHEMFL,SPECFL
       INTEGER :: I,NSPMX,NTRG,NCASE,NDATA,INDX_TRG(NSPMX)
@@ -92,6 +92,8 @@
       READ(IU,*) 
       READ(IU,*) NTRG,NCASE,NDATA
       READ(IU,*)
+      INDX_TRG(1:NSPMX)=0
+      ETOL(1:NSPMX)=ZERO
       DO I=1,NTRG
        READ(IU,*) INDX_TRG(I),ETOL(I)      
       ENDDO
