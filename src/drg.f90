@@ -82,37 +82,6 @@
 
       END
       !-----------------------------------------------------------------
-      SUBROUTINE GET_RIJ(NSPEC,NREAC,WKI,IDB,RIJ)
-      IMPLICIT NONE
-      INTEGER :: NSPEC,NREAC,IDB(NREAC,NSPEC),I,J,K
-      DOUBLE PRECISION :: WKI(NREAC,NSPEC),RIJ(NSPEC,NSPEC),FT,FB,ETHR
-      PARAMETER(ETHR=1.0E-20)
-
-      DO J=1,NSPEC
-       DO I=1,NSPEC
-        RIJ(I,J)=0.0E0
-        IF(I.EQ.J) RIJ(I,J)=1.0E0
-       ENDDO
-      ENDDO
-
-      !CALCULATE DIRECT INTERACTION COEFF (DIC)
-      DO J=1,NSPEC
-       DO I=1,NSPEC
-         FT=0.0E0
-         FB=0.0E0 
-         DO K=1,NREAC
-          FT=IDB(K,J)*ABS(WKI(K,I))+FT
-          FB=ABS(WKI(K,I))+FB
-          FT=MAX(FT,0.0E0)
-          FB=MAX(FB,0.0E0)
-         ENDDO
-         IF(FB.GT.ETHR) RIJ(I,J)=MAX(FT/FB,0.0E0) 
-         !WRITE(*,*) J,RIJ(J,1:NSPEC)
-       ENDDO
-      ENDDO
-      
-      END
-      !-----------------------------------------------------------------
       SUBROUTINE GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DELTANU,IDB, &
                                         CSPECNM,CREACNM, &
                                         DIC,NEIGHB,N_NEIGHB)
