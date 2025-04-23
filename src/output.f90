@@ -177,4 +177,53 @@
       RETURN
       END
       !-----------------------------------------------------------------
+      SUBROUTINE WRITE_OICS(ICASE,IDATA,NTRG,INDX_TRG,OIC)
+      USE GLOBAL, ONLY: NSFLMX,NSPEC,SPEC,OUTDIR
+      IMPLICIT NONE
+      INTEGER, PARAMETER :: IU=1
+      CHARACTER(LEN=NSFLMX) :: FL
+      CHARACTER(LEN=3) :: IC
+      CHARACTER(LEN=8) :: ID
+      INTEGER :: ICASE,IDATA,NTRG,INDX_TRG(NTRG)
+      DOUBLE PRECISION :: OIC(NTRG,NSPEC)
 
+      WRITE(IC,'(I3.3)') ICASE
+      WRITE(ID,'(I8.8)') IDATA
+      FL=TRIM(ADJUSTL(OUTDIR))//'case'//IC//'data'//ID//'.dat'
+      OPEN(UNIT=IU,FILE=FL,STATUS='REPLACE',FORM='UNFORMATTED')
+      WRITE(IU) NTRG,NSPEC,OIC
+      CLOSE(IU)
+      
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE WRITE_SPECIES(NCASE,NDATA,NTRG,INDX_TRG)
+      USE GLOBAL, ONLY : NSFLMX,NSPEC,SPEC,OUTDIR
+      IMPLICIT NONE
+      CHARACTER(LEN=NSFLMX) :: FL
+      INTEGER :: NTRG,INDX_TRG(NTRG),I,NCASE,NDATA
+      INTEGER, PARAMETER :: IU=1
+
+      FL=OUTDIR//'speciesAndTargets.txt'
+      OPEN(UNIT=IU,FILE=FL,STATUS='REPLACE',FORM='FORMATTED')
+      WRITE(IU,*) 'No of cases:'
+      WRITE(IU,*) NCASE
+      WRITE(IU,*) 'No of data for each case:'
+      WRITE(IU,*) NDATA
+      WRITE(IU,*) 'No species:'
+      WRITE(IU,*) NSPEC
+      WRITE(IU,*) 'Species:'
+      DO I=1,NSPEC
+       WRITE(IU,*) TRIM(ADJUSTL(SPEC(I)))
+      ENDDO
+      WRITE(IU,*) 'No of targets:'
+      WRITE(IU,*) NTRG
+      WRITE(IU,*) 'Target species:'
+      DO I=1,NTRG
+       WRITE(IU,*) TRIM(ADJUSTL(SPEC(INDX_TRG(I))))
+      ENDDO
+      CLOSE(IU)
+
+      RETURN
+      END
+      !-----------------------------------------------------------------

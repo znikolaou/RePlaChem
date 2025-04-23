@@ -5,7 +5,8 @@
       !-----------------------------------------------------------------
       SUBROUTINE DRIVER_DRG(NSPEC,NREAC,NTRG,INDX_TRG,ETOL, &
                             DNU,IDB,RR, &
-                            LEN_CSP,LEN_CRE,CSPECNM,CREACNM,SET_TRG)        
+                            LEN_CSP,LEN_CRE,CSPECNM,CREACNM, &
+                            SET_TRG,DIC_PATH) 
       USE GRAPH_SEARCH
       IMPLICIT NONE
       INTEGER :: NSPEC,NREAC,NTRG,INDX_TRG(NTRG), &

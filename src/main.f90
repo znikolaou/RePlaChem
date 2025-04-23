@@ -14,7 +14,7 @@
                               SPSET_TRGUP(:,:),SPSET_UNION(:), &
                               RESET_UNION(:),ELEMSET_UNION(:), &
                               SPBOLSET_UNION(:)
-      DOUBLE PRECISION, ALLOCATABLE :: RR(:)
+      DOUBLE PRECISION, ALLOCATABLE :: RR(:),OIC_PATH(:,:)
       DOUBLE PRECISION :: ETOL(NSPMX)
       CHARACTER(LEN=NSMX) :: COMMAND
       CHARACTER(LEN=2) :: JCASE
@@ -28,6 +28,7 @@
       
       ALLOCATE(RR(NREAC))
       ALLOCATE(SET_TRG(NTRG,NSPEC))
+      ALLOCATE(OIC_PATH(NTRG,NSPEC))
       ALLOCATE(SPSET_TRGUP(NTRG,NSPEC))
       ALLOCATE(SPSET_UNION(NSPEC))
       ALLOCATE(RESET_UNION(NREAC))
@@ -55,8 +56,8 @@
         CALL DRIVER_DRG(NSPEC,NREAC,NTRG,INDX_TRG(1:NTRG), &
                         ETOL(1:NTRG),DELTANU(1:NREAC,1:NSPEC), &
                         RSPEC(1:NREAC,1:NSPEC),RR, &
-                        NSMX,NSMX,SPEC,REAC,SET_TRG)  
-        !SAVE PICs
+                        NSMX,NSMX,SPEC,REAC, &
+                        SET_TRG,OIC_PATH)  
         !UPDATE_SETS
         DO K=1,NSPEC
          DO J=1,NTRG
@@ -65,11 +66,16 @@
           ENDIF
          ENDDO  
         ENDDO   
+
+        !OUTPUT OICs
+        CALL WRITE_OICS(N,I,NTRG,INDX_TRG(1:NTRG),OIC_PATH)
        
        ENDDO!DATA
       ENDDO!CASE
       !-----------------------------------------------------------------     
       
+      CALL WRITE_SPECIES(NCASE,NDATA,NTRG,INDX_TRG)
+
       WRITE(*,*) 'FINAL TARGET SPECIES SETS:'
       DO I=1,NTRG
        WRITE(*,*) I,TRIM(SPEC(INDX_TRG(I))),SUM(SPSET_TRGUP(I,:))
@@ -205,6 +211,7 @@
 
       DEALLOCATE(RR)
       DEALLOCATE(SET_TRG)
+      DEALLOCATE(OIC_PATH)
       DEALLOCATE(SPSET_TRGUP)
       DEALLOCATE(SPSET_UNION)
       DEALLOCATE(RESET_UNION)
