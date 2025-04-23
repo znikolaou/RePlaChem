@@ -27,7 +27,7 @@
       CALL GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DNU,IDB,CSPECNM, &
                                  CREACNM, &
                                  DIC,NEIGHB,N_NEIGHB)       
-      WRITE(*,*) 'DIRECT INTER. COEFFS:'
+      WRITE(*,*) 'DICs:'
       DO J=1,NSPEC
        WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),N_NEIGHB(J)
         DO I=1,N_NEIGHB(J)
@@ -40,42 +40,30 @@
       WRITE(*,*) 'SEARCHING FOR STRONGEST PATH ...'
 
       DO I=1,NTRG
+       SET_TRG(I,INDX_TRG(I))=1
+       SET_TRG(I,1:NSPEC)=0
        CALL GRPH_DIJKSTRA(NSPEC,DIC,NEIGHB,N_NEIGHB,INDX_TRG(I), &
-                         DIC_PATH(I,:)) !STRONGEST PATH FOUND (MAXIMUM PRODUCT OF DICs)
-          
-        !TODO: WRITE AS SEPARATE ROUTINE         
-        DO J=1,NSPEC
-         IF(DIC_PATH(I,J).GT.ETOL(I)) THEN
-          SET_TRG(I,J)=1
-         ELSE
-          SET_TRG(I,J)=0
-         ENDIF
-         SET_TRG(I,INDX_TRG(I))=1
-        ENDDO         
+                         DIC_PATH(I,:)) !STRONGEST PATH FOUND (MAXIMUM PRODUCT OF DICs)       
+       DO J=1,NSPEC
+        IF(DIC_PATH(I,J).GT.ETOL(I)) THEN
+         SET_TRG(I,J)=1
+        ENDIF
+       ENDDO         
 
-        WRITE(*,*) 'STRONGEST PATH FOUND, TARGET: ', &
+       WRITE(*,*) 'STRONGEST PATH FOUND, TARGET: ', &
                    TRIM(ADJUSTL(CSPECNM(INDX_TRG(I)))),',', &
                    'NO OF CONNECTIONS=',SUM(SET_TRG(I,:))         
-        DO J=1,NSPEC
-         IF(SET_TRG(I,J).EQ.1) THEN
-          WRITE(*,*) ' ->',TRIM(ADJUSTL(CSPECNM(J))), &
-                           DIC_PATH(I,J)
-         ENDIF
-        ENDDO 
-       
-        !SORT OVERALL DICs FOR EACH TARGET     
-        CALL SORT(NSPEC,LEN_CSP,DIC_PATH(I,:),CSPECNM,SRT_DIC, &
+               
+       CALL SORT(NSPEC,LEN_CSP,DIC_PATH(I,:),CSPECNM,SRT_DIC, &
                   SRT_SPECNM)
 
-        WRITE(*,*) 'SORTED OICs'
+        WRITE(*,*) 'OICs'
         DO J=1,NSPEC
          WRITE(*,*) TRIM(ADJUSTL(SRT_SPECNM(J))),SRT_DIC(J)
         ENDDO
 
       ENDDO !FOR TARGET SPECIES 
             
-            !SET_TRG(NTRG,NSPEC)
-
       WRITE(*,*) 
       WRITE(*,*) '***DRIVER DRG***'
       WRITE(*,*)       
