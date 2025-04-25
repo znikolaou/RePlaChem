@@ -70,68 +70,12 @@
       ENDDO
       WRITE(*,*) '-------------------'
 
-      !GET UNION SET ACROSS ALL TARGETS
-      CALL GET_UNION_SET(NSPEC,NTRG,INDX_TRG(1:NTRG),SPSET_TRGUP, &
-                         SPSET_UNION)
+      CALL GET_SPECIES_SET(NSPEC,NTRG,INDX_TRG(1:NTRG),SPSET_TRGUP, &
+                         SPSET_UNION,RESET_UNION)
      
-
-      !GET PRELIMINARY REACTION SET
-      WRITE(*,*) 'EXTRACTING PRELIMINARY SKEL MECH REACTIONS'
-      WRITE(*,*) '------------------------------------------'
-      DO J=1,NREAC
-       IPROD=1
-       WRITE(*,*) J,TRIM(REAC(J))
-       DO I=1,NSPEC
-        IF(RSPEC(J,I).EQ.1) THEN !SPEC IN R
-         IPROD=IPROD*SPSET_UNION(I)
-         WRITE(*,*) TRIM(ADJUSTL(SPEC(I))),SPSET_UNION(I),IPROD
-        ENDIF
-       ENDDO
-       IF(IPROD.EQ.1) THEN
-        RESET_UNION(J)=1
-        WRITE(*,*) '------------------------------KEEP'
-       ELSE 
-        WRITE(*,*) '------------------------------REMOVE'
-       ENDIF
-      ENDDO
-
-      !GOTO 1 
-      !CHECK REACTIONS
-      WRITE(*,*)
-      WRITE(*,*) 'CHECKING PRELIMINARY SKEL MECH REACTIONS'
-      WRITE(*,*)
-      N=0
-      DO I=1,NSPEC
-       IF(SPSET_UNION(I).EQ.1) THEN !UNION SPEC
-        
-        DO J=1,NREAC
-         IF(RESET_UNION(J).EQ.1.AND.RSPEC(J,I).EQ.1) THEN !EXISTS IN SOME REACTION
-          !WRITE(*,*) TRIM(ADJUSTL(REAC(J))) 
-          CHECK=1
-          !WRITE(*,'(A,X,A,X,I1)') 'CHECK ',SPEC(I),CHECK
-          EXIT
-         ELSE
-          CHECK=0
-         ENDIF
-        ENDDO 
-        IF(CHECK.EQ.0) THEN !SPEC IN SKEL SET NOT IN ANY REACTION IN SKEL SET -> REMOVE SPEC
-         N=N+1
-         !WRITE(*,*) 'ERROR: REDUCED REACTION SET NOT POSSIBLE'
-         !WRITE(*,*) TRIM(ADJUSTL(REAC(J))) 
-         !STOP
-         WRITE(*,*) 'CHECK REACTIONS-REMOVING ', &
-                     TRIM(ADJUSTL(SPEC(I))), &
-                     ' FROM SKEL MECH SET'         
-         SPSET_UNION(I)=0         
-        ENDIF
-       ENDIF
-      ENDDO
-      IF(N.NE.0) THEN
-       WRITE(*,*) 'WARNING: SOME SKEL MECH SPECIES REMOVED'
-      ENDIF
-      WRITE(*,*) 
-
-1     CONTINUE
+      CALL GET_REACTION_SET(NSPEC,NREAC,SPEC,REAC, &
+                            RSPEC(1:NREAC,1:NSPEC),SPSET_UNION, &
+                            RESET_UNION)
 
       WRITE(*,*) 'ELIMINATED SPECIES:'
       DO I=1,NSPEC
