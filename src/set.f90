@@ -82,3 +82,22 @@
 
       END
       !-----------------------------------------------------------------
+      SUBROUTINE GET_BOLSIG_SET(NSPEC,NSPEC_BOLSIG,SPEC,SPSET_UNION, &
+                                SPEC_BOLSIG,SPBOLSET_UNION)
+      IMPLICIT NONE
+      INTEGER :: I,NSPEC,NSPEC_BOLSIG,SPSET_UNION(NSPEC), &
+                 SPEC_BOLSIG(NSPEC),SPBOLSET_UNION(NSPEC)
+      CHARACTER(LEN=*) :: SPEC(NSPEC)
+      LOGICAL :: IS_STRING_PRESENT
+
+      DO I=1,NSPEC
+       IF(SPSET_UNION(I).EQ.1) THEN
+        IF(IS_STRING_PRESENT(NSPEC_BOLSIG,SPEC_BOLSIG, &
+                TRIM(ADJUSTL(SPEC(I))))) THEN
+         SPBOLSET_UNION(I)=1
+        ENDIF
+       ENDIF
+      ENDDO 
+
+      END
+      !-----------------------------------------------------------------

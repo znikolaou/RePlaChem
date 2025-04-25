@@ -76,7 +76,10 @@
       CALL GET_REACTION_SET(NSPEC,NREAC,SPEC,REAC, &
                             RSPEC(1:NREAC,1:NSPEC),SPSET_UNION, &
                             RESET_UNION)
-
+      CALL GET_BOLSIG_SET(NSPEC,NSPEC_BOLSIG,SPEC(1:NSPEC), &
+                          SPSET_UNION,SPEC_BOLSIG(1:NSPEC), &
+                          SPBOLSET_UNION) 
+      
       WRITE(*,*) 'ELIMINATED SPECIES:'
       DO I=1,NSPEC
        IF(SPSET_UNION(I).EQ.0) THEN
@@ -100,16 +103,7 @@
        ENDIF
       ENDDO
       WRITE(*,*) '-------------------'
-      
-      DO I=1,NSPEC
-       IF(SPSET_UNION(I).EQ.1) THEN
-        IF(IS_STRING_PRESENT(NSPEC_BOLSIG,SPEC_BOLSIG, &
-                TRIM(ADJUSTL(SPEC(I))))) THEN
-         SPBOLSET_UNION(I)=1
-        ENDIF
-       ENDIF
-      ENDDO 
-
+       
       NSPEC_SKEL=SUM(SPSET_UNION)
       NREAC_SKEL=SUM(RESET_UNION)
       IF(NSPEC_SKEL.LE.0.OR.NREAC_SKEL.LE.0) THEN
@@ -126,8 +120,8 @@
                                    REAC_SEC_DOLLAR_LIST)
 
       WRITE(*,*) 'SKELETAL MECHANISM SIZE:'
-      WRITE(*,*) 'NUNION SPEC=',SUM(SPSET_UNION)
-      WRITE(*,*) 'NUNION REAC=',SUM(RESET_UNION)
+      WRITE(*,*) 'NUNION SPEC=',NSPEC_SKEL
+      WRITE(*,*) 'NUNION REAC=',NREAC_SKEL
       WRITE(*,*) 
       WRITE(*,*) 'RUN COMPLETED SUCCESSFULLY!'
       WRITE(*,*) '-------------------'
