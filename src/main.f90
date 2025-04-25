@@ -61,8 +61,7 @@
         CALL WRITE_OICS(N,I,NTRG,INDX_TRG(1:NTRG),OIC)
        ENDDO
       ENDDO
-      !-----------------------------------------------------------------     
-      
+     
       CALL WRITE_SPECIES(NCASE,NDATA,NTRG,INDX_TRG)
 
       WRITE(*,*) 'FINAL TARGET SPECIES SETS:'
@@ -71,21 +70,10 @@
       ENDDO
       WRITE(*,*) '-------------------'
 
-      !TODO: WRITE RATE EXPRESSIONS IN REDUCED MECHANISM
-      !TODO: WRITE AS SEPARATE ROUTINE
       !GET UNION SET ACROSS ALL TARGETS
-      SPSET_UNION(1:NSPEC)=0
-      DO I=1,NTRG
-       SPSET_UNION(INDX_TRG(I))=1
-      ENDDO
-      DO J=1,NSPEC
-       DO I=1,NTRG
-        IF(INDX_TRG(I).EQ.J) CYCLE 
-        IF(SPSET_TRGUP(I,J).EQ.1.AND.SPSET_UNION(J).EQ.0) THEN
-         SPSET_UNION(J)=1
-        ENDIF
-       ENDDO
-      ENDDO      
+      CALL GET_UNION_SET(NSPEC,NTRG,INDX_TRG(1:NTRG),SPSET_TRGUP, &
+                         SPSET_UNION)
+     
 
       !GET PRELIMINARY REACTION SET
       WRITE(*,*) 'EXTRACTING PRELIMINARY SKEL MECH REACTIONS'
