@@ -7,21 +7,20 @@
       USE GLOBAL
       USE CHEM_PARSE, ONLY : CM_INIT
       IMPLICIT NONE
-      LOGICAL :: IS_STRING_PRESENT
-      INTEGER :: NDATA,NCASE,CHECK,NSPEC_SKEL,NREAC_SKEL, &
-                 INDX_TRG(NSPMX),I,J,K,N,IPROD
+      INTEGER :: NDATA,NCASE,NSPEC_SKEL,NREAC_SKEL,INDX_TRG(NSPMX),I, &
+                 J,K,N
       INTEGER, ALLOCATABLE :: SET_TRG(:,:),SPSET_TRG(:,:), &
                               SPSET_TRGUP(:,:),SPSET_UNION(:), &
                               RESET_UNION(:),ELEMSET_UNION(:), &
                               SPBOLSET_UNION(:)
       DOUBLE PRECISION, ALLOCATABLE :: RR(:),OIC(:,:)
       DOUBLE PRECISION :: ETOL(NSPMX)
-      CHARACTER(LEN=NSMX) :: COMMAND
       CHARACTER(LEN=2) :: JCASE
       CHARACTER(LEN=NSFLMX) :: FLCASE,CHEMFL,SPECFL,BUILD_CASE_DIR
       
-      WRITE(*,*) 'MAIN:'
-
+      WRITE(*,*) 
+      WRITE(*,*) 'MAIN'
+      
       CALL READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,INDX_TRG,ETOL, &
                         CHEMFL,SPECFL) 
                 
@@ -37,6 +36,8 @@
       ALLOCATE(SPBOLSET_UNION(NSPEC))
       
       RR(1:NREAC)=ZERO
+      SET_TRG(1:NTRG,1:NSPEC)=0
+      OIC(1:NTRG,1:NSPEC)=ZERO
       SPSET_TRGUP(1:NTRG,1:NSPEC)=0
       SPSET_UNION(1:NSPEC)=0
       RESET_UNION(1:NREAC)=0
@@ -68,7 +69,6 @@
       DO I=1,NTRG
        WRITE(*,*) I,TRIM(SPEC(INDX_TRG(I))),SUM(SPSET_TRGUP(I,:))
       ENDDO
-      WRITE(*,*) '-------------------'
 
       CALL GET_SPECIES_SET(NSPEC,NTRG,INDX_TRG(1:NTRG),SPSET_TRGUP, &
                          SPSET_UNION,RESET_UNION)
@@ -76,6 +76,7 @@
       CALL GET_REACTION_SET(NSPEC,NREAC,SPEC,REAC, &
                             RSPEC(1:NREAC,1:NSPEC),SPSET_UNION, &
                             RESET_UNION)
+      
       CALL GET_BOLSIG_SET(NSPEC,NSPEC_BOLSIG,SPEC(1:NSPEC), &
                           SPSET_UNION,SPEC_BOLSIG(1:NSPEC), &
                           SPBOLSET_UNION) 
@@ -86,23 +87,20 @@
         WRITE(*,*) TRIM(SPEC(I)) 
        ENDIF
       ENDDO
-      WRITE(*,*) '-------------------'
-
+      
       WRITE(*,*) 'SPECIES UNION SET:'
       DO I=1,NSPEC
        IF(SPSET_UNION(I).EQ.1) THEN 
         WRITE(*,*) TRIM(SPEC(I))
        ENDIF
       ENDDO
-      WRITE(*,*) '-------------------'
-
+      
       WRITE(*,*) 'REACTIONS UNION SET:'
       DO I=1,NREAC
        IF(RESET_UNION(I).EQ.1) THEN   
         WRITE(*,*) TRIM(REAC(I))
        ENDIF
       ENDDO
-      WRITE(*,*) '-------------------'
        
       NSPEC_SKEL=SUM(SPSET_UNION)
       NREAC_SKEL=SUM(RESET_UNION)
@@ -124,8 +122,7 @@
       WRITE(*,*) 'NUNION REAC=',NREAC_SKEL
       WRITE(*,*) 
       WRITE(*,*) 'RUN COMPLETED SUCCESSFULLY!'
-      WRITE(*,*) '-------------------'
-
+      
       DEALLOCATE(RR)
       DEALLOCATE(SET_TRG)
       DEALLOCATE(OIC)
@@ -137,3 +134,4 @@
 
       STOP
       END
+      !-----------------------------------------------------------------
