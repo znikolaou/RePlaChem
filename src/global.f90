@@ -21,7 +21,8 @@
       DOUBLE PRECISION, PARAMETER :: ZERO=0.0E0, &
                                      ONE=1.0E0 
       !                             
-      INTEGER :: NELEM,NSPEC,NREAC,NSPEC_BOLSIG,NBOLS_SET,NREAC_DOLLAR
+      INTEGER :: NELEM,NSPEC,NREAC,NSPEC_BOLSIG,NBOLS_SET, &
+                 NREAC_DOLLAR,NTRG
       CHARACTER(LEN=NSMX) :: ELEM(NSPMX),SPEC(NSPMX),REAC(NREMX), &
                              SPEC_BOLSIG(NSPMX), REAC_CONST(NREMX), &
                              BOLSIG_SEC_SET_LIST(NLINEMX), &

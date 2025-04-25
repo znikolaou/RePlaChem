@@ -209,4 +209,15 @@
            
       END SUBROUTINE
       !-----------------------------------------------------------------
-      
+      FUNCTION BUILD_CASE_DIR(ICASE)
+      USE GLOBAL, ONLY: INDIR,RATE_DIR,NSFLMX
+      IMPLICIT NONE
+      INTEGER :: ICASE
+      CHARACTER(LEN=NSFLMX) :: BUILD_CASE_DIR
+      CHARACTER(LEN=2) :: CHI
+
+      WRITE(CHI,'(I2.2)') ICASE
+      BUILD_CASE_DIR=INDIR//RATE_DIR//'case_'//CHI//'/'
+
+      END FUNCTION
+      !----------------------------------------------------------------- 

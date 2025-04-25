@@ -3,37 +3,30 @@
       ! AUTHOR: Z. NIKOLAOU
       !
       !-----------------------------------------------------------------
-      SUBROUTINE DRIVER_DRG(NSPEC,NREAC,NTRG,INDX_TRG,ETOL, &
-                            DNU,IDB,RR, &
-                            LEN_CSP,LEN_CRE,CSPECNM,CREACNM, &
-                            SET_TRG,DIC_PATH) 
+      SUBROUTINE DRIVER_DRG(INDX_TRG,ETOL,RR,SET_TRG,DIC_PATH) 
+      USE GLOBAL, ONLY : NSMX,NSPEC,NREAC,NTRG,SPEC,DELTANU,RSPEC
       USE GRAPH_SEARCH
       IMPLICIT NONE
-      INTEGER :: NSPEC,NREAC,NTRG,INDX_TRG(NTRG), &
-                 LEN_CSP,LEN_CRE,IDB(NREAC,NSPEC), &
-                 SETA(NSPEC),SET_TRG(NTRG,NSPEC)      
-      CHARACTER(LEN=LEN_CSP) :: CSPECNM(NSPEC),SRT_SPECNM(NSPEC)
-      CHARACTER(LEN=LEN_CRE) :: CREACNM(NREAC)
-      DOUBLE PRECISION :: ETOL(NTRG),RR(NREAC), &
-                          DNU(NREAC,NSPEC),MXVL
-      INTEGER :: I,J,K,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC)   
-      DOUBLE PRECISION :: DIC(NSPEC,NSPEC),DIC_PATH(NTRG,NSPEC), &
-                          SRT_DIC(NSPEC)
+      INTEGER :: INDX_TRG(NTRG),SETA(NSPEC),SET_TRG(NTRG,NSPEC), &      
+                 I,J,K,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC)   
+      CHARACTER(LEN=NSMX) :: SRT_SPECNM(NSPEC)
+      DOUBLE PRECISION :: ETOL(NTRG),RR(NREAC),MXVL,DIC(NSPEC,NSPEC), &
+                          DIC_PATH(NTRG,NSPEC),SRT_DIC(NSPEC)
   
       WRITE(*,*)
       WRITE(*,*) '***DRIVER_DRG***'
       WRITE(*,*) 
 
       SET_TRG(1:NTRG,1:NSPEC)=0
-      CALL GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DNU,IDB,CSPECNM, &
-                                 CREACNM, &
-                                 DIC,NEIGHB,N_NEIGHB)       
+      CALL GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR, &
+       DELTANU(1:NREAC,1:NSPEC),RSPEC(1:NREAC,1:NSPEC),SPEC(1:NSPEC), &
+       DIC,NEIGHB,N_NEIGHB)       
       WRITE(*,*) 'DICs:'
       DO J=1,NSPEC
-       WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),N_NEIGHB(J)
+       WRITE(*,*) TRIM(ADJUSTL(SPEC(J))),N_NEIGHB(J)
         DO I=1,N_NEIGHB(J)
-         WRITE(*,*) TRIM(ADJUSTL(CSPECNM(J))),'->', &
-                    TRIM(ADJUSTL(CSPECNM(NEIGHB(J,I)))), &
+         WRITE(*,*) TRIM(ADJUSTL(SPEC(J))),'->', &
+                    TRIM(ADJUSTL(SPEC(NEIGHB(J,I)))), &
                     DIC(J,NEIGHB(J,I))
         ENDDO
       ENDDO
@@ -52,11 +45,11 @@
        ENDDO         
 
        WRITE(*,*) 'STRONGEST PATH FOUND, TARGET: ', &
-                   TRIM(ADJUSTL(CSPECNM(INDX_TRG(I)))),',', &
+                   TRIM(ADJUSTL(SPEC(INDX_TRG(I)))),',', &
                    'NO OF CONNECTIONS=',SUM(SET_TRG(I,:))         
                
-       CALL SORT(NSPEC,LEN_CSP,DIC_PATH(I,:),CSPECNM,SRT_DIC, &
-                  SRT_SPECNM)
+       CALL SORT(NSPEC,NSMX,DIC_PATH(I,:),SPEC(1:NSPEC),SRT_DIC, &
+                 SRT_SPECNM)
 
         WRITE(*,*) 'OICs'
         DO J=1,NSPEC
@@ -72,13 +65,11 @@
       END
       !-----------------------------------------------------------------
       SUBROUTINE GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DELTANU,IDB, &
-                                        CSPECNM,CREACNM, &
-                                        DIC,NEIGHB,N_NEIGHB)
+                                        CSPECNM,DIC,NEIGHB,N_NEIGHB)
       IMPLICIT NONE
       INTEGER :: NSPEC,NREAC,NEIGHB(NSPEC,NSPEC),N_NEIGHB(NSPEC), &
                  IDB(NREAC,NSPEC),I,J,K,N
       CHARACTER(LEN=*) :: CSPECNM(NSPEC)
-      CHARACTER(LEN=*) :: CREACNM(NREAC)
       DOUBLE PRECISION :: DELTANU(NREAC,NSPEC),RR(NREAC), &
                           DIC(NSPEC,NSPEC),FT,DTRM,PTRM,MXVL, &
                           WKI(NREAC,NSPEC),FTT

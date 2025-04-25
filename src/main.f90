@@ -8,27 +8,28 @@
       USE CHEM_PARSE, ONLY : CM_INIT
       IMPLICIT NONE
       LOGICAL :: IS_STRING_PRESENT
-      INTEGER :: NDATA,NCASE,NTRG,CHECK,NSPEC_SKEL,NREAC_SKEL, &
+      INTEGER :: NDATA,NCASE,CHECK,NSPEC_SKEL,NREAC_SKEL, &
                  INDX_TRG(NSPMX),I,J,K,N,IPROD
       INTEGER, ALLOCATABLE :: SET_TRG(:,:),SPSET_TRG(:,:), &
                               SPSET_TRGUP(:,:),SPSET_UNION(:), &
                               RESET_UNION(:),ELEMSET_UNION(:), &
                               SPBOLSET_UNION(:)
-      DOUBLE PRECISION, ALLOCATABLE :: RR(:),OIC_PATH(:,:)
+      DOUBLE PRECISION, ALLOCATABLE :: RR(:),OIC(:,:)
       DOUBLE PRECISION :: ETOL(NSPMX)
       CHARACTER(LEN=NSMX) :: COMMAND
       CHARACTER(LEN=2) :: JCASE
-      CHARACTER(LEN=NSFLMX) :: FLCASE,CHEMFL,SPECFL
+      CHARACTER(LEN=NSFLMX) :: FLCASE,CHEMFL,SPECFL,BUILD_CASE_DIR
       
       WRITE(*,*) 'MAIN:'
 
       CALL READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,INDX_TRG,ETOL, &
-                        CHEMFL,SPECFL)  
+                        CHEMFL,SPECFL) 
+                
       CALL CM_INIT(INDIR//CHEMFL)
       
       ALLOCATE(RR(NREAC))
       ALLOCATE(SET_TRG(NTRG,NSPEC))
-      ALLOCATE(OIC_PATH(NTRG,NSPEC))
+      ALLOCATE(OIC(NTRG,NSPEC))
       ALLOCATE(SPSET_TRGUP(NTRG,NSPEC))
       ALLOCATE(SPSET_UNION(NSPEC))
       ALLOCATE(RESET_UNION(NREAC))
@@ -39,25 +40,16 @@
       SPSET_TRGUP(1:NTRG,1:NSPEC)=0
       SPSET_UNION(1:NSPEC)=0
       RESET_UNION(1:NREAC)=0
-      DO I=1,NELEM
-       ELEMSET_UNION(I)=ONE
-       SPBOLSET_UNION(I)=ZERO
-      ENDDO
+      ELEMSET_UNION(1:NELEM)=1
+      SPBOLSET_UNION(1:NSPEC)=0
 
-      WRITE(*,*) 'GOING THROUGH DATASETS'       
-      WRITE(*,*) 
+      WRITE(*,*) 'GOING THROUGH DATASETS ...'       
       DO N=1,NCASE
-       WRITE(*,*) 'CASE',N
-       WRITE(JCASE,'(I2.2)') N
-       FLCASE=INDIR//RATE_DIR//'case_'//JCASE//'/'         
+       FLCASE=BUILD_CASE_DIR(N)        
        DO I=1,NDATA
-        WRITE(*,*) 'DATASET',I
+        WRITE(*,*) 'CASE ',N,'DATASET ',I
         CALL READ_REACTION_RATES(I,FLCASE,NREAC,RR)
-        CALL DRIVER_DRG(NSPEC,NREAC,NTRG,INDX_TRG(1:NTRG), &
-                        ETOL(1:NTRG),DELTANU(1:NREAC,1:NSPEC), &
-                        RSPEC(1:NREAC,1:NSPEC),RR, &
-                        NSMX,NSMX,SPEC,REAC, &
-                        SET_TRG,OIC_PATH)  
+        CALL DRIVER_DRG(INDX_TRG(1:NTRG),ETOL(1:NTRG),RR,SET_TRG,OIC)  
         !UPDATE_SETS
         DO K=1,NSPEC
          DO J=1,NTRG
@@ -66,12 +58,9 @@
           ENDIF
          ENDDO  
         ENDDO   
-
-        !OUTPUT OICs
-        CALL WRITE_OICS(N,I,NTRG,INDX_TRG(1:NTRG),OIC_PATH)
-       
-       ENDDO!DATA
-      ENDDO!CASE
+        CALL WRITE_OICS(N,I,NTRG,INDX_TRG(1:NTRG),OIC)
+       ENDDO
+      ENDDO
       !-----------------------------------------------------------------     
       
       CALL WRITE_SPECIES(NCASE,NDATA,NTRG,INDX_TRG)
@@ -213,7 +202,7 @@
 
       DEALLOCATE(RR)
       DEALLOCATE(SET_TRG)
-      DEALLOCATE(OIC_PATH)
+      DEALLOCATE(OIC)
       DEALLOCATE(SPSET_TRGUP)
       DEALLOCATE(SPSET_UNION)
       DEALLOCATE(RESET_UNION)
