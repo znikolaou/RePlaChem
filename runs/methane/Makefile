@@ -13,7 +13,7 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.f90
 	$(FC) $(FOPT) -c $< -o $@
 
 clean:
-	@ rm -f exe *.o *.mod $(BUILD_DIR)/*.o
+	@ rm -f exe *.o *.mod $(BUILD_DIR)/*.o 
 
 print:
 	@ echo $(OBJS)

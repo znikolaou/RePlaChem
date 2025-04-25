@@ -3,7 +3,7 @@ kinetAntwerpMethaneNoTabs.inp
 !Species file:
 notUsed
 !NO OF TARGET SPECIES, NO OF CASES, NO OF DATA SETS FOR EACH CASE
-   1 1 10
+   1 1 5000
 !TARGET SPECIES INDEX, ETOL: [0,1] 
-  1 1.0e-3
+  1 1.0e-4
 !END

@@ -82,9 +82,9 @@
       ENDDO
       WRITE(*,*) '-------------------'
 
+      !TODO: WRITE RATE EXPRESSIONS IN REDUCED MECHANISM
       !TODO: WRITE AS SEPARATE ROUTINE
-      !TODO: GET BOSLIG_SPECIES UNION SET FROM REDUCED SPECIES SET
-      !GET UNION SET
+      !GET UNION SET ACROSS ALL TARGETS
       SPSET_UNION(1:NSPEC)=0
       DO I=1,NTRG
        SPSET_UNION(INDX_TRG(I))=1
@@ -184,7 +184,7 @@
        IF(SPSET_UNION(I).EQ.1) THEN
         IF(IS_STRING_PRESENT(NSPEC_BOLSIG,SPEC_BOLSIG, &
                 TRIM(ADJUSTL(SPEC(I))))) THEN
-         SPBOLSET_UNION(I)=1.0E0
+         SPBOLSET_UNION(I)=1
         ENDIF
        ENDIF
       ENDDO 
@@ -196,11 +196,13 @@
        STOP
       ENDIF
        
-      CALL WRITE_CHEM_MECH_FMT_ZDP(OUTDIR,CHEMRED_FL, &
-                                   NELEM,NSPEC,NREAC, &
+      CALL WRITE_CHEM_MECH_FMT_ZDP(OUTDIR,CHEMRED_FL,NTRG,INDX_TRG, &
+                                   ETOL, &
+                                   NELEM,NSPEC,NREAC,NREAC_DOLLAR, &
                                    ELEM,SPEC,REAC,REAC_CONST, &
                                    ELEMSET_UNION,SPSET_UNION, &
-                                   SPBOLSET_UNION,RESET_UNION)
+                                   SPBOLSET_UNION,RESET_UNION, &
+                                   REAC_SEC_DOLLAR_LIST)
 
       WRITE(*,*) 'SKELETAL MECHANISM SIZE:'
       WRITE(*,*) 'NUNION SPEC=',SUM(SPSET_UNION)

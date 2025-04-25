@@ -1,4 +1,5 @@
 from read import *
+import matplotlib.pyplot as plt
 src='../output/'
 
 ncase,ndata,nspec,ntrg,spec,trgSpec=readSpeciesAndTargets(src)
@@ -10,13 +11,16 @@ for item in trgSpec: print(item)
 
 print('OICs:')
 for i in range(1,ncase+1):
-    for j in range(1,ndata+1):
+    for j in range(1,2):
         oic=read(src,i,j,nspec,ntrg)
+
+        print(oic[:])
+        plt.plot(oic[:])
+        """
         for itrg in range(ntrg):
             print('Target:', trgSpec[itrg])
             for jspec in range(nspec):
                 print(spec[jspec],' ',oic[jspec][itrg])
+        """
 
-
-
-
+plt.show()

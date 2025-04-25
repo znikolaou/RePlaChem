@@ -93,15 +93,21 @@
 
       END
       !-----------------------------------------------------------------
-      SUBROUTINE WRITE_CHEM_MECH_FMT_ZDP(DIR,FLSKEL,NELEM,NSPEC, &
-                                         NREAC,ELEM,SPEC,REAC, &
+      SUBROUTINE WRITE_CHEM_MECH_FMT_ZDP(DIR,FLSKEL,NTRG,INDX_TRG, &
+                                         ETOL, &
+                                         NELEM,NSPEC, &
+                                         NREAC,NDOLLAR,ELEM,SPEC,REAC, &
                                          REAC_CONST, &
-                                         SETE,SETSP,SETSP_BOLS,SETRE)
+                                         SETE,SETSP,SETSP_BOLS,SETRE, &
+                                         REAC_DOLLAR_LIST)
       IMPLICIT NONE
-      INTEGER :: NELEM,NSPEC,NBOLS,NREAC
+      INTEGER :: NTRG,NELEM,NSPEC,NBOLS,NREAC,NDOLLAR,I
       INTEGER, PARAMETER :: IO=7
-      INTEGER :: SETE(NELEM),SETSP(NSPEC),SETSP_BOLS(NSPEC),SETRE(NREAC)
+      INTEGER :: SETE(NELEM),SETSP(NSPEC),SETSP_BOLS(NSPEC), &
+                 SETRE(NREAC),INDX_TRG(NTRG)
+      DOUBLE PRECISION :: ETOL(NTRG)
       CHARACTER(LEN=*) :: ELEM(NELEM),SPEC(NSPEC), &
+                          REAC_DOLLAR_LIST(NDOLLAR), &
                           REAC(NREAC),REAC_CONST(NREAC),DIR,FLSKEL 
       CHARACTER(LEN=LEN(DIR)+LEN(FLSKEL)+1) :: FL
       CHARACTER(LEN=8)  :: DATE
@@ -115,31 +121,53 @@
 
       WRITE(IO,'(A)') '# PLASEREDCHEM.V01'
       WRITE(IO,'(A)') '#'
-      WRITE(IO,'(A)') '# AUTHOR: Z. NIKOLAOU'
+      WRITE(IO,'(A)') '# AUTHOR: ZACHARIAS NIKOLAOU'
       WRITE(IO,'(A)') '#'
-      WRITE(IO,'(A)') '# AUTO-GENERATED FILE: SKELETAL CHEM. MECH.'
-      WRITE(IO,'(A)') '# FORMAT=ZDPlasKin'
+      WRITE(IO,'(A)') '# THIS IS AN AUTO-GENERATED FILE.'
+      WRITE(IO,'(A)') '#'
       WRITE(IO,'(4(AX))') '# CREATED: ',TRIM(DATE),TRIM(TIME),TRIM(ZONE)
+      WRITE(IO,'(A)') '#'
+      WRITE(IO,'(A)') '# REDUCTION PARAMS (TARGET SPECIES AND ETOL):'
+      DO I=1,NTRG
+       WRITE(IO,'(AXAXE12.5)') '# '//TRIM(ADJUSTL(SPEC(INDX_TRG(I)))), &
+                              'ETOL=',ETOL(I)
+      ENDDO
+      WRITE(IO,'(A)') '#'
+      WRITE(IO,'(A)') '# DETAILED MECHANISM:'
+      WRITE(IO,'(AXI4)') '# NREAC=',NREAC
+      WRITE(IO,'(AXI4)') '# NSPEC=',NSPEC
+      WRITE(IO,'(A)') '# REDUCED MECHANISM:'
+      WRITE(IO,'(AXI4)') '# NREAC=',SUM(SETRE)
+      WRITE(IO,'(AXI4)') '# NSPEC=',SUM(SETSP)
       WRITE(IO,'(A)') '#' 
      
       CALL WRITE_SECTION_FMT_ZDP(IO,'ELEMENTS',NELEM,ELEM,SETE)
       CALL WRITE_SECTION_FMT_ZDP(IO,'SPECIES',NSPEC,SPEC,SETSP)
       CALL WRITE_SECTION_FMT_ZDP(IO,'BOLSIG',NSPEC,SPEC,SETSP_BOLS)
-      !CALL WRITE_SECTION_FMT_ZDP(IO,'BOLSIG',NBOLS,BOLS)
-      CALL WRITE_SECTION_REAC_FMT_ZDP(IO,'REACTIONS',NREAC,REAC, &
-                                      REAC_CONST,SETRE)
+      CALL WRITE_SECTION_REAC_FMT_ZDP(IO,'REACTIONS',NREAC,NDOLLAR, &
+                                      REAC,REAC_CONST,SETRE, &
+                                      REAC_DOLLAR_LIST)
  
       CLOSE(IO)
 
       RETURN
       END 
       !-----------------------------------------------------------------
+      SUBROUTINE WRITE_REAC_CONST(IU,N,DOLLARLIST)
+      IMPLICIT NONE
+      INTEGER :: IU,N
+      CHARACTER(LEN=*) :: DOLLARLIST(N)
+
+      WRITE(IU,'(A)') '$'
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
       SUBROUTINE WRITE_SECTION_FMT_ZDP(IU,SECNAME,N,CLIST,SET)
       IMPLICIT NONE
       INTEGER :: IU,N,I,SET(N)
       CHARACTER(LEN=*) :: SECNAME,CLIST(N)
-
-      WRITE(IU,'(A)') ' ' 
+ 
       WRITE(IU,'(A)') '#'
       WRITE(IU,'(A)') SECNAME
       DO I=1,N
@@ -148,22 +176,25 @@
        ENDIF
       ENDDO
       WRITE(IU,'(A)') 'END'
-      WRITE(IU,'(A)') '#'
-      WRITE(IU,'(A)') ' '
- 
+      WRITE(IU,'(A)') '#' 
       RETURN
+
       END
       !-----------------------------------------------------------------
-      SUBROUTINE WRITE_SECTION_REAC_FMT_ZDP(IU,SECNAME,N,CLIST,CONST, &
-                                            SET)
+      SUBROUTINE WRITE_SECTION_REAC_FMT_ZDP(IU,SECNAME,N,NDOLLAR,CLIST, &
+                                            CONST,SET,REAC_DOLLAR_LIST)
       IMPLICIT NONE
-      INTEGER :: IU,N,I,SET(N)
-      CHARACTER(LEN=*) :: SECNAME,CLIST(N),CONST(N)
-
-      !TODO: WRITE ALSO EXPRESSIONS WITH '$' SIGN WHICH HOLD RATE EXPRESSIONS
-      WRITE(IU,'(A)') ' '
+      INTEGER :: IU,N,I,NDOLLAR,SET(N)
+      CHARACTER(LEN=*) :: SECNAME,CLIST(N),CONST(N), &
+                          REAC_DOLLAR_LIST(NDOLLAR)
+ 
       WRITE(IU,'(A)') '#'
       WRITE(IU,'(A)') SECNAME
+      WRITE(IU,'(A)') '# USER-PROVIDED EXPRESSIONS:'
+      DO I=1,NDOLLAR
+       WRITE(IU,'(A)') TRIM(ADJUSTL(REAC_DOLLAR_LIST(I)))
+      ENDDO
+      WRITE(IU,'(A)') '#'
       DO I=1,N
        IF(SET(I).EQ.1) THEN !KEEP
        WRITE(IU,'(A)') TRIM(ADJUSTL(CLIST(I)))//' !'// & 
@@ -172,7 +203,6 @@
       ENDDO
       WRITE(IU,'(A)') 'END'
       WRITE(IU,'(A)') '#'
-      WRITE(IU,'(A)') ' '
  
       RETURN
       END
