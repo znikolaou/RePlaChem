@@ -59,7 +59,7 @@
           ENDIF
          ENDDO  
         ENDDO   
-        CALL WRITE_OICS(N,I,NTRG,INDX_TRG(1:NTRG),OIC)
+        !CALL WRITE_OICS(N,I,NTRG,INDX_TRG(1:NTRG),OIC)
        ENDDO
       ENDDO
      
