@@ -72,19 +72,17 @@
             
       END
       !-----------------------------------------------------------------
-      SUBROUTINE READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,INDX_TRG,ETOL, &
-                              CHEMFL,SPECFL)
-      USE GLOBAL, ONLY: ZERO,SPEC,CONTROL_FL
+      SUBROUTINE READ_CONTROL()
+      USE GLOBAL, ONLY: NTRG,NCASE,NDATA,NSPMX,ZERO,SPEC,CONTROL_FL, &
+       INDX_TRG,ETOL,CHEMFL
       IMPLICIT NONE
-      CHARACTER(LEN=*) :: CHEMFL,SPECFL
-      INTEGER :: I,NSPMX,NTRG,NCASE,NDATA,INDX_TRG(NSPMX)
-      DOUBLE PRECISION :: ETOL(NSPMX)
+      INTEGER :: I
       INTEGER, PARAMETER:: IU=1
-     
+      
       WRITE(*,*) '***READ_CONTROL***'
       
       OPEN(UNIT=IU,FILE=CONTROL_FL,STATUS='OLD',FORM='FORMATTED')
-
+      
       READ(IU,*) 
       READ(IU,*) CHEMFL
       READ(IU,*) 
@@ -97,7 +95,6 @@
       DO I=1,NTRG
        READ(IU,*) INDX_TRG(I),ETOL(I)      
       ENDDO
-      
       WRITE(*,*) 'CHEMICAL MECHANISM FILE:',TRIM(ADJUSTL(CHEMFL))
       WRITE(*,*) 'NO TARGETS SPECIES, NO CASES, DATA SIZE'
       WRITE(*,*) NTRG,NCASE,NDATA

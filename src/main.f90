@@ -7,23 +7,18 @@
       USE GLOBAL
       USE CHEM_PARSE, ONLY : CM_INIT
       IMPLICIT NONE
-      INTEGER :: NDATA,NCASE,NSPEC_SKEL,NREAC_SKEL,INDX_TRG(NSPMX),I, &
-                 J,K,N
+      INTEGER :: NSPEC_SKEL,NREAC_SKEL,I,J,K,N
       INTEGER, ALLOCATABLE :: SET_TRG(:,:),SPSET_TRG(:,:), &
-                              SPSET_TRGUP(:,:),SPSET_UNION(:), &
-                              RESET_UNION(:),ELEMSET_UNION(:), &
-                              SPBOLSET_UNION(:)
+       SPSET_TRGUP(:,:),SPSET_UNION(:),RESET_UNION(:), &
+       ELEMSET_UNION(:),SPBOLSET_UNION(:)
       DOUBLE PRECISION, ALLOCATABLE :: RR(:),OIC(:,:)
-      DOUBLE PRECISION :: ETOL(NSPMX)
       CHARACTER(LEN=2) :: JCASE
-      CHARACTER(LEN=NSFLMX) :: FLCASE,CHEMFL,SPECFL,BUILD_CASE_DIR
+      CHARACTER(LEN=NSFLMX) :: FLCASE,BUILD_CASE_DIR
       
       WRITE(*,*) 
       WRITE(*,*) 'MAIN'
       
-      CALL READ_CONTROL(NSPMX,NTRG,NCASE,NDATA,INDX_TRG,ETOL, &
-                        CHEMFL,SPECFL) 
-                
+      CALL READ_CONTROL()           
       CALL CM_INIT(INDIR//CHEMFL)
       
       ALLOCATE(RR(NREAC))
