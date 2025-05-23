@@ -334,6 +334,60 @@
       RETURN
       END
       !-----------------------------------------------------------------
+      SUBROUTINE WRITE_STATS(TRGD_USET,STATS)
+      USE GLOBAL, ONLY : NTRG,NSPEC,NSMX,SPEC,INDX_TRG,OUTDIR,STATS_FL
+      IMPLICIT NONE
+      CHARACTER(LEN=NSMX) :: SRT_SPEC(NSPEC)
+      INTEGER, PARAMETER :: IU=1
+      INTEGER :: I,J,IT,TRGD_USET(NTRG,NSPEC)
+      DOUBLE PRECISION :: STATS(NTRG,NSPEC,3),SRT_STATS(NSPEC)
+
+      OPEN(UNIT=IU,FILE=OUTDIR//STATS_FL,STATUS='REPLACE', &
+           FORM='FORMATTED')
+      WRITE(IU,'(A)') 'Overall Interaction Coefficient (OIC) stats'
+      WRITE(IU,'(A)') '-------------------------------------------'
+      WRITE(IU,'(AI3)') 'No of targets:',NTRG
+      DO I=1,NTRG
+       IT=INDX_TRG(I)
+       WRITE(IU,'(AXAXAXI3)') 'TARGET:',TRIM(ADJUSTL(SPEC(IT))), &
+        ', INDEX (DET. MECH.):',IT
+       WRITE(IU,'(AXI3)') 'NO OF DEP. SPECIES:', &
+        SUM(TRGD_USET(I,:))-1
+       WRITE(IU,'(A)') 'I, DEP. SPEC, AVR-OIC, MIN-OIC, MAX-OIC:'
+       DO J=1,NSPEC
+        IF(TRGD_USET(I,J).NE.0.AND.J.NE.IT) THEN
+         WRITE(IU,'(I3XAXE12.5XE12.5XE12.5)')  &
+          J,TRIM(ADJUSTL(SPEC(J))), &
+          STATS(I,J,1),STATS(I,J,2),STATS(I,J,3)
+        ENDIF 
+       ENDDO
+       WRITE(IU,'(A)') 'SORTED BASED ON MAX-OIC:'
+       CALL SORT(NSPEC,NSMX,STATS(I,:,3),SPEC(1:NSPEC),SRT_STATS, &
+                 SRT_SPEC)
+       DO J=1,NSPEC
+        IF(TRGD_USET(I,J).NE.0.AND.J.NE.IT) THEN
+         WRITE(IU,'(I3XAXE12.5)') J,TRIM(ADJUSTL(SRT_SPEC(J))), &
+          SRT_STATS(J)
+        ENDIF 
+       ENDDO
+       WRITE(IU,'(A)') 'SORTED BASED ON AVR-OIC:'
+       CALL SORT(NSPEC,NSMX,STATS(I,:,1),SPEC(1:NSPEC),SRT_STATS, &
+                 SRT_SPEC)
+       DO J=1,NSPEC
+        IF(TRGD_USET(I,J).NE.0.AND.J.NE.IT) THEN
+         WRITE(IU,'(I3XAXE12.5)') J,TRIM(ADJUSTL(SRT_SPEC(J))), &
+          SRT_STATS(J)
+        ENDIF 
+       ENDDO
+
+      ENDDO
+
+      WRITE(IU,'(A)') '!END'
+      CLOSE(IU)
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
       SUBROUTINE WRITE_REDUCTION_INFO(SP_USET,RE_USET)
       USE GLOBAL, ONLY: NSPEC,NREAC,SPEC,REAC
       IMPLICIT NONE

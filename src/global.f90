@@ -10,7 +10,8 @@
        RATE_DIR='rates/',  &
        CONTROL_FL='control.txt', &
        CHEMRED_FL='reducedChemistry.txt', &
-       REAC_RATE_FL='reactionRates'
+       REAC_RATE_FL='reactionRates', &
+       STATS_FL='stats.txt'
       INTEGER, PARAMETER :: & 
        NREMX=20000, &
        NSPMX=5000, &
