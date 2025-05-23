@@ -344,16 +344,15 @@
 
       OPEN(UNIT=IU,FILE=OUTDIR//STATS_FL,STATUS='REPLACE', &
            FORM='FORMATTED')
-      WRITE(IU,'(A)') 'Overall Interaction Coefficient (OIC) stats'
+      WRITE(IU,'(A)') 'OVERALL INTERACTION COEFFICIENT (OIC) STATS'
       WRITE(IU,'(A)') '-------------------------------------------'
-      WRITE(IU,'(AI3)') 'No of targets:',NTRG
+      WRITE(IU,'(AI3)') 'NO TARGETS:',NTRG
       DO I=1,NTRG
        IT=INDX_TRG(I)
-       WRITE(IU,'(AXAXAXI3)') 'TARGET:',TRIM(ADJUSTL(SPEC(IT))), &
-        ', INDEX (DET. MECH.):',IT
-       WRITE(IU,'(AXI3)') 'NO OF DEP. SPECIES:', &
-        SUM(TRGD_USET(I,:))-1
-       WRITE(IU,'(A)') 'I, DEP. SPEC, AVR-OIC, MIN-OIC, MAX-OIC:'
+       WRITE(IU,'(AXAXAXI3XAXI3)') 'TARGET:', &
+        TRIM(ADJUSTL(SPEC(IT))), &
+        ' INDEX:',IT, 'NO DEP. SPECIES:',SUM(TRGD_USET(I,:))-1
+       WRITE(IU,'(A)') 'INDEX, SPEC, AVR OIC, MIN OIC, MAX OIC:'
        DO J=1,NSPEC
         IF(TRGD_USET(I,J).NE.0.AND.J.NE.IT) THEN
          WRITE(IU,'(I3XAXE12.5XE12.5XE12.5)')  &
@@ -361,7 +360,7 @@
           STATS(I,J,1),STATS(I,J,2),STATS(I,J,3)
         ENDIF 
        ENDDO
-       WRITE(IU,'(A)') 'SORTED BASED ON MAX-OIC:'
+       WRITE(IU,'(A)') 'SORTED BASED ON MAX OIC:'
        CALL SORT(NSPEC,NSMX,STATS(I,:,3),SPEC(1:NSPEC),SRT_STATS, &
                  SRT_SPEC)
        DO J=1,NSPEC
@@ -370,7 +369,7 @@
           SRT_STATS(J)
         ENDIF 
        ENDDO
-       WRITE(IU,'(A)') 'SORTED BASED ON AVR-OIC:'
+       WRITE(IU,'(A)') 'SORTED BASED ON AVR OIC:'
        CALL SORT(NSPEC,NSMX,STATS(I,:,1),SPEC(1:NSPEC),SRT_STATS, &
                  SRT_SPEC)
        DO J=1,NSPEC
