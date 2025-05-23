@@ -3,30 +3,26 @@
       ! AUTHOR: Z. NIKOLAOU
       !
       !-----------------------------------------------------------------
-      SUBROUTINE WRITE_CHEM_MECH_FMT_ZDP(DIR,FLSKEL,NTRG,INDX_TRG, &
-                                         ETOL, &
-                                         NELEM,NSPEC, &
-                                         NREAC,NDOLLAR,ELEM,SPEC,REAC, &
-                                         REAC_CONST, &
-                                         SETE,SETSP,SETSP_BOLS,SETRE, &
-                                         REAC_DOLLAR_LIST)
+      SUBROUTINE WRITE_CHEM_MECH_FMT_ZDP(SETE,SETSP,SETSP_BOLS,SETRE)
+      USE GLOBAL, ONLY : OUTDIR,CHEMRED_FL,NTRG,NELEM,NSPEC,NREAC, &
+       NREAC_DOLLAR,INDX_TRG,ELEM,SPEC,REAC,REAC_SEC_DOLLAR_LIST, &
+       REAC_CONST,ETOL
       IMPLICIT NONE
-      INTEGER :: NTRG,NELEM,NSPEC,NBOLS,NREAC,NDOLLAR,I
+      INTEGER :: NBOLS,I
       INTEGER, PARAMETER :: IO=7
       INTEGER :: SETE(NELEM),SETSP(NSPEC),SETSP_BOLS(NSPEC), &
-                 SETRE(NREAC),INDX_TRG(NTRG)
-      DOUBLE PRECISION :: ETOL(NTRG)
-      CHARACTER(LEN=*) :: ELEM(NELEM),SPEC(NSPEC), &
-                          REAC_DOLLAR_LIST(NDOLLAR), &
-                          REAC(NREAC),REAC_CONST(NREAC),DIR,FLSKEL 
-      CHARACTER(LEN=LEN(DIR)+LEN(FLSKEL)+1) :: FL
+                 SETRE(NREAC)
+      !CHARACTER(LEN=*) :: ELEM(NELEM),SPEC(NSPEC), &
+      !                    REAC_DOLLAR_LIST(NREAC_DOLLAR), &
+      !                    REAC(NREAC),REAC_CONST(NREAC)
+      CHARACTER(LEN=LEN(OUTDIR)+LEN(CHEMRED_FL)+1) :: FL
       CHARACTER(LEN=8)  :: DATE
       CHARACTER(LEN=10) :: TIME
       CHARACTER(LEN=5)  :: ZONE
 
       CALL DATETIME(DATE,TIME,ZONE)
     
-      FL=DIR//'/'//FLSKEL
+      FL=OUTDIR//'/'//CHEMRED_FL
       OPEN(UNIT=IO,FILE=FL,STATUS='REPLACE',FORM='FORMATTED')
 
       WRITE(IO,'(A)') '# PLASEREDCHEM.V01'
@@ -54,9 +50,8 @@
       CALL WRITE_SECTION_FMT_ZDP(IO,'ELEMENTS',NELEM,ELEM,SETE)
       CALL WRITE_SECTION_FMT_ZDP(IO,'SPECIES',NSPEC,SPEC,SETSP)
       CALL WRITE_SECTION_FMT_ZDP(IO,'BOLSIG',NSPEC,SPEC,SETSP_BOLS)
-      CALL WRITE_SECTION_REAC_FMT_ZDP(IO,'REACTIONS',NREAC,NDOLLAR, &
-                                      REAC,REAC_CONST,SETRE, &
-                                      REAC_DOLLAR_LIST)
+      CALL WRITE_SECTION_REAC_FMT_ZDP(IO,'REACTIONS',NREAC, &
+       NREAC_DOLLAR,REAC,REAC_CONST,SETRE,REAC_SEC_DOLLAR_LIST)
  
       CLOSE(IO)
 

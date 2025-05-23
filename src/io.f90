@@ -1,4 +1,8 @@
       !-----------------------------------------------------------------
+      !
+      ! AUTHOR: Z. NIKOLAOU
+      !
+      !-----------------------------------------------------------------
       SUBROUTINE READ_INT_AND_STR(FL,N,STRL,NL)
       USE GLOBAL, ONLY : NSMX
       CHARACTER(LEN=*) :: FL 
@@ -142,10 +146,10 @@
            
       END SUBROUTINE
       !-----------------------------------------------------------------
-      SUBROUTINE READ_REACTION_RATES(IDAT,DIR,NREAC,RR)
-      USE GLOBAL, ONLY : NSMX,REAC_RATE_FL
+      SUBROUTINE READ_REACTION_RATES(IDAT,DIR,RR)
+      USE GLOBAL, ONLY : NSMX,NREAC,REAC_RATE_FL
       IMPLICIT NONE
-      INTEGER I,J,IDAT,NREAC,TSTEP
+      INTEGER I,J,IDAT,TSTEP
       CHARACTER(LEN=*) :: DIR
       DOUBLE PRECISION :: RR(NREAC)
       CHARACTER(LEN=8) :: CDAT

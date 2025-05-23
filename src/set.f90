@@ -1,3 +1,24 @@
+      !-----------------------------------------------------------------
+      !
+      ! AUTHOR: Z. NIKOLAOU
+      !
+      !-----------------------------------------------------------------
+      SUBROUTINE GET_SPECIES_UNION_SET_FOR_TARGET(SET_TRG_DEP,SET_UNION)
+      USE GLOBAL, ONLY : NTRG,NSPEC
+      IMPLICIT NONE
+      INTEGER :: I,J,SET_TRG_DEP(NTRG,NSPEC),SET_UNION(NTRG,NSPEC)
+
+      DO J=1,NSPEC
+       DO I=1,NTRG
+        IF(SET_TRG_DEP(I,J).EQ.1.AND.SET_UNION(I,J).EQ.0) THEN
+         SET_UNION(I,J)=1
+        ENDIF
+       ENDDO
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
       SUBROUTINE GET_SPECIES_SET(INDX_TRG,SPSET_TRGUP,SPSET_UNION)
       USE GLOBAL, ONLY : NSPEC,NTRG
       IMPLICIT NONE
