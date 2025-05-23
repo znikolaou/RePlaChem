@@ -4,18 +4,18 @@ SRC_IN=global.f90 io.f90 chem_parse.f90 \
        drg.f90 output.f90 charUtil.f90 timing.f90 \
        sort.f90 set.f90
 
-SRC=$(addprefix $(SRC_DIR),$(notdir $(SRC_IN)))
+SRC=$(addprefix $(REDCHEM_SRC),$(notdir $(SRC_IN)))
 
-OBJS=$(patsubst $(SRC_DIR)%.o,$(BUILD_DIR)%.o,$(SRC:%.f90=%.o)) 
+OBJS=$(patsubst $(REDCHEM_SRC)%.o,$(REDCHEM_BUILD)%.o,$(SRC:%.f90=%.o)) 
 
 redChem:$(OBJS) 
-	$(FC) $(FOPT) $(OBJS) -o $(BIN_DIR)/$@
+	$(FC) $(FOPT) $(OBJS) -o $(REDCHEM_BIN)/$@
 
-$(BUILD_DIR)%.o: $(SRC_DIR)%.f90
+$(REDCHEM_BUILD)%.o: $(REDCHEM_SRC)%.f90
 	$(FC) $(FOPT) -c $< -o $@
 
 clean:
-	@ rm -f $(BIN_DIR)/* *.o *.mod $(BUILD_DIR)/*.o 
+	@ rm -f $(REDCHEM_BIN)/* *.o *.mod $(REDCHEM_BUILD)/*.o 
 
 printObjs:
 	@ echo $(OBJS)
