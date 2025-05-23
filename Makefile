@@ -1,7 +1,7 @@
 
 SRC_IN=global.f90 io.f90 chem_parse.f90 \
        graph_search.f90 main.f90  \
-       drg.f90 output.f90 char_util.f90 timing.f90 \
+       drg.f90 char_util.f90 timing.f90 \
        sort.f90 set.f90
 
 SRC=$(addprefix $(REDCHEM_SRC),$(notdir $(SRC_IN)))
