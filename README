@@ -1,0 +1,12 @@
+!************************plasRedChem_v0.1*******************************
+
+This is plasRedChem_v0.1 a dimensionality-reduction library for plasma
+chemical kinetics. 
+
+To use: 
+
+1. Set env. variables: source setenv.sh. 
+
+2. Compile: make clean and make redChem. 
+
+!***********************************************************************

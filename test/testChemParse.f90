@@ -1,4 +1,4 @@
-      PROGRAM TEST_ZDPLASKIN
+      PROGRAM TEST_CHEMPARSE
       USE CHEM_PARSE
       IMPLICIT NONE
       INTEGER :: I
@@ -8,7 +8,7 @@
               'kinetAntwerpMethaneNoTabs.inp', &
       FLC='./input_chemistry/chemkinFormatGri3/grimech3.txt'
  
-      CALL CM_INIT(FLC)
+      CALL CM_INIT(FLB)
 
       STOP
       END

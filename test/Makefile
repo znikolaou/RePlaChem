@@ -1,5 +1,9 @@
 
-SRC_CHEM=$(SRC_DIR)/global.f90 $(SRC_DIR)/precis.f90 $(SRC_DIR)/chem_parse.f90 $(SRC_DIR)/charUtil.f90 $(SRC_DIR)/parsechem.f90 $(SRC_DIR)/io.f90 
+SRC_CHEM=$(SRC_DIR)/global.f90  \
+	 $(SRC_DIR)/chem_parse.f90 \
+	 $(SRC_DIR)/charUtil.f90 \
+	 $(SRC_DIR)/io.f90 
+
 OBJS_CHEM=$(patsubst $(SRC_DIR)/%.f90,$(BUILD_DIR)/%.o,$(SRC_CHEM))
 
 SRC_T1=testIsBolsigReaction.f90

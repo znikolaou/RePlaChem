@@ -33,7 +33,9 @@ echo " "$FC
 echo " Compiler options:"
 echo " "$FOPT
 echo ""
-echo " Environment variables set! Please make clean and make redChem to compile."
+echo " Environment variables set!"
+echo " "
+echo " Please make clean and make redChem to compile."
 echo " "
 
 export PATH=$PATH:$BIN_DIR

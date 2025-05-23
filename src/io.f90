@@ -88,9 +88,9 @@
       READ(IU,*) 
       READ(IU,*) CHEMFL
       READ(IU,*) 
-      READ(IU,*) SPECFL
-      READ(IU,*) 
-      READ(IU,*) NTRG,NCASE,NDATA
+      READ(IU,*) NCASE,NDATA
+      READ(IU,*)
+      READ(IU,*) NTRG
       READ(IU,*)
       INDX_TRG(1:NSPMX)=0
       ETOL(1:NSPMX)=ZERO
