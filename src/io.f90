@@ -334,4 +334,42 @@
       RETURN
       END
       !-----------------------------------------------------------------
+      SUBROUTINE WRITE_REDUCTION_INFO(SP_USET,RE_USET)
+      USE GLOBAL, ONLY: NSPEC,NREAC,SPEC,REAC
+      IMPLICIT NONE
+      INTEGER :: I,NSP_RED,NRE_RED,SP_USET(NSPEC),RE_USET(NREAC)
 
+      WRITE(*,*) 'ELIMINATED SPECIES:'
+      DO I=1,NSPEC
+       IF(SP_USET(I).EQ.0) THEN
+        WRITE(*,*) TRIM(ADJUSTL(SPEC(I)))
+       ENDIF
+      ENDDO
+
+      WRITE(*,*) 'KEPT SPECIES:'
+      DO I=1,NSPEC
+       IF(SP_USET(I).EQ.1) THEN
+        WRITE(*,*) TRIM(ADJUSTL(SPEC(I)))
+       ENDIF
+      ENDDO
+
+      WRITE(*,*) 'KEPT REACTIONS:'
+      DO I=1,NREAC
+       IF(RE_USET(I).EQ.1) THEN
+        WRITE(*,*) TRIM(ADJUSTL(REAC(I)))
+       ENDIF
+      ENDDO
+
+      NSP_RED=SUM(SP_USET)
+      NRE_RED=SUM(RE_USET)
+      IF(NSP_RED.LE.0.OR.NRE_RED.LE.0) THEN
+       WRITE(*,*) 'ERROR: NO RED. MECH. CREATED TERMINATING ...'
+       STOP
+      ENDIF
+      IF(NSP_RED.EQ.NSPEC) THEN
+       WRITE(*,*) 'WARNING: NO REDUCTION!'
+      ENDIF
+
+      RETURN
+      END
+      !-----------------------------------------------------------------

@@ -53,34 +53,8 @@
       CALL GET_REACTION_SET(SP_USET,RE_USET)
       CALL GET_BOLSIG_SET(SP_USET,SPBOLS_USET) 
  
-      WRITE(*,*) 'ELIMINATED SPECIES:'
-      DO I=1,NSPEC
-       IF(SP_USET(I).EQ.0) THEN
-        WRITE(*,*) TRIM(SPEC(I)) 
-       ENDIF
-      ENDDO
-      
-      WRITE(*,*) 'SPECIES UNION SET:'
-      DO I=1,NSPEC
-       IF(SP_USET(I).EQ.1) THEN 
-        WRITE(*,*) TRIM(SPEC(I))
-       ENDIF
-      ENDDO
-      
-      WRITE(*,*) 'REACTIONS UNION SET:'
-      DO I=1,NREAC
-       IF(RE_USET(I).EQ.1) THEN   
-        WRITE(*,*) TRIM(REAC(I))
-       ENDIF
-      ENDDO
-       
-      NSPEC_SKEL=SUM(SP_USET)
-      NREAC_SKEL=SUM(RE_USET)
-      IF(NSPEC_SKEL.LE.0.OR.NREAC_SKEL.LE.0) THEN
-       WRITE(*,*) 'ERROR: NO SKEL MECH CREATED. TERMINATING ...'
-       STOP
-      ENDIF
-            
+      CALL WRITE_REDUCTION_INFO(SP_USET,RE_USET)
+                 
       CALL WRITE_CHEM_MECH_FMT_ZDP(EL_USET,SP_USET,SPBOLS_USET,RE_USET)
 
       WRITE(*,*) 'SKELETAL MECHANISM SIZE:'
