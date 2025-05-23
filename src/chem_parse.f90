@@ -97,8 +97,7 @@
       CALL CM_SET_STOICH_COEFFS() !SET VARS:NUR,NUP,DELTANU
       CALL CM_SET_RSPEC()  !SET VARS: RSPEC
       CALL CM_CHECK_CHARGE()  
-      !TODO:CALL CHECK_STOICHIOMETRY()
-       
+             
       WRITE(*,'(A)') 'EXTRACTED REACTIONS AND RATE CONSTANTS:'
       WRITE(*,'(A)') '---------------------------------------'
       DO I=1,NREAC
