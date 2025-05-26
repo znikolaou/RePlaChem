@@ -356,9 +356,9 @@
 
       DO I=1,NTRG
        IT=INDX_TRG(I)
-       WRITE(IU,FMTB) 'TARGET:',TRIM(ADJUSTL(SPEC(IT))), &
-        'INDEX:',IT, 'NO DEP. SPECIES:',SUM(TRGD_USET(I,:))-1, &
-        'ACCEPT. THRESH.:',ETOL(I)        
+       WRITE(IU,'(4(A10X))') 'TARGET','INDEX','NO DEP.','ACC. THR.'
+       WRITE(IU,'(A10XI10XI10XF10.6)') TRIM(ADJUSTL(SPEC(IT))),IT, &
+                  SUM(TRGD_USET(I,:))-1,ETOL(I)    
        WRITE(IU,'(6(A10X))') 'COUNT', 'INDEX','SPEC','MAX OIC', &
                              'ACCEPT(A)'
        CALL SORT(NSPEC,NSMX,STATS(I,:,3),SPEC(1:NSPEC),SRT_STATS, &
