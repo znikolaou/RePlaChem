@@ -12,7 +12,7 @@
         STATS(I,J,3)=MAX(OIC(I,J),STATS(I,J,3))
        ENDDO
       ENDDO
-      STATS(:,:,1)=STATS(:,:,1)/(NDATA*NCASE)
+      STATS(1:NTRG,1:NSPEC,1)=STATS(1:NTRG,1:NSPEC,1)/(NDATA*NCASE)
 
       RETURN
       END

@@ -96,7 +96,6 @@
        DO J=1,NSPEC
         FT=ZERO
         DO K=1,NREAC
-         !IF(ABS(DELTANU(K,J)).NE.ZERO.AND.J.NE.I) THEN !SPEC J IN REAC K
          IF(IDB(K,J).EQ.1.AND.J.NE.I) THEN                   
           FT=WKI(K,I)+FT                    
           IF(.NOT.(RIJ_FLAG(I,J))) THEN

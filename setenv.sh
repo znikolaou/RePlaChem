@@ -40,7 +40,7 @@ echo " "
 echo " Please make clean and make redChem to compile."
 echo " "
 
-export PATH=$PATH:$BIN_DIR
+export PATH=$PATH:$REDCHEM_BIN
 export REDCHEM_HOME
 export REDCHEM_SRC
 export REDCHEM_BUILD

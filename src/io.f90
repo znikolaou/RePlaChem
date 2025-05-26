@@ -335,57 +335,65 @@
       END
       !-----------------------------------------------------------------
       SUBROUTINE WRITE_STATS(TRGD_USET,STATS)
-      USE GLOBAL, ONLY : NTRG,NSPEC,NSMX,SPEC,INDX_TRG,OUTDIR,STATS_FL
+      USE GLOBAL, ONLY : NTRG,NSPEC,NSMX,SPEC,INDX_TRG,OUTDIR, &
+                         STATS_FL,LOGO,AUTHOR,DASH,ETOL
       IMPLICIT NONE
+      CHARACTER(LEN=1) :: IS_ACCEPT
       CHARACTER(LEN=NSMX) :: SRT_SPEC(NSPEC)
+      CHARACTER(LEN=30), PARAMETER :: FMTA='(2(I10X)A10XF10.6XA10)', &
+                                      FMTB='(3(AX)I4XAXI4XAXF10.6)' 
       INTEGER, PARAMETER :: IU=1
-      INTEGER :: I,J,IT,TRGD_USET(NTRG,NSPEC)
+      INTEGER :: I,J,IT,IC,TRGD_USET(NTRG,NSPEC)
       DOUBLE PRECISION :: STATS(NTRG,NSPEC,3),SRT_STATS(NSPEC)
 
       OPEN(UNIT=IU,FILE=OUTDIR//STATS_FL,STATUS='REPLACE', &
            FORM='FORMATTED')
-      WRITE(IU,'(A)') 'OVERALL INTERACTION COEFFICIENT (OIC) STATS'
-      WRITE(IU,'(A)') '-------------------------------------------'
-      WRITE(IU,'(AI3)') 'NO TARGETS:',NTRG
+
+      WRITE(IU,'(A/A/A)') LOGO,AUTHOR,DASH
+      WRITE(IU,*)
+      WRITE(IU,'(AXI4)') 'NO TARGETS:',NTRG
+      WRITE(IU,*)
+
       DO I=1,NTRG
        IT=INDX_TRG(I)
-       WRITE(IU,'(AXAXAXI3XAXI3)') 'TARGET:', &
-        TRIM(ADJUSTL(SPEC(IT))), &
-        ' INDEX:',IT, 'NO DEP. SPECIES:',SUM(TRGD_USET(I,:))-1
-       WRITE(IU,'(A)') 'INDEX, SPEC, AVR OIC, MIN OIC, MAX OIC:'
-       DO J=1,NSPEC
-        IF(TRGD_USET(I,J).NE.0.AND.J.NE.IT) THEN
-         WRITE(IU,'(I3XAXE12.5XE12.5XE12.5)')  &
-          J,TRIM(ADJUSTL(SPEC(J))), &
-          STATS(I,J,1),STATS(I,J,2),STATS(I,J,3)
-        ENDIF 
-       ENDDO
-       WRITE(IU,'(A)') 'SORTED BASED ON MAX OIC:'
+       WRITE(IU,FMTB) 'TARGET:',TRIM(ADJUSTL(SPEC(IT))), &
+        'INDEX:',IT, 'NO DEP. SPECIES:',SUM(TRGD_USET(I,:))-1, &
+        'ACCEPT. THRESH.:',ETOL(I)        
+       WRITE(IU,'(6(A10X))') 'COUNT', 'INDEX','SPEC','MAX OIC', &
+                             'ACCEPT(A)'
        CALL SORT(NSPEC,NSMX,STATS(I,:,3),SPEC(1:NSPEC),SRT_STATS, &
                  SRT_SPEC)
+       IC=0
        DO J=1,NSPEC
-        IF(TRGD_USET(I,J).NE.0.AND.J.NE.IT) THEN
-         WRITE(IU,'(I3XAXE12.5)') J,TRIM(ADJUSTL(SRT_SPEC(J))), &
-          SRT_STATS(J)
+        IF(J.NE.IT) THEN
+         IC=IC+1
+         WRITE(IU,FMTA) IC,J,TRIM(ADJUSTL(SRT_SPEC(J))),SRT_STATS(J), &
+                 IS_ACCEPT(SRT_STATS(J),ETOL(I))
         ENDIF 
        ENDDO
-       WRITE(IU,'(A)') 'SORTED BASED ON AVR OIC:'
-       CALL SORT(NSPEC,NSMX,STATS(I,:,1),SPEC(1:NSPEC),SRT_STATS, &
-                 SRT_SPEC)
-       DO J=1,NSPEC
-        IF(TRGD_USET(I,J).NE.0.AND.J.NE.IT) THEN
-         WRITE(IU,'(I3XAXE12.5)') J,TRIM(ADJUSTL(SRT_SPEC(J))), &
-          SRT_STATS(J)
-        ENDIF 
-       ENDDO
-
+       
+      WRITE(IU,*) 
       ENDDO
 
       WRITE(IU,'(A)') '!END'
+   
       CLOSE(IU)
 
       RETURN
       END
+      !-----------------------------------------------------------------
+      FUNCTION IS_ACCEPT(V,E)
+      IMPLICIT NONE
+      DOUBLE PRECISION :: V,E
+      CHARACTER(LEN=1) :: IS_ACCEPT
+
+      IF(V.GE.E) THEN
+       IS_ACCEPT='A'
+      ELSE
+       IS_ACCEPT='X'
+      ENDIF
+
+      END FUNCTION
       !-----------------------------------------------------------------
       SUBROUTINE WRITE_REDUCTION_INFO(SP_USET,RE_USET)
       USE GLOBAL, ONLY: NSPEC,NREAC,SPEC,REAC
@@ -425,4 +433,15 @@
 
       RETURN
       END
+      !-----------------------------------------------------------------
+      FUNCTION GET_FORMAT(ID)
+      IMPLICIT NONE
+      INTEGER :: ID
+      CHARACTER(LEN=50) :: GET_FORMAT
+
+      GET_FORMAT='*'
+      IF(ID.EQ.1) GET_FORMAT='(A10)'
+     
+
+      END FUNCTION
       !-----------------------------------------------------------------
