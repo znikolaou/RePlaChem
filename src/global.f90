@@ -11,7 +11,7 @@
        CONTROL_FL='control.txt', &
        CHEMRED_FL='reducedChemistry.txt', &
        REAC_RATE_FL='reactionRates', &
-       STATS_FL='stats.txt', &
+       STATS_FL='reductionSummary.txt', &
        VERSION='25.05', &
        LOGO=  '# plasRedChem_'//VERSION//'   #', &
        AUTHOR='# AUTHOR: Z. NIKOLAOU #', &

@@ -3,34 +3,6 @@
       ! AUTHOR: Z. NIKOLAOU
       !
       !-----------------------------------------------------------------
-      SUBROUTINE READ_INT_AND_STR(FL,N,STRL,NL)
-      USE GLOBAL, ONLY : NSMX
-      CHARACTER(LEN=*) :: FL 
-      INTEGER :: N,ID,STAT,I,NL,NA
-      CHARACTER(LEN=NSMX) :: STRL(N),CL(2),C
-      LOGICAL ISEMPTY,ISCOMMENT
-      PARAMETER(ID=1)
-      
-      OPEN(UNIT=ID,FILE=TRIM(ADJUSTL(FL)),STATUS='OLD',FORM='FORMATTED')
-
-      I=0
-      STAT=0
-      DO WHILE(STAT.EQ.0)
-       READ(ID,'(A)',IOSTAT=STAT) C 
-       IF(.NOT.ISEMPTY(C)) THEN
-        IF(.NOT.ISCOMMENT(C)) THEN
-         CALL SPLIT_STRING(C,' ',2,CL,NA)
-          I=I+1
-          STRL(I)=CL(2)
-        ENDIF
-       ENDIF
-      ENDDO      
-      NL=I
-
-      CLOSE(ID)
-
-      END SUBROUTINE 
-      !-----------------------------------------------------------------
       SUBROUTINE REMOVE_TABS_FROM_FILE(FL)
       IMPLICIT NONE
       CHARACTER(LEN=*) :: FL
@@ -114,50 +86,15 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE READ_RATES(IDAT,DIR,RNM,NSPEC,NREAC,WIJ,RR,JIJ)
-      USE GLOBAL, ONLY : NSMX
-      IMPLICIT NONE
-      INTEGER I,J,IDAT,NSPEC,NREAC
-      CHARACTER(LEN=*) :: DIR,RNM
-      DOUBLE PRECISION :: WIJ(NREAC,NSPEC),RR(NREAC),JIJ(NSPEC,NSPEC)
-      CHARACTER(LEN=4) :: CDAT
-      CHARACTER(LEN=NSMX) :: FLNM
-      INTEGER :: NSP,NRE
-      DOUBLE PRECISION :: TIME,THETA
- 
-      !BUILD FILENAMES
-      WRITE(CDAT,'(I4.4)') IDAT     
-      FLNM=DIR//RNM//'_'//CDAT//'.dat'
-
-      OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
-      READ(1) NSP,NRE
-      CLOSE(1)
-      
-      IF(NSP.NE.NSPEC.OR.NRE.NE.NREAC) THEN
-       WRITE(*,*) 'READ_RATES:ERROR, MISMATCH',NSP,NSPEC,NRE,NREAC
-       WRITE(*,*) 'TERMINATING ...'
-       STOP
-      ELSE
-       OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
-       !TODO READ SPECIES RATES MATRIX DIRECTLY
-       READ(1) NSP,NRE,TIME,THETA,WIJ,RR,JIJ
-       CLOSE(1)
-      ENDIF
-           
-      END SUBROUTINE
-      !-----------------------------------------------------------------
       SUBROUTINE READ_REACTION_RATES(IDAT,DIR,RR)
       USE GLOBAL, ONLY : NSMX,NREAC,REAC_RATE_FL
       IMPLICIT NONE
-      INTEGER I,J,IDAT,TSTEP
+      INTEGER I,J,IDAT,TSTEP,NSP,NRE,COUNT
       CHARACTER(LEN=*) :: DIR
-      DOUBLE PRECISION :: RR(NREAC)
+      DOUBLE PRECISION :: TIME,RR(NREAC)
       CHARACTER(LEN=8) :: CDAT
       CHARACTER(LEN=NSMX) :: FLNM
-      INTEGER :: NSP,NRE,COUNT
-      DOUBLE PRECISION :: TIME
  
-      !BUILD FILENAMES
       WRITE(CDAT,'(I8.8)') IDAT     
       FLNM=TRIM(ADJUSTL(DIR))//REAC_RATE_FL//'_'//CDAT//'.dat'
 
@@ -172,38 +109,6 @@
       ELSE
        OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
        READ(1) COUNT,TSTEP,TIME,NRE,RR
-       CLOSE(1)
-      ENDIF
-           
-      END SUBROUTINE
-      !-----------------------------------------------------------------
-      SUBROUTINE READ_SPECIES_RATES_MATRIX(IDAT,DIR,RNM,NSPEC,NREAC,WIJ)
-      USE GLOBAL, ONLY : NSMX
-      IMPLICIT NONE
-      INTEGER I,J,IDAT,NSPEC,NREAC
-      CHARACTER(LEN=*) :: DIR,RNM
-      DOUBLE PRECISION :: WIJ(NREAC,NSPEC)
-      CHARACTER(LEN=4) :: CDAT
-      CHARACTER(LEN=NSMX) :: FLNM
-      INTEGER :: NSP,NRE
-      DOUBLE PRECISION :: TIME
- 
-      !BUILD FILENAMES
-      WRITE(CDAT,'(I4.4)') IDAT     
-      FLNM=TRIM(ADJUSTL(DIR))//RNM
-      
-      WRITE(*,*) 'READING RATES FILE:',TRIM(ADJUSTL(FLNM))
-      OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
-      READ(1) NRE,NSP
-      CLOSE(1)
-      
-      IF(NSP.NE.NSPEC.OR.NRE.NE.NREAC) THEN
-       WRITE(*,*) 'READ_RATES:ERROR, MISMATCH',NSP,NSPEC,NRE,NREAC
-       WRITE(*,*) 'TERMINATING ...'
-       STOP
-      ELSE
-       OPEN(UNIT=1,FILE=FLNM,STATUS='OLD',FORM='UNFORMATTED')
-       READ(1) NRE,NSP,WIJ
        CLOSE(1)
       ENDIF
            
@@ -309,29 +214,9 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE WRITE_OICS(ICASE,IDATA,NTRG,INDX_TRG,OIC)
-      USE GLOBAL, ONLY: NSFLMX,NSPEC,SPEC,OUTDIR
-      IMPLICIT NONE
-      INTEGER, PARAMETER :: IU=1
-      CHARACTER(LEN=NSFLMX) :: FL
-      CHARACTER(LEN=3) :: IC
-      CHARACTER(LEN=8) :: ID
-      INTEGER :: ICASE,IDATA,NTRG,INDX_TRG(NTRG)
-      DOUBLE PRECISION :: OIC(NTRG,NSPEC)
-
-      WRITE(IC,'(I3.3)') ICASE
-      WRITE(ID,'(I8.8)') IDATA
-      FL=TRIM(ADJUSTL(OUTDIR))//'case'//IC//'data'//ID//'.dat'
-      OPEN(UNIT=IU,FILE=FL,STATUS='REPLACE',FORM='UNFORMATTED')
-      WRITE(IU) NTRG,NSPEC,OIC
-      CLOSE(IU)
-      
-      RETURN
-      END
-      !-----------------------------------------------------------------
-      SUBROUTINE WRITE_STATS(TRGD_USET,STATS)
-      USE GLOBAL, ONLY : NTRG,NSPEC,NSMX,SPEC,INDX_TRG,OUTDIR, &
-                         STATS_FL,LOGO,AUTHOR,DASH,ETOL
+      SUBROUTINE WRITE_SUMMARY(TRGD_USET,STATS,SP_USET,RE_USET)
+      USE GLOBAL, ONLY : NTRG,NSPEC,NREAC,NSMX,SPEC,INDX_TRG,OUTDIR, &
+                         REAC,STATS_FL,LOGO,AUTHOR,DASH,ETOL
       IMPLICIT NONE
       CHARACTER(LEN=72) :: BUILD_LINE
       CHARACTER(LEN=1) :: IS_ACCEPT
@@ -339,7 +224,8 @@
       CHARACTER(LEN=30), PARAMETER :: FMTA='(2(I10X)A10XF10.6XA10)', &
                                       FMTB='(3(AX)I4XAXI4XAXF10.6)' 
       INTEGER, PARAMETER :: IU=1
-      INTEGER :: I,J,IT,IC,TRGD_USET(NTRG,NSPEC)
+      INTEGER :: I,J,IT,IC,TRGD_USET(NTRG,NSPEC),SP_USET(NSPEC), &
+                 RE_USET(NREAC),NSP_RED,NRE_RED
       DOUBLE PRECISION :: STATS(NTRG,NSPEC,3),SRT_STATS(NSPEC)
 
       OPEN(UNIT=IU,FILE=OUTDIR//STATS_FL,STATUS='REPLACE', &
@@ -367,8 +253,61 @@
         ENDIF 
        ENDDO
       ENDDO
+      
       WRITE(IU,'(A)') BUILD_LINE(1)
-   
+      
+      NSP_RED=SUM(SP_USET)
+      NRE_RED=SUM(RE_USET)
+      IF(NSP_RED.EQ.NSPEC) THEN
+       WRITE(*,*) '*WARNING: NO REDUCTION!'
+      ENDIF
+      
+      WRITE(IU,'(A)') BUILD_LINE(1)
+      
+      WRITE(IU,'(AXI4)') 'ELIMINATED SPECIES:',NSPEC-NSP_RED
+      IC=0
+      DO I=1,NSPEC
+       IF(SP_USET(I).EQ.0) THEN
+        IC=IC+1
+        WRITE(IU,'(I4XA)') IC,TRIM(ADJUSTL(SPEC(I)))
+       ENDIF
+      ENDDO
+      
+      WRITE(IU,'(A)') BUILD_LINE(1)
+
+      WRITE(IU,'(AXI4)') 'KEPT SPECIES:',NSP_RED
+      IC=0
+      DO I=1,NSPEC
+       IF(SP_USET(I).EQ.1) THEN
+        IC=IC+1
+        WRITE(IU,'(I4XA)') IC,TRIM(ADJUSTL(SPEC(I)))
+       ENDIF
+      ENDDO
+
+      WRITE(IU,'(A)') BUILD_LINE(1)
+      
+      WRITE(IU,'(AXI4)') 'ELIMINATED REACTIONS:',NREAC-NRE_RED
+      IC=0
+      DO I=1,NREAC
+       IF(RE_USET(I).EQ.0) THEN
+        IC=IC+1
+        WRITE(IU,'(I4XA)') IC,TRIM(ADJUSTL(REAC(I)))
+       ENDIF
+      ENDDO
+      
+      WRITE(IU,'(A)') BUILD_LINE(1)
+
+      WRITE(IU,'(AXI4)') 'KEPT REACTIONS:',NRE_RED
+      IC=0
+      DO I=1,NREAC
+       IF(RE_USET(I).EQ.1) THEN
+        IC=IC+1
+        WRITE(IU,'(I4XA)') IC,TRIM(ADJUSTL(REAC(I)))
+       ENDIF
+      ENDDO
+      
+      WRITE(IU,'(A)') BUILD_LINE(1)
+
       CLOSE(IU)
 
       RETURN
@@ -387,42 +326,4 @@
 
       END FUNCTION
       !-----------------------------------------------------------------
-      SUBROUTINE WRITE_REDUCTION_INFO(SP_USET,RE_USET)
-      USE GLOBAL, ONLY: NSPEC,NREAC,SPEC,REAC
-      IMPLICIT NONE
-      INTEGER :: I,NSP_RED,NRE_RED,SP_USET(NSPEC),RE_USET(NREAC)
-
-      WRITE(*,*) 'ELIMINATED SPECIES:'
-      DO I=1,NSPEC
-       IF(SP_USET(I).EQ.0) THEN
-        WRITE(*,*) TRIM(ADJUSTL(SPEC(I)))
-       ENDIF
-      ENDDO
-
-      WRITE(*,*) 'KEPT SPECIES:'
-      DO I=1,NSPEC
-       IF(SP_USET(I).EQ.1) THEN
-        WRITE(*,*) TRIM(ADJUSTL(SPEC(I)))
-       ENDIF
-      ENDDO
-
-      WRITE(*,*) 'KEPT REACTIONS:'
-      DO I=1,NREAC
-       IF(RE_USET(I).EQ.1) THEN
-        WRITE(*,*) TRIM(ADJUSTL(REAC(I)))
-       ENDIF
-      ENDDO
-
-      NSP_RED=SUM(SP_USET)
-      NRE_RED=SUM(RE_USET)
-      IF(NSP_RED.LE.0.OR.NRE_RED.LE.0) THEN
-       WRITE(*,*) 'ERROR: NO RED. MECH. CREATED TERMINATING ...'
-       STOP
-      ENDIF
-      IF(NSP_RED.EQ.NSPEC) THEN
-       WRITE(*,*) 'WARNING: NO REDUCTION!'
-      ENDIF
-
-      RETURN
-      END
-      !----------------------------------------------------------------- 
+      
