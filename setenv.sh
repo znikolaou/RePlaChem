@@ -16,10 +16,10 @@ REDCHEM_BUILD=$REDCHEM_HOME/build/
 REDCHEM_BIN=$REDCHEM_HOME/bin/
 
 echo " "
-echo " **********plasRedChem_v0.1**********"
-echo " Plasma-chemistry reduction library. "
+echo " **********plasRedChem_25.05**********"
+echo " Plasma-chemistry reduction library.  "
 echo " Author: Z. Nikolaou (2025)"
-echo " ************************************"
+echo " *************************************"
 echo " "
 echo " Setting environment vars ..."
 echo " Home dir:"
