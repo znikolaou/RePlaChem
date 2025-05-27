@@ -480,4 +480,18 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      
+      FUNCTION BUILD_LINE(ID)
+      IMPLICIT NONE
+      INTEGER :: I,ID
+      INTEGER, PARAMETER :: N=72
+      CHARACTER(LEN=N) :: BUILD_LINE
+
+      IF(ID.EQ.1) BUILD_LINE='#'
+      IF(ID.EQ.2) BUILD_LINE='!'
+      IF(ID.EQ.3) BUILD_LINE='*'
+      DO I=1,71
+       BUILD_LINE=TRIM(ADJUSTL(BUILD_LINE))//'-'
+      ENDDO
+
+      END FUNCTION
+      !----------------------------------------------------------------- 

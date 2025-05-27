@@ -333,6 +333,7 @@
       USE GLOBAL, ONLY : NTRG,NSPEC,NSMX,SPEC,INDX_TRG,OUTDIR, &
                          STATS_FL,LOGO,AUTHOR,DASH,ETOL
       IMPLICIT NONE
+      CHARACTER(LEN=72) :: BUILD_LINE
       CHARACTER(LEN=1) :: IS_ACCEPT
       CHARACTER(LEN=NSMX) :: SRT_SPEC(NSPEC)
       CHARACTER(LEN=30), PARAMETER :: FMTA='(2(I10X)A10XF10.6XA10)', &
@@ -345,12 +346,11 @@
            FORM='FORMATTED')
 
       WRITE(IU,'(A/A/A)') LOGO,AUTHOR,DASH
-      WRITE(IU,*)
       WRITE(IU,'(AXI4)') 'NO TARGETS:',NTRG
-      WRITE(IU,*)
 
       DO I=1,NTRG
        IT=INDX_TRG(I)
+       WRITE(IU,'(A)') BUILD_LINE(1)
        WRITE(IU,'(4(A10X))') 'TARGET','INDEX','NO DEP.','ACC. THR.'
        WRITE(IU,'(A10XI10XI10XF10.6)') TRIM(ADJUSTL(SPEC(IT))),IT, &
                   SUM(TRGD_USET(I,:))-1,ETOL(I)    
@@ -366,11 +366,8 @@
                  IS_ACCEPT(SRT_STATS(J),ETOL(I))
         ENDIF 
        ENDDO
-       
-      WRITE(IU,*) 
       ENDDO
-
-      WRITE(IU,'(A)') '!END'
+      WRITE(IU,'(A)') BUILD_LINE(1)
    
       CLOSE(IU)
 
@@ -428,15 +425,4 @@
 
       RETURN
       END
-      !-----------------------------------------------------------------
-      FUNCTION GET_FORMAT(ID)
-      IMPLICIT NONE
-      INTEGER :: ID
-      CHARACTER(LEN=50) :: GET_FORMAT
-
-      GET_FORMAT='*'
-      IF(ID.EQ.1) GET_FORMAT='(A10)'
-     
-
-      END FUNCTION
-      !-----------------------------------------------------------------
+      !----------------------------------------------------------------- 
