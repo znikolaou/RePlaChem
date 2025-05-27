@@ -14,55 +14,24 @@
       DOUBLE PRECISION :: RR(NREAC),MXVL,DIC(NSPEC,NSPEC), &
                           DIC_PATH(NTRG,NSPEC),SRT_DIC(NSPEC)
   
-      WRITE(*,*)
-      WRITE(*,*) '***DRIVER_DRG***'
-      WRITE(*,*) 
-
       SET_TRG(1:NTRG,1:NSPEC)=0
       CALL GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR, &
        DELTANU(1:NREAC,1:NSPEC),RSPEC(1:NREAC,1:NSPEC),SPEC(1:NSPEC), &
        DIC,NEIGHB,N_NEIGHB)       
-      WRITE(*,*) 'DICs:'
-      DO J=1,NSPEC
-       WRITE(*,*) TRIM(ADJUSTL(SPEC(J))),N_NEIGHB(J)
-        DO I=1,N_NEIGHB(J)
-         WRITE(*,*) TRIM(ADJUSTL(SPEC(J))),'->', &
-                    TRIM(ADJUSTL(SPEC(NEIGHB(J,I)))), &
-                    DIC(J,NEIGHB(J,I))
-        ENDDO
-      ENDDO
-
-      WRITE(*,*) 'SEARCHING FOR STRONGEST PATH ...'
-
+      
       DO I=1,NTRG
        SET_TRG(I,INDX_TRG(I))=1
        SET_TRG(I,1:NSPEC)=0
        CALL GRPH_DIJKSTRA(NSPEC,DIC,NEIGHB,N_NEIGHB,INDX_TRG(I), &
-                         DIC_PATH(I,:)) !STRONGEST PATH FOUND (MAXIMUM PRODUCT OF DICs)       
+                         DIC_PATH(I,:))      
        DO J=1,NSPEC
         IF(DIC_PATH(I,J).GT.ETOL(I)) THEN
          SET_TRG(I,J)=1
         ENDIF
        ENDDO         
 
-       WRITE(*,*) 'STRONGEST PATH FOUND, TARGET: ', &
-                   TRIM(ADJUSTL(SPEC(INDX_TRG(I)))),',', &
-                   'NO OF CONNECTIONS=',SUM(SET_TRG(I,:))         
-               
-       CALL SORT(NSPEC,NSMX,DIC_PATH(I,:),SPEC(1:NSPEC),SRT_DIC, &
-                 SRT_SPECNM)
-
-        WRITE(*,*) 'OICs'
-        DO J=1,NSPEC
-         WRITE(*,*) TRIM(ADJUSTL(SRT_SPECNM(J))),SRT_DIC(J)
-        ENDDO
-
       ENDDO !FOR TARGET SPECIES 
             
-      WRITE(*,*) 
-      WRITE(*,*) '***DRIVER DRG***'
-      WRITE(*,*)       
-
       END
       !-----------------------------------------------------------------
       SUBROUTINE GET_DIRECT_INTER_COEFF(NSPEC,NREAC,RR,DELTANU,IDB, &
@@ -109,7 +78,7 @@
         IF(MXVL.NE.ZERO) THEN 
          DIC(I,J)=FT/MXVL         
          IF(DIC(I,J).GT.ONE) THEN
-          WRITE(*,*) 'GET_DIRECT_INTER_COEFF:ERROR, DIC > 1.0'
+          WRITE(*,*) 'GET_DIRECT_INTER_COEFF:ERROR, DIC > 1.0!'
           WRITE(*,*) TRIM(ADJUSTL(CSPECNM(I))),' ', &
                       ' ',TRIM(ADJUSTL(CSPECNM(J))), &
                        DTRM,PTRM,MXVL,DTRM+PTRM-FT,DIC(I,J)
@@ -121,97 +90,5 @@
 
       ENDDO !FOR TRG 
       
-      END
-      !-----------------------------------------------------------------
-      SUBROUTINE GET_SETA(ITRG,NSPEC,ETOL,RAB,LEN_CSP,CSPECNM,SETA)
-      IMPLICIT NONE
-      INTEGER :: ITRG,NSPEC,LEN_CSP,I,J,K,DIFF,SETA(NSPEC), &
-                 SET_TRG(NSPEC),SET_TRGO(NSPEC)
-      CHARACTER(LEN=LEN_CSP), DIMENSION(NSPEC) :: CSPECNM
-      DOUBLE PRECISION :: ETOL,RAB(NSPEC,NSPEC)
-
-      SETA(1:NSPEC)=0
-      SET_TRG(1:NSPEC)=0
-      SET_TRG(ITRG)=1 
-      SET_TRGO(1:NSPEC)=0
-      DIFF=1
-      K=0
-
-      DO WHILE(DIFF.NE.0) 
-
-       K=K+1
-
-       !WRITE(*,*) 'LEVEL',K,'TARGET SET SIZE=',SUM(SET_TRG)
-       !WRITE(*,*) 'TARGET SET:'
-       ! DO I=1,NSPEC
-       ! IF(SET_TRG(I).EQ.1) WRITE(*,*) CSPECNM(I)
-       !ENDDO      
-
-       DO I=1,NSPEC !FOR EACH NEW SPEC IN TARGET SET        
-        
-        IF( (SET_TRG(I).EQ.1).AND.(SET_TRGO(I).EQ.0) ) THEN           
-         DO J=1,NSPEC
-          IF( RAB(I,J).GT.ETOL ) THEN
-           SETA(J)=1
-           !WRITE(*,'(3A,E12.5)') TRIM(CSPECNM(I)),'->', &
-           !                      TRIM(CSPECNM(J)),RAB(I,J)
-          ENDIF
-         ENDDO
-        ENDIF  
-
-       ENDDO !SETA UPDATED
-       SET_TRGO(1:NSPEC)=SET_TRG(1:NSPEC)
-       !WRITE(*,*) 'NEW SET:'
-       !DO I=1,NSPEC
-       ! IF(SETA(I).EQ.1) WRITE(*,*) CSPECNM(I)
-       !ENDDO              
-       DIFF=ABS(SUM(SETA(:)-SET_TRG(:)))
-       SET_TRG(1:NSPEC)=SETA(1:NSPEC)
-       !DO I=1,NSPEC 
-       ! SETAO(I)=SETA(I)-SETAO(I)
-       !ENDDO
-       ! IF( (SETA(I).EQ.1).AND.(SETAO(I).EQ.0) ) THEN
-       !  SETAO(I)=1
-       ! ELSE
-       !  SETAO(I)=0
-       ! ENDIF
-       !ENDDO
-      ENDDO 
-      !WRITE(*,*) 'FINAL SET SIZE=',SUM(SETA)
-      !DO I=1,NSPEC
-      ! IF(SETA(I).EQ.1) WRITE(*,*) CSPECNM(I)
-      !ENDDO              
-      
-      END
-      !-----------------------------------------------------------------
-      !TODO: UNUSED (REMOVE?)
-      SUBROUTINE GET_SETS(NSPEC,NREAC,IDB,ISP_SET,ISP_SET_UPD, &
-                          IRE_SET_UPD)      
-      IMPLICIT NONE 
-      INTEGER :: NSPEC,NREAC,IDB(NREAC,NSPEC),I,J,ISP_SET(NSPEC), &
-                 IRE_SET(NREAC),ISP_SET_UPD(NSPEC), &
-                 IRE_SET_UPD(NREAC),IWRK,NRSPEC
-      
-      !*SPECIES AND REACTION ARRAYS ZEROED IN MAIN FUNCTION 
-
-      !SPECIES SET
-      DO I=1,NSPEC 
-       IF( (ISP_SET(I).EQ.1).AND.(ISP_SET_UPD(I).EQ.0) ) THEN
-        ISP_SET_UPD(I)=1
-       ENDIF
-      ENDDO !SPEC IN SET
-
-      !REACTIONS SET
-      DO J=1,NREAC
-       IWRK=0
-       NRSPEC=SUM(IDB(J,:))
-       DO I=1,NSPEC
-         IF( (ISP_SET_UPD(I).EQ.1).AND.(IDB(J,I).EQ.1) ) THEN
-          IWRK=IWRK+1
-         ENDIF
-       ENDDO
-       IF(IWRK.EQ.NRSPEC) IRE_SET_UPD(J)=1
-      ENDDO
-         
       END
       !-----------------------------------------------------------------
