@@ -23,7 +23,7 @@
       OPEN(UNIT=ID,FILE=FL,STATUS='OLD',FORM='FORMATTED',IOSTAT=IOS)
 
       IF(IOS.LT.0) THEN
-       WRITE(*,*) 'ERROR READING FILE'
+       WRITE(*,*) '*READ_LINES: ERROR READING FILE'
        STOP
       ENDIF
 
@@ -33,7 +33,7 @@
        IF(IOS.NE.0) EXIT
        NL=NL+1
        IF(NL.GT.NLINEMX) THEN
-        WRITE(*,*) 'MAX LINES EXCEEDED, TERMINATING ...'
+        WRITE(*,*) '*READ_LINES: MAX LINES EXCEEDED, TERMINATING ...'
         STOP
        ENDIF
       ENDDO
@@ -52,11 +52,14 @@
       USE GLOBAL, ONLY: NTRG,NCASE,NDATA,NSPMX,ZERO,SPEC,CONTROL_FL, &
        INDX_TRG,ETOL,CHEMFL
       IMPLICIT NONE
+      CHARACTER(LEN=72) :: BUILD_LINE
       INTEGER :: I
       INTEGER, PARAMETER:: IU=1
       
-      WRITE(*,*) '***READ_CONTROL***'
-      
+      WRITE(*,'(A)') BUILD_LINE(1)
+
+      WRITE(*,'(A)') 'READING CONTROL FILE ...'
+
       OPEN(UNIT=IU,FILE=CONTROL_FL,STATUS='OLD',FORM='FORMATTED')
       
       READ(IU,*) 
@@ -71,18 +74,19 @@
       DO I=1,NTRG
        READ(IU,*) INDX_TRG(I),ETOL(I)      
       ENDDO
-      WRITE(*,*) 'CHEMICAL MECHANISM FILE:',TRIM(ADJUSTL(CHEMFL))
-      WRITE(*,*) 'NO TARGETS SPECIES, NO CASES, DATA SIZE'
-      WRITE(*,*) NTRG,NCASE,NDATA
-      WRITE(*,*) 'TARGET SPECIES INDEX, TARGET SPECIES, TOL:'
+      WRITE(*,'(A)') 'CHEMICAL MECHANISM:'
+      WRITE(*,'(XA)') TRIM(ADJUSTL(CHEMFL))
+      WRITE(*,'(X3(A10X))') 'NO TRGS','NO CASES','NO DATA'
+      WRITE(*,'(X3(I10X))') NTRG,NCASE,NDATA
+      WRITE(*,'(X2(A10X))') 'TARG. INDX','ACC. THR.'
       DO I=1,NTRG
-       WRITE(*,*) I,INDX_TRG(I),ETOL(I)       
+       WRITE(*,'(XI10XF10.6)') INDX_TRG(I),ETOL(I)
       ENDDO
 
+      WRITE(*,'(A)') BUILD_LINE(1)
+
       CLOSE(IU)
- 
-      WRITE(*,*) '***READ_CONTROL***'
-                 
+            
       RETURN
       END
       !-----------------------------------------------------------------

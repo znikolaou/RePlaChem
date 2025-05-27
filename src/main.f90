@@ -13,9 +13,6 @@
       DOUBLE PRECISION, ALLOCATABLE :: RR(:),OIC(:,:),STATS(:,:,:)
       CHARACTER(LEN=NSFLMX) :: FLCASE,BUILD_CASE_DIR
       
-      WRITE(*,*) 
-      WRITE(*,*) 'MAIN'
-      
       CALL READ_CONTROL()           
       
       CALL CM_INIT(INDIR//CHEMFL)

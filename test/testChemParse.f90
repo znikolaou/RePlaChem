@@ -8,7 +8,7 @@
               'kinetAntwerpMethaneNoTabs.inp', &
       FLC='./input_chemistry/chemkinFormatGri3/grimech3.txt'
  
-      CALL CM_INIT(FLB)
+      CALL CM_INIT(FLA)
 
       STOP
       END

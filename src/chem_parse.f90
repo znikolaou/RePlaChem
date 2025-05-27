@@ -41,13 +41,7 @@
       INTEGER :: I,J
       CHARACTER(LEN=*) :: FL
 
-      WRITE(*,*)
-      WRITE(*,'(A)') '***MODULE CHEM_PARSE***'
-      WRITE(*,*) 
-      WRITE(*,'(AXA)') 'FILE:',TRIM(ADJUSTL(FL))
-      WRITE(*,*) 
-      WRITE(*,'(A)') 'PARSING CHEM. MECHANISM ...' 
-      WRITE(*,*) 
+      WRITE(*,'(A)') 'PARSING CHEMICAL MECHANISM ...'
 
       CALL REMOVE_TABS_FROM_FILE(FL)
 
@@ -85,11 +79,9 @@
       CALL CM_READ_AND_FILTER_REACTIONS() 
       CALL CM_READ_REAC_SEC_DOLLAR_LIST()
 
-      WRITE(*,'(A)') 
-      WRITE(*,'(A)') 'FINISHED READING FILE'
       WRITE(*,*) 
-      WRITE(*,'(A)') 'POST-PROCESSING ...'
-      WRITE(*,*)  
+      WRITE(*,'(A)') 'FINISHED READING FILE, POST-PROCESSING ...'
+      WRITE(*,*) 
       
       CALL CM_SET_IS_SPEC_CHARGED()
       CALL CM_SET_REAC_INFO()
@@ -98,46 +90,20 @@
       CALL CM_SET_RSPEC()  !SET VARS: RSPEC
       CALL CM_CHECK_CHARGE()  
              
-      WRITE(*,'(A)') 'EXTRACTED REACTIONS AND RATE CONSTANTS:'
-      WRITE(*,'(A)') '---------------------------------------'
+      WRITE(*,'(A)') 'REACTION INFO (RATE CONS. AND STOICH. COEFFS):'
       DO I=1,NREAC
-       WRITE(*,'(I5XAXAXA)') I,TRIM(ADJUSTL(REAC(I))), &
-                                 'RATE CONST:', &
-                                 TRIM(ADJUSTL(REAC_CONST(I)))
-      ENDDO
-
-      WRITE(*,*) 'REACTION SPECIES'
-      WRITE(*,*) '----------------'
-      DO I=1,NREAC
-       WRITE(*,*) I,TRIM(ADJUSTL(REAC(I)))
-       DO J=1,NSPEC
-        IF(RSPEC(I,J).NE.0) THEN
-         WRITE(*,*) '   ',TRIM(ADJUSTL(SPEC(J)))
-        ENDIF
-       ENDDO
-      ENDDO
-
-      WRITE(*,*) 
-      WRITE(*,'(A)') 'STOICHIOMETRIC COEFFS:'
-      WRITE(*,'(A)') '----------------------'
-      DO I=1,NREAC
-       WRITE(*,'(I5XAXAXAXA)') I,TRIM(ADJUSTL(REAC(I))), &
-                                 '( '//TRIM(ADJUSTL(REAC_F(I)))//' )'
+       WRITE(*,'(I5X4(XA))') I,TRIM(ADJUSTL(REAC(I))), &
+                               '|',TRIM(ADJUSTL(REAC_CONST(I))),'|'
        DO J=1,NSPEC
         IF(RSPEC(I,J).EQ.1) THEN
-         WRITE(*,*) TRIM(ADJUSTL(SPEC(J))),NUR(I,J),NUP(I,J), &
-                    DELTANU(I,J)
+         WRITE(*,'(A10X3(F10.6X))') TRIM(ADJUSTL(SPEC(J))),NUR(I,J), &
+                                   NUP(I,J),DELTANU(I,J)
         ENDIF
        ENDDO
       ENDDO
       
-
-
       WRITE(*,*) 
       WRITE(*,'(A)') 'PARSING COMPLETE!' 
-      WRITE(*,*) 
-      WRITE(*,'(A)') '***MODULE CHEM_PARSE***'
-
       RETURN
       END 
       !-----------------------------------------------------------------        
@@ -148,15 +114,14 @@
       IS=GET_KEY_INDEX(KEY_ELEM,NLINES,LINES(1:NLINES),1)
       IF(IS.GT.0) THEN
        IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
-       WRITE(*,*)
-       WRITE(*,'(AXI5XI5)') 'ELEMENTS SECTION, LINES:',IS,IE
+       WRITE(*,'(AXI4AXI4)') 'ELEMENTS SECTION: LINES',IS,'-',IE
        CALL CM_READ_SECTION(IS,IE,NSPMX,NSMX,ELEM,NELEM,.TRUE.)
-       WRITE(*,'(AXI5)') 'ELEMENTS: NELEM=',NELEM
+       WRITE(*,*) 'ELEMENTS:'
        DO I=1,NELEM
-        WRITE(*,'(I4XA)') I,TRIM(ADJUSTL(ELEM(I)))
+        WRITE(*,*) I,TRIM(ADJUSTL(ELEM(I)))
        ENDDO
       ELSE
-       WRITE(*,'(A)') '*ERROR: NO ELEMENTS SECTION FOUND!'// &
+       WRITE(*,*) '*ERROR: NO ELEMENTS SECTION FOUND!'// &
                       ' TERMINATING ...'
        STOP
       ENDIF
@@ -171,12 +136,11 @@
       IS=GET_KEY_INDEX(KEY_SPEC,NLINES,LINES(1:NLINES),1)
       IF(IS.GT.0) THEN
        IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
-       WRITE(*,*)
-       WRITE(*,'(AXI5XI5)') 'SPECIES SECTION, LINES:',IS,IE
+       WRITE(*,'(AXI4AXI4)') 'SPECIES SECTION: LINES',IS,'-',IE
        CALL CM_READ_SECTION(IS,IE,NSPMX,NSMX,SPEC,NSPEC,.TRUE.)
-       WRITE(*,'(AXI5)') 'SPECIES: NSPEC=',NSPEC
+       WRITE(*,*) 'SPECIES:'
        DO I=1,NSPEC
-        WRITE(*,'(I4XA)') I,TRIM(ADJUSTL(SPEC(I)))
+        WRITE(*,*) I,TRIM(ADJUSTL(SPEC(I)))
        ENDDO
       ELSE
        WRITE(*,*) '*ERROR: NO SPECIES SECTION FOUND! TERMINATING ...'
@@ -193,13 +157,12 @@
       IS=GET_KEY_INDEX(KEY_BOLS,NLINES,LINES(1:NLINES),1)
       IF(IS.GT.0) THEN
        IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
-       WRITE(*,*)
-       WRITE(*,'(AXI5XI5)') 'BOLSIG SPECIES SECTION, LINES:',IS,IE
+       WRITE(*,'(AXI4AXI4)') 'BOLSIG SPECIES SECTION: LINES:',IS,'-',IE
        CALL CM_READ_SECTION(IS,IE,NSPMX,NSMX,SPEC_BOLSIG,NSPEC_BOLSIG, &
               .TRUE.)
-       WRITE(*,'(AXI5)') 'BOLSIG SPECIES: NSPEC_BOSLIG=',NSPEC_BOLSIG
+       WRITE(*,*) 'BOLSIG SPECIES:'
        DO I=1,NSPEC_BOLSIG
-        WRITE(*,'(I4XA)') I,TRIM(ADJUSTL(SPEC_BOLSIG(I)))
+        WRITE(*,*) I,TRIM(ADJUSTL(SPEC_BOLSIG(I)))
        ENDDO
       ELSE
       WRITE(*,'(A)') '*WARNING: NO BOLSIG SPECIES SECTION FOUND!' 
@@ -215,20 +178,19 @@
       IS=GET_KEY_INDEX(KEY_BOLS,NLINES,LINES(1:NLINES),1)
       IF(IS.GT.0) THEN
        IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS) 
-       WRITE(*,*)
-       WRITE(*,'(AXI5XI5)') 'BOLSIG SECTION, LINES:',IS,IE
+       WRITE(*,'(AXI4AXI4)') 'BOLSIG SECTION, LINES:',IS,'-',IE
        CALL CM_READ_SECTION_SET_LIST(IS,IE,NLINEMX, &
                                      BOLSIG_SEC_SET_LIST,NBOLS_SET)
-       WRITE(*,'(A)') 'BOLSIG SECTION SET LINES:'
+       WRITE(*,*) 'BOLSIG SECTION SET LINES:'
        IF(NBOLS_SET.GT.0) THEN
         DO I=1,NBOLS_SET
-         WRITE(*,'(A)') TRIM(ADJUSTL(BOLSIG_SEC_SET_LIST(I)))
+         WRITE(*,*) TRIM(ADJUSTL(BOLSIG_SEC_SET_LIST(I)))
         ENDDO 
        ELSE
-        WRITE(*,'(XA)') 'NO SET KEYWORDS FOUND IN BOLSIG SECTION!'
+        WRITE(*,*) 'NO SET KEYWORDS FOUND IN BOLSIG SECTION!'
        ENDIF
       ELSE
-       WRITE(*,'(A)') '*WARNING: NO BOLSIG SPECIES SECTION FOUND!'
+       WRITE(*,*) '*WARNING: NO BOLSIG SPECIES SECTION FOUND!'
       ENDIF     
 
       RETURN
@@ -241,14 +203,13 @@
       IS=GET_KEY_INDEX(KEY_REAC,NLINES,LINES(1:NLINES),1)
       IF(IS.GT.0) THEN
        IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
-       WRITE(*,*)
-       WRITE(*,'(AXI5XI5)') 'REACTIONS SECTION, LINES:',IS,IE
-       WRITE(*,'(A)') 'REACTIONS:'
+       WRITE(*,'(AXI4AXI4)') 'REACTIONS SECTION: LINES:',IS,'-',IE
+       WRITE(*,*) 'REACTIONS:'
        CALL CM_READ_SECTION(IS,IE,NREMX,NSMX,CHEM_LINES,NREAC_RAW, &
                             .FALSE.)
        CALL CM_FILTER_REACTIONS()
       ELSE
-       WRITE(*,'(A)') '*ERROR: NO REACTIONS SECTION FOUND!,'// &
+       WRITE(*,*) '*ERROR: NO REACTIONS SECTION FOUND!,'// &
                       'TERMINATING ...'
        STOP
       ENDIF
@@ -262,15 +223,14 @@
 
       IS=GET_KEY_INDEX(KEY_REAC,NLINES,LINES(1:NLINES),1)
       IE=GET_KEY_INDEX(KEY_END,NLINES,LINES(1:NLINES),IS)
-      WRITE(*,*)
-      WRITE(*,'(A)') 'REACTIONS SET DOLLAR LIST:'
+      WRITE(*,*) 'REACTIONS SET DOLLAR LIST:'
       CALL CM_READ_SECTION_DOLLAR_LIST(IS,IE,NLINEMX, &
               REAC_SEC_DOLLAR_LIST,NREAC_DOLLAR)
       IF(NREAC_DOLLAR.EQ.0) THEN
-       WRITE(*,'(XA)') 'NO $ EXPRESSIONS FOUND IN REACTIONS SECTION!'
+       WRITE(*,*) ' NO $ EXPRESSIONS FOUND IN REACTIONS SECTION!'
       ELSE
        DO I=1,NREAC_DOLLAR
-        WRITE(*,'(A)') TRIM(ADJUSTL(REAC_SEC_DOLLAR_LIST(I)))
+        WRITE(*,*) TRIM(ADJUSTL(REAC_SEC_DOLLAR_LIST(I)))
        ENDDO
       ENDIF
      

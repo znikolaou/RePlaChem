@@ -1,10 +1,10 @@
 
-SRC_CHEM=$(SRC_DIR)/global.f90  \
-	 $(SRC_DIR)/chem_parse.f90 \
-	 $(SRC_DIR)/charUtil.f90 \
-	 $(SRC_DIR)/io.f90 
+SRC_CHEM=$(REDCHEM_SRC)global.f90  \
+	 $(REDCHEM_SRC)chem_parse.f90 \
+	 $(REDCHEM_SRC)char_util.f90 \
+	 $(REDCHEM_SRC)io.f90 $(REDCHEM_SRC)timing.f90 $(REDCHEM_SRC)sort.f90 
 
-OBJS_CHEM=$(patsubst $(SRC_DIR)/%.f90,$(BUILD_DIR)/%.o,$(SRC_CHEM))
+OBJS_CHEM=$(patsubst $(REDCHEM_SRC)%.f90,$(REDCHEM_BUILD)%.o,$(SRC_CHEM))
 
 SRC_T1=testIsBolsigReaction.f90
 SRC_T2=testFormatReactions.f90
@@ -99,9 +99,9 @@ print:
 %.o: %.f90
 	$(FC) $(FOPT) -c -o $@ $< 
 
-$(BUILD_DIR)/%.o: $(SRC_DIR)/%.f90
+$(REDCHEM_BUILD)%.o: $(REDCHEM_SRC)%.f90
 	$(FC) $(FOPT) -c -o $@ $< 
 
 clean:
-	@ rm -f $(BUILD_DIR)/*.o  *.o log* go*  *.mod
+	@ rm -f $(REDCHEM_BUILD)*.o  *.o log* go*  *.mod
 
