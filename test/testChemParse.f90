@@ -3,11 +3,8 @@
       IMPLICIT NONE
       INTEGER :: I
       CHARACTER(LEN=*), PARAMETER :: &
-      FLA='./input_chemistry/argon2step/kinet2stepArgonModified.inp', &
-      FLB='./input_chemistry/methaneAntwerp/'//&
-              'kinetAntwerpMethaneNoTabs.inp', &
-      FLC='./input_chemistry/chemkinFormatGri3/grimech3.txt'
- 
+      FLA='./input_chemistry/argon2step/kinet2stepArgon.inp'
+       
       CALL CM_INIT(FLA)
 
       STOP
