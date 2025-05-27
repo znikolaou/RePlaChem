@@ -12,9 +12,10 @@
        CHEMRED_FL='reducedChemistry.txt', &
        REAC_RATE_FL='reactionRates', &
        STATS_FL='stats.txt', &
-       LOGO=  '***plasRedChem_25.05***', &
-       AUTHOR='* Author: Z. Nikolaou *', &
-       DASH=  '***********************'
+       VERSION='25.05', &
+       LOGO=  '# plasRedChem_'//VERSION//'   #', &
+       AUTHOR='# AUTHOR: Z. NIKOLAOU #', &
+       DASH=  '#---------------------#'
       INTEGER, PARAMETER :: & 
        NREMX=20000, &
        NSPMX=5000, &

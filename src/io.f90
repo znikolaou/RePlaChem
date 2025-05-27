@@ -237,27 +237,22 @@
       FL=OUTDIR//'/'//CHEMRED_FL
       OPEN(UNIT=IO,FILE=FL,STATUS='REPLACE',FORM='FORMATTED')
 
-      WRITE(IO,'(A)') '# PLASEREDCHEM.V01'
-      WRITE(IO,'(A)') '#'
-      WRITE(IO,'(A)') '# AUTHOR: ZACHARIAS NIKOLAOU'
+      WRITE(IO,'(A)') LOGO
+      WRITE(IO,'(A)') AUTHOR
+      WRITE(IO,'(A)') DASH
       WRITE(IO,'(A)') '#'
       WRITE(IO,'(A)') '# THIS IS AN AUTO-GENERATED FILE.'
-      WRITE(IO,'(A)') '#'
       WRITE(IO,'(4(AX))') '# CREATED: ',TRIM(DATE),TRIM(TIME),TRIM(ZONE)
       WRITE(IO,'(A)') '#'
-      WRITE(IO,'(A)') '# REDUCTION PARAMS (TARGET SPECIES AND ETOL):'
+      WRITE(IO,'(A1X2(A10X))') '#','TARGETS', 'ACC. THR.'
       DO I=1,NTRG
-       WRITE(IO,'(AXAXE12.5)') '# '//TRIM(ADJUSTL(SPEC(INDX_TRG(I)))), &
-                              'ETOL=',ETOL(I)
+       WRITE(IO,'(A1XA10XF10.6)') '#', &
+               TRIM(ADJUSTL(SPEC(INDX_TRG(I)))),ETOL(I)
       ENDDO
       WRITE(IO,'(A)') '#'
-      WRITE(IO,'(A)') '# DETAILED MECHANISM:'
-      WRITE(IO,'(AXI4)') '# NREAC=',NREAC
-      WRITE(IO,'(AXI4)') '# NSPEC=',NSPEC
-      WRITE(IO,'(A)') '# REDUCED MECHANISM:'
-      WRITE(IO,'(AXI4)') '# NREAC=',SUM(SETRE)
-      WRITE(IO,'(AXI4)') '# NSPEC=',SUM(SETSP)
-      WRITE(IO,'(A)') '#' 
+      WRITE(IO,'(A1(8X)AXA)') '#','DET. MECH.','RED. MECH.'
+      WRITE(IO,'(A1XA6X2(I8X))') '#','NREAC=',NREAC,SUM(SETRE)
+      WRITE(IO,'(A1XA6X2(I8X))') '#','NSPEC=',NSPEC,SUM(SETSP)
      
       CALL WRITE_SECTION_FMT_ZDP(IO,'ELEMENTS',NELEM,ELEM,SETE)
       CALL WRITE_SECTION_FMT_ZDP(IO,'SPECIES',NSPEC,SPEC,SETSP)
