@@ -12,7 +12,7 @@
       SUBROUTINE DIJKSTRA_GSEARCH(NODES,WEIGHTS,NEIGH,N_NEIGH,ITRG,OIC)
       IMPLICIT NONE
       ! REFERENCES: E. Dijkstra. Numer. Math. 1 (1959) 261–271.
-      INTEGER :: I,J,K,N,NODES,II,KK
+      INTEGER :: I,J,K,N,NODES,INODE,INDX_FOR_INODE
       INTEGER :: NEIGH(NODES,NODES),N_NEIGH(NODES),ITRG,IARR(NODES)
       DOUBLE PRECISION :: WEIGHTS(NODES,NODES),OIC(NODES),MXVL
       !
@@ -30,32 +30,13 @@
       ENDDO
       N=NODES
       
-      DO WHILE(IARR(1).NE.0)
-
-       !FIND INDEX OF MAX VAL->MOST IMPORTANT SPECIES/NODE.            
-       !MXVL=0.0D0
-       !DO K=1,N
-       ! IF(IARR(K).EQ.0) GOTO 1
-       ! !WRITE(*,*) K,IARR(K),OIC(IARR(K)),MXVL
-       !  IF(OIC(IARR(K)).GE.MXVL) THEN 
-       !   II=IARR(K)
-       !   MXVL=OIC(II)
-       !   KK=K
-       !  ENDIF
-!1      ! CONTINUE
-       !ENDDO!! II SET       
-       !WRITE(*,*) II,MXVL
-                            !--------------
-       
-       CALL GET_MAX_LOC(N,NODES,IARR,OIC,II,KK,MXVL)
-       !REMOVE II FROM LIST
-       CALL UPDATE_LIST(NODES,KK,N,IARR)
-       
-       !RUN THROUGH NEIGH OF II->GET OIC
-       DO I=1,N_NEIGH(II)
-        J=NEIGH(II,I)
-        IF(WEIGHTS(II,J).GT.(1.0D-30)) THEN
-         OIC(J)=MAX(OIC(J),OIC(II)*WEIGHTS(II,J))
+      DO WHILE(IARR(1).NE.0)       
+       CALL GET_MAX_LOC(N,NODES,IARR,OIC,INODE,INDX_FOR_INODE,MXVL)
+       CALL UPDATE_LIST(NODES,INDX_FOR_INODE,N,IARR)
+       DO I=1,N_NEIGH(INODE)
+        J=NEIGH(INODE,I)
+        IF(WEIGHTS(INODE,J).GT.(1.0D-30)) THEN
+         OIC(J)=MAX(OIC(J),OIC(INODE)*WEIGHTS(INODE,J))
         ENDIF
        ENDDO      
 
