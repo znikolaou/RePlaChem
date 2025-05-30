@@ -1,12 +1,30 @@
-!************************plasRedChem_v0.1*******************************
+!***********************************************************************
 
-This is plasRedChem_v0.1 a dimensionality-reduction library for plasma
-chemical kinetics. 
+Description:
+------------
+plasRedChem is a dimensionality-reduction library for plasma
+chemical kinetics. Reduction is performed using the Directed Relation
+Graphs with Error Propagation (DRGEP) method. 
+
+Author: Z. Nikolaou 
+
+References: 
+ P. Pepiot Desjardins, H. Pitsch. Combust. Flame 154 (2008) 67-81. 
+ T. Lu, C.K. Law. Proc. Combust. Inst. 30 (2005) 1333-1341. 
+
+User inputs:
+------------ 
+ 1. A detailed chemical mechanism in ZDPlasKin format e.g. kinet.inp,
+    kinet.txt etc.  
+ 2. Individual reaction rates in binary Fortran format obtained using
+    the provided WRITE_BIN subroutine under utils/. 
+ 3. A control file for the reduction as in the examples directory.  
 
 To use: 
+-------
 
-1. Set env. variables: source setenv.sh. 
+1. Set environment variables: source setenv.sh. 
 
-2. Compile: make clean and make redChem. 
+2. make clean then  make redChem. 
 
 !***********************************************************************
