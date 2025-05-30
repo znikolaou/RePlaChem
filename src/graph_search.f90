@@ -33,34 +33,24 @@
       DO WHILE(IARR(1).NE.0)
 
        !FIND INDEX OF MAX VAL->MOST IMPORTANT SPECIES/NODE.            
-       MXVL=0.0D0
-       DO K=1,N
-        IF(IARR(K).EQ.0) GOTO 1
-        !WRITE(*,*) K,IARR(K),OIC(IARR(K)),MXVL
-         IF(OIC(IARR(K)).GE.MXVL) THEN 
-          II=IARR(K)
-          MXVL=OIC(II)
-          KK=K
-         ENDIF
-1       CONTINUE
-       ENDDO!! II SET       
+       !MXVL=0.0D0
+       !DO K=1,N
+       ! IF(IARR(K).EQ.0) GOTO 1
+       ! !WRITE(*,*) K,IARR(K),OIC(IARR(K)),MXVL
+       !  IF(OIC(IARR(K)).GE.MXVL) THEN 
+       !   II=IARR(K)
+       !   MXVL=OIC(II)
+       !   KK=K
+       !  ENDIF
+!1      ! CONTINUE
+       !ENDDO!! II SET       
        !WRITE(*,*) II,MXVL
                             !--------------
        
+       CALL GET_MAX_LOC(N,NODES,IARR,OIC,II,KK,MXVL)
        !REMOVE II FROM LIST
        CALL UPDATE_LIST(NODES,KK,N,IARR)
-       N=N-1
-       !IARR(KK)=0
-       !IF(KK.LE.(N-1)) THEN
-       ! DO K=KK,N-1
-       !  IARR(K)=IARR(K+1)
-       ! ENDDO
-       !ENDIF 
-       !IARR(N)=0
-                            !---------------
-       !N=N-1 !REDUCE SEARCH SIZE BY 1 EVERY TIME. 
-                            !---------------
-
+       
        !RUN THROUGH NEIGH OF II->GET OIC
        DO I=1,N_NEIGH(II)
         J=NEIGH(II,I)
@@ -75,20 +65,40 @@
 
       END 
       !-----------------------------------------------------------------
-      SUBROUTINE UPDATE_LIST(NT,KK,N,IARR)
+      SUBROUTINE GET_MAX_LOC(N,NT,IARR,Y,II,KK,MXVL)
       IMPLICIT NONE
-      INTEGER :: N,K,NT,KK,IARR(NT)
+      INTEGER :: N,NT,II,KK,K,IARR(NT)
+      DOUBLE PRECISION :: MXVL,Y(NT)
 
-      IARR(KK)=0
-      IF(KK.LE.(N-1)) THEN
-       DO K=KK,N-1
+      MXVL=ZERO
+      DO K=1,N
+       IF(IARR(K).EQ.0) GOTO 1
+        IF(Y(IARR(K)).GE.MXVL) THEN 
+         II=IARR(K)
+         MXVL=Y(II)
+         KK=K
+        ENDIF
+1      CONTINUE
+      ENDDO
+
+      RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE UPDATE_LIST(NT,ITORM,N,IARR)
+      IMPLICIT NONE
+      INTEGER :: N,K,NT,ITORM,IARR(NT)
+
+      IARR(ITORM)=0
+      IF(ITORM.LE.(N-1)) THEN
+       DO K=ITORM,N-1
         IARR(K)=IARR(K+1)
        ENDDO
       ENDIF 
       IARR(N)=0
-      !N=N-1 
+      N=N-1
 
       RETURN
       END
+      !-----------------------------------------------------------------
       END MODULE GRAPH_SEARCH
       !-----------------------------------------------------------------
