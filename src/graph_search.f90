@@ -39,11 +39,9 @@
          OIC(J)=MAX(OIC(J),OIC(INODE)*WEIGHTS(INODE,J))
         ENDIF
        ENDDO      
-
       ENDDO
 
       RETURN
-
       END 
       !-----------------------------------------------------------------
       SUBROUTINE GET_MAX_LOC(N,NT,IARR,Y,II,KK,MXVL)
