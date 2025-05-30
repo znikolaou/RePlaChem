@@ -4,35 +4,27 @@
       ! 
       !-----------------------------------------------------------------
       MODULE GRAPH_SEARCH
+      USE GLOBAL, ONLY : ZERO,ONE
       IMPLICIT NONE
      
       CONTAINS
       !-----------------------------------------------------------------
-      SUBROUTINE GRPH_DIJKSTRA(NODES,WEIGHTS,NEIGHBS,N_NEIGHBS,TARG,PIC)
+      SUBROUTINE DIJKSTRA_GSEARCH(NODES,WEIGHTS,NEIGH,N_NEIGH,ITRG,OIC)
       IMPLICIT NONE
-      ! PERFORMS GRAPH SEARCH USING DIJKSTRA'S ALGORITHM
-      !             ->MODIFIED VERSION FOR CHEMISTRY APPLICATIONS.
-      !
-      ! REFERENCES: 
-      !  E. Dijkstra. Numer. Math. 1 (1959) 261–271.
-      !  T. Lu, C. Law. Proc. Combust. Inst. 30 (2005) 1333-1341.
-      !  K. Niemeyer, C. Sung., M. Raju. Combust. Flame 157 (2010) 1760-1770.
-      !  P. Desjardins, H. Pitsch. Combust. Flame 154 (2008) 67-81. 
-      !
+      ! REFERENCES: E. Dijkstra. Numer. Math. 1 (1959) 261–271.
       INTEGER :: I,J,K,N,NODES,II,KK
-      INTEGER :: NEIGHBS(NODES,NODES),N_NEIGHBS(NODES),TARG,IARR(NODES)
-      DOUBLE PRECISION :: WEIGHTS(NODES,NODES),PIC(NODES),MXVL
+      INTEGER :: NEIGH(NODES,NODES),N_NEIGH(NODES),ITRG,IARR(NODES)
+      DOUBLE PRECISION :: WEIGHTS(NODES,NODES),OIC(NODES),MXVL
       !
       IF(NODES.LE.0) THEN
        WRITE(*,*) ' '
-       WRITE(*,*) 'GRAPH_SEARCH: NODES<=0 !'
+       WRITE(*,*) 'GRAPH_SEARCH: NODES<=0. TERMINATING ...'
        WRITE(*,*) ' '
        STOP
       ENDIF
 
-      !INITIALISE
-      PIC(1:NODES)=0.0D0
-      PIC(TARG)=1.0D0 !THIS IS TARGET SPECIES
+      OIC(1:NODES)=ZERO
+      OIC(ITRG)=ONE
       DO I=1,NODES
        IARR(I)=I
       ENDDO
@@ -44,33 +36,36 @@
        MXVL=0.0D0
        DO K=1,N
         IF(IARR(K).EQ.0) GOTO 1
-        !WRITE(*,*) K,IARR(K),PIC(IARR(K)),MXVL
-         IF(PIC(IARR(K)).GE.MXVL) THEN 
+        !WRITE(*,*) K,IARR(K),OIC(IARR(K)),MXVL
+         IF(OIC(IARR(K)).GE.MXVL) THEN 
           II=IARR(K)
-          MXVL=PIC(II)
+          MXVL=OIC(II)
           KK=K
          ENDIF
 1       CONTINUE
        ENDDO!! II SET       
        !WRITE(*,*) II,MXVL
                             !--------------
+       
        !REMOVE II FROM LIST
-       IARR(KK)=0
-       IF(KK.LE.(N-1)) THEN
-        DO K=KK,N-1
-         IARR(K)=IARR(K+1)
-        ENDDO
-       ENDIF 
-       IARR(N)=0
+       CALL UPDATE_LIST(NODES,KK,N,IARR)
+       N=N-1
+       !IARR(KK)=0
+       !IF(KK.LE.(N-1)) THEN
+       ! DO K=KK,N-1
+       !  IARR(K)=IARR(K+1)
+       ! ENDDO
+       !ENDIF 
+       !IARR(N)=0
                             !---------------
-       N=N-1 !REDUCE SEARCH SIZE BY 1 EVERY TIME. 
+       !N=N-1 !REDUCE SEARCH SIZE BY 1 EVERY TIME. 
                             !---------------
 
-       !RUN THROUGH NEIGHBS OF II->GET PIC
-       DO I=1,N_NEIGHBS(II)
-        J=NEIGHBS(II,I)
+       !RUN THROUGH NEIGH OF II->GET OIC
+       DO I=1,N_NEIGH(II)
+        J=NEIGH(II,I)
         IF(WEIGHTS(II,J).GT.(1.0D-30)) THEN
-         PIC(J)=MAX(PIC(J),PIC(II)*WEIGHTS(II,J))
+         OIC(J)=MAX(OIC(J),OIC(II)*WEIGHTS(II,J))
         ENDIF
        ENDDO      
 
@@ -80,5 +75,20 @@
 
       END 
       !-----------------------------------------------------------------
+      SUBROUTINE UPDATE_LIST(NT,KK,N,IARR)
+      IMPLICIT NONE
+      INTEGER :: N,K,NT,KK,IARR(NT)
+
+      IARR(KK)=0
+      IF(KK.LE.(N-1)) THEN
+       DO K=KK,N-1
+        IARR(K)=IARR(K+1)
+       ENDDO
+      ENDIF 
+      IARR(N)=0
+      !N=N-1 
+
+      RETURN
+      END
       END MODULE GRAPH_SEARCH
       !-----------------------------------------------------------------

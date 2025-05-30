@@ -14,11 +14,11 @@
   
       SET_TRG(1:NTRG,1:NSPEC)=0
       CALL GET_NEIGH(NEIGH_INDEX,NO_NEIGH)
-      CALL GET_DIC(RR,DIC) 
+      CALL GET_DIC(RR,DIC)   
       DO I=1,NTRG
        SET_TRG(I,INDX_TRG(I))=1
-       CALL GRPH_DIJKSTRA(NSPEC,DIC,NEIGH_INDEX,NO_NEIGH,INDX_TRG(I), &
-                          OIC(I,:))      
+       CALL DIJKSTRA_GSEARCH(NSPEC,DIC,NEIGH_INDEX,NO_NEIGH, &
+                             INDX_TRG(I),OIC(I,:))      
        DO J=1,NSPEC
         IF(OIC(I,J).GT.ETOL(I)) SET_TRG(I,J)=1
        ENDDO         
