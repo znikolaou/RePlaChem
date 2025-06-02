@@ -25,5 +25,5 @@ $(REDCHEM_BUILD)%.o: $(REDCHEM_SRC)%.f90
 	$(FC) $(FOPT) -c -o $@ $< 
 
 clean:
-	@ rm -f $(REDCHEM_BUILD)*.o  *.o log* go*  *.mod
+	@ rm -f testChemParse $(REDCHEM_BUILD)*.o  *.o log* go*  *.mod
 
