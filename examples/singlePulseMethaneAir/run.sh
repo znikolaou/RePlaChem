@@ -1,2 +1,3 @@
 #!/bin/bash
-redChem >output/logRun
+rm -r output/*
+redChem >output/redChemLog
