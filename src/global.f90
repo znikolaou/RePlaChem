@@ -9,9 +9,9 @@
        OUTDIR='./output/', &
        RATE_DIR='rates/',  &
        CONTROL_FL='control.txt', &
-       CHEMRED_FL='reducedChemistry.txt', &
+       CHEMRED_FL='skeletalChemistry.txt', &
        REAC_RATE_FL='reactionRates', &
-       STATS_FL='reductionSummary.txt', &
+       STATS_FL='summary.txt', &
        VERSION='25.05', &
        LOGO=  '# plasRedChem_'//VERSION//'   #', &
        AUTHOR='# AUTHOR: Z. NIKOLAOU #', &
