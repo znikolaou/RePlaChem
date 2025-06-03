@@ -229,7 +229,7 @@
       CHARACTER(LEN=30), PARAMETER :: FMTA='(2(I10X)A10XF10.6XA10)', &
                                       FMTB='(3(AX)I4XAXI4XAXF10.6)' 
       INTEGER, PARAMETER :: IU=1
-      INTEGER :: I,J,IT,IC,TRGD_USET(NTRG,NSPEC),SP_USET(NSPEC), &
+      INTEGER :: I,J,IT,IC,JINDX,TRGD_USET(NTRG,NSPEC),SP_USET(NSPEC), &
                  RE_USET(NREAC),NSP_RED,NRE_RED
       DOUBLE PRECISION :: STATS(NTRG,NSPEC,3),SRT_STATS(NSPEC)
 
@@ -251,9 +251,10 @@
                  SRT_SPEC)
        IC=0
        DO J=1,NSPEC
-        IF(J.NE.IT) THEN
+        JINDX=CM_GET_SPECIES_INDEX(SRT_SPEC(J))
+        IF(JINDX.NE.IT) THEN
          IC=IC+1
-         WRITE(IU,FMTA) IC,CM_GET_SPECIES_INDEX(SRT_SPEC(J)), &
+         WRITE(IU,FMTA) IC,JINDX, &
                         TRIM(ADJUSTL(SRT_SPEC(J))),SRT_STATS(J), &
                         IS_ACCEPT(SRT_STATS(J),ETOL(I))
         ENDIF 
