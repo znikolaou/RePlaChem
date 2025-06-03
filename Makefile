@@ -1,5 +1,5 @@
 
-SRC_IN=global.f90 io.f90 chem_parse.f90 \
+SRC_IN=global.f90 chem_parse.f90 io.f90\
        graph_search.f90 main.f90  \
        drg.f90 char_util.f90 timing.f90 \
        sort.f90 set.f90 stats.f90

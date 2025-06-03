@@ -253,7 +253,7 @@
        DO J=1,NSPEC
         IF(J.NE.IT) THEN
          IC=IC+1
-         WRITE(IU,FMTA) IC,CM_GET_SPECIES_INDEX(STR_SPEC(J)), &
+         WRITE(IU,FMTA) IC,CM_GET_SPECIES_INDEX(SRT_SPEC(J)), &
                         TRIM(ADJUSTL(SRT_SPEC(J))),SRT_STATS(J), &
                         IS_ACCEPT(SRT_STATS(J),ETOL(I))
         ENDIF 
