@@ -42,10 +42,13 @@
       RETURN
       END
       !-----------------------------------------------------------------
-      SUBROUTINE GET_REACTION_SET(SPSET_UNION,RESET_UNION)
-      USE GLOBAL, ONLY : NSPEC,NREAC,SPEC,RSPEC
+      SUBROUTINE GET_REACTION_SET(SPSET_UNION,RESET_UNION, &
+                                  NREAC_BOLSIG_SKEL)
+      USE GLOBAL, ONLY : NSPEC,NREAC,SPEC,RSPEC,IS_BOLSIG_REAC
       IMPLICIT NONE
-      INTEGER :: I,J,IPROD,CHECK,SPSET_UNION(NSPEC),RESET_UNION(NREAC)
+      INTEGER :: I,J,NREAC_SKEL,NREAC_BOLSIG_SKEL, &
+                 NREAC_NONBOLSIG_SKEL, IPROD,CHECK, &
+                 SPSET_UNION(NSPEC),RESET_UNION(NREAC)
 
       WRITE(*,'(A)') 'CALCULATING FINAL REACTION UNION SET ...'  
       RESET_UNION(1:NREAC)=0
@@ -75,7 +78,29 @@
         ENDIF
        ENDIF
       ENDDO
-      
+     
+      NREAC_SKEL=SUM(RESET_UNION)
+      NREAC_BOLSIG_SKEL=0
+      NREAC_NONBOLSIG_SKEL=0
+      DO I=1,NREAC
+       IF(RESET_UNION(I).EQ.1) THEN
+        IF(IS_BOLSIG_REAC(I)) THEN 
+         NREAC_BOLSIG_SKEL=NREAC_BOLSIG_SKEL+1
+        ELSE 
+         NREAC_NONBOLSIG_SKEL=NREAC_NONBOLSIG_SKEL+1
+        ENDIF
+       ENDIF
+      ENDDO
+
+      IF(NREAC_BOLSIG_SKEL+NREAC_NONBOLSIG_SKEL.NE.NREAC_SKEL) THEN
+       WRITE(*,'(A)') '*ERROR (GET_REACTION_SET)'
+       WRITE(*,'(XAXI4XAXI4XAXI4)') &
+        'NREAC-BOLSIG+NREAC-NON_BOLSIG.NE.NREAC_SKEL', &
+        NREAC_BOLSIG_SKEL,'+',NREAC_NONBOLSIG_SKEL,'NE',NREAC_SKEL
+       WRITE(*,'(XA)') 'TERMINATING ...'
+       STOP
+      ENDIF
+
       END
       !-----------------------------------------------------------------
       SUBROUTINE GET_BOLSIG_SET(SPSET_UNION,SPBOLSET_UNION)
@@ -91,6 +116,19 @@
                 TRIM(ADJUSTL(SPEC(I))))) THEN
          SPBOLSET_UNION(I)=1
         ENDIF
+       ENDIF
+      ENDDO
+
+      DO I=1,NSPEC
+       IF(SPBOLSET_UNION(I).EQ.1) THEN
+        IF(.NOT.IS_STRING_PRESENT(NSPEC,SPEC(1:NSPEC), &
+         TRIM(ADJUSTL(SPEC(I))))) THEN     
+         WRITE(*,'(A)') '*ERROR (GET_BOLSIG_SET)'
+         WRITE(*,'(3(XA))') 'BOLSIG SPECIES',TRIM(ADJUSTL(SPEC(I))), &
+                    'NOT IN SPECIES LIST' 
+         WRITE(*,'(XA)') 'TERMINATING ...'
+         STOP
+        ENDIF  
        ENDIF
       ENDDO 
 

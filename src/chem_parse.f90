@@ -49,6 +49,7 @@
       NSPEC=0
       NSPEC_BOLSIG=0
       NREAC=0
+      NREAC_BOLSIG=0
       NBOLS_SET=0
       NREAC_DOLLAR=0
       ELEM(1:NSPMX)=' '
@@ -64,6 +65,7 @@
       IS_ANY_ION_POS_REAC(1:NREMX)=.FALSE.
       IS_ANY_ION_NEG_REAC(1:NREMX)=.FALSE.
       IS_THIRD_BODY_REAC(1:NREMX)=.FALSE.
+      IS_BOLSIG_REAC(1:NREMX)=.FALSE.
       BOLSIG_SEC_SET_LIST=' '
       REAC_SEC_DOLLAR_LIST=' '
       NUR(1:NREMX,1:NSPMX)=ZERO
@@ -384,6 +386,7 @@
       CALL CM_SET_ION_POS_IF_ANY()
       CALL CM_SET_ION_NEG_IF_ANY()
       CALL CM_SET_ANY_SPEC_IF_ANY()
+      CALL CM_SET_BOLSIG_REAC_IF_ANY()
 
       RETURN
       END
@@ -449,6 +452,20 @@
       ENDDO
 
       RETURN
+      END
+      !-----------------------------------------------------------------
+      SUBROUTINE CM_SET_BOLSIG_REAC_IF_ANY()
+      IMPLICIT NONE
+      INTEGER :: J
+
+      NREAC_BOLSIG=0
+      DO J=1,NREAC
+       IF(CM_IS_BOLSIG_REACTION(REAC(J))) THEN
+        IS_BOLSIG_REAC(J)=.TRUE.
+        NREAC_BOLSIG=NREAC_BOLSIG+1
+       ENDIF
+      ENDDO
+
       END
       !-----------------------------------------------------------------
       SUBROUTINE CM_SET_REAC_F() 
