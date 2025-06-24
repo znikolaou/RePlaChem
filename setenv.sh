@@ -14,6 +14,7 @@ REDCHEM_HOME=$(pwd)
 REDCHEM_SRC=$REDCHEM_HOME/src/
 REDCHEM_BUILD=$REDCHEM_HOME/build/
 REDCHEM_BIN=$REDCHEM_HOME/bin/
+REDCHEM_UTIL=$REDCHEM_HOME/util/
 
 echo " "
 echo " **********plasRedChem_25.05**********"
@@ -28,6 +29,8 @@ echo " Source dir:"
 echo " "$REDCHEM_HOME
 echo " Build dir:"
 echo " "$REDCHEM_BUILD
+echo " Utils dir:"
+echo " "$REDCHEM_UTIL
 echo " Bin dir:"
 echo " "$REDCHEM_BIN
 echo " Fortran compiler:"
@@ -45,5 +48,6 @@ export REDCHEM_HOME
 export REDCHEM_SRC
 export REDCHEM_BUILD
 export REDCHEM_BIN
+export REDCHEM_UTIL
 export FC
 export FOPT
