@@ -19,8 +19,8 @@ User inputs:
 
  3. A control file for the reduction as in the *./examples/* directory.  
 
-To use: 
--------
+Installation: 
+-------------
 
 1. Set environment variables: 
    
@@ -31,6 +31,10 @@ To use:
 
 2. *make clean*, then *make redChem* to create the *redChem* executable under *./bin/*.  
 
-3. Have a look at the *./examples/* directory on how to set up your own working directory. Preferably, create a working directory different from the installation directory, and add the *./bin/* directory to your system *PATH*.  
+To use:
+-------
+
+Have a look at the *./examples/* directory on how to set up your own working directory. 
+Preferably, create a working directory different from the installation directory, and add the *./bin/* directory to your system *PATH*.  
 
 
