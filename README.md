@@ -17,7 +17,7 @@ User inputs:
 
  2. Individual reaction rate data in a binary Fortran format obtained by solving a canonical problem-please use the provided *pcmo.f90* module under *./utils/* in your main program to write the reaction rate data in the necessary format. 
 
- 3. A control file for the reduction as in the *./examples/* directory.  
+ 3. A control file for the reduction as in the *./examples/* directory. In the control file the user sets the name of the chemical mechanism  to use, the number of reaction-rate data sets to use, the indices of the target species (in the list of the detailed chemistry), and for each target species the acceptance threshold.    
 
 Installation: 
 -------------
