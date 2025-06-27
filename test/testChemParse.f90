@@ -4,7 +4,7 @@
       INTEGER :: I
       CHARACTER(LEN=*), PARAMETER :: &
       FLA='./input_chemistry/argon2step/kinet2stepArgon.inp'
-       
+      
       CALL CM_INIT(FLA)
 
       STOP
