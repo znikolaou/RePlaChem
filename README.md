@@ -1,4 +1,7 @@
 # plasRedChem
+
+![title](figs/graphicDRG.png)
+    
 plasRedChem, is a dimensionality-reduction library for reducing large scale plasma chemical mechanisms to smaller skeletal ones in ZDPlasKin format [1]. Reduction is performed using the Directed Relation Graphs with Error Propagation (DRGEP) method [2,3]. 
 
 **Author: Z. Nikolaou (2025).** 
