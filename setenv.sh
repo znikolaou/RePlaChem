@@ -17,7 +17,7 @@ REDCHEM_BIN=$REDCHEM_HOME/bin/
 REDCHEM_UTIL=$REDCHEM_HOME/util/
 
 echo " "
-echo " **********plasRedChem_25.05**********"
+echo " **********RePlaChem_25.05**********"
 echo " Plasma-chemistry reduction library.  "
 echo " Author: Z. Nikolaou (2025)"
 echo " *************************************"

@@ -8,7 +8,7 @@ SRC=$(addprefix $(REDCHEM_SRC),$(notdir $(SRC_IN)))
 
 OBJS=$(patsubst $(REDCHEM_SRC)%.o,$(REDCHEM_BUILD)%.o,$(SRC:%.f90=%.o)) 
 
-plasRedChem:$(OBJS) 
+rePlaChem:$(OBJS) 
 	$(FC) $(FOPT) $(OBJS) -o $(REDCHEM_BIN)/$@
 
 $(REDCHEM_BUILD)%.o: $(REDCHEM_SRC)%.f90

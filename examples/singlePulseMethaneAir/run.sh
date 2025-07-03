@@ -1,3 +1,3 @@
 #!/bin/bash
 rm -r output/*
-plasRedChem >output/redChemLog
+rePlaChem >output/rePlaChemLog

@@ -13,7 +13,7 @@
        REAC_RATE_FL='reactionRates', &
        STATS_FL='summary.txt', &
        VERSION='25.05', &
-       LOGO=  '# plasRedChem_'//VERSION//'   #', &
+       LOGO=  '# RePlaChem_'//VERSION//'     #', &
        AUTHOR='# AUTHOR: Z. NIKOLAOU #', &
        DASH=  '#---------------------#'
       INTEGER, PARAMETER :: & 
