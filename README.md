@@ -34,7 +34,7 @@ Installation:
 
    Here, you may set the Fortran compiler and the relevant compiler options (by default gfortran is used).  
 
-2. *make clean*, then *make redChem* to create the *redChem* executable under *./bin/*.  
+2. *make clean*, then *make rePlaChem* to create the *rePlaChem* executable under *./bin/*.  
 
 To use:
 -------
