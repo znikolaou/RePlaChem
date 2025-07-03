@@ -6,6 +6,8 @@ plasRedChem, is a dimensionality-reduction library for reducing large scale plas
 
 **Author: Z. Nikolaou (2025).** 
 
+Email address: ZachariasMNic@gmail.com
+
 **References:** 
 
  [1] S. Pancheshnyi, B. Eismann, G.J.M. Hagelaar, and L.C. Pitchford. Computer code ZDPlasKin: http://www.zdplaskin.laplace.univ-tlse.fr. University of Toulouse, LAPLACE, CNRS-UPS-INP, Toulouse, France, 2008
