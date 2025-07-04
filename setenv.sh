@@ -17,10 +17,11 @@ REDCHEM_BIN=$REDCHEM_HOME/bin/
 REDCHEM_UTIL=$REDCHEM_HOME/util/
 
 echo " "
-echo " **********RePlaChem_25.05**********"
-echo " Plasma-chemistry reduction library.  "
-echo " Author: Z. Nikolaou (2025)"
-echo " *************************************"
+echo " **********RePlaChem_25.05***********"
+echo " Plasma-chemistry reduction library. "
+echo " Author: Z. Nikolaou (2025)          "
+echo " Email: ZachariasMNic@gmail.com      "
+echo " ************************************"
 echo " "
 echo " Setting environment vars ..."
 echo " Home dir:"
@@ -40,7 +41,7 @@ echo " "$FOPT
 echo ""
 echo " Environment variables set!"
 echo " "
-echo " Please make clean and make redChem to compile."
+echo " Please make clean and make rePlaChem to compile."
 echo " "
 
 export PATH=$PATH:$REDCHEM_BIN
