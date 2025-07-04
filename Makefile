@@ -1,3 +1,6 @@
+#
+# AUTHOR: Z. NIKOLAOU
+#
 
 SRC_IN=global.f90 chem_parse.f90 io.f90\
        graph_search.f90 main.f90  \

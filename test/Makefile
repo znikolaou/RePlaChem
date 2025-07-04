@@ -1,3 +1,6 @@
+#
+# AUTHOR: Z. NIKOLAOU
+#
 
 SRC_CHEM=global.f90 chem_parse.f90 char_util.f90 \
 	 io.f90 timing.f90 sort.f90 
