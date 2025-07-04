@@ -27,9 +27,9 @@ User inputs:
 Installation: 
 -------------
 
-1. Edit setenv.sh to include the Fortran compiler and compiler options. 
-   The current compiler is gfortran v. 13.3.0. Make sure to use as a compiler
-   option -mcmodel=large for larger-scale chemical mechanisms. 
+1. Edit *setenv.sh* to include the Fortran compiler and compiler options. 
+   The current compiler is *gfortran* v. 13.3.0. Make sure to use as a compiler
+   option *-mcmodel=large* for larger-scale chemical mechanisms. 
 
 2. Set environment variables: 
    
