@@ -1,4 +1,8 @@
       !-----------------------------------------------------------------
+      !
+      ! AUTHOR: Z. NIKOLAOU
+      !
+      !-----------------------------------------------------------------
       SUBROUTINE GET_STATS(OIC,STATS)
       USE GLOBAL, ONLY : NTRG,NSPEC,NDATA,NCASE
       IMPLICIT NONE

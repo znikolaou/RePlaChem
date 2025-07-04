@@ -235,9 +235,7 @@
       !-----------------------------------------------------------------
       FUNCTION GET_TEXT_WITH_SPACES_COUNT(STRING,TEXT)
       !
-      ! AUTHOR: Z. NIKOLAOU     
-      !
-      ! DESCRIPTION: COUNTS NO OF OCCURANCES OF TEXT IN 
+      ! COUNTS NO OF OCCURANCES OF TEXT IN 
       ! STRING, OF THE FORM TEXT' ' AND ' 'TEXT' '  
       !
       IMPLICIT NONE
