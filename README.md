@@ -34,10 +34,7 @@ Installation:
 2. Set environment variables: 
    
    *source setenv.sh*
-   
-
-   Here, you may set the Fortran compiler and the relevant compiler options (by default gfortran is used).  
-
+    
 3. *make clean*, then *make rePlaChem* to create the *rePlaChem* executable under *./bin/*.  
 
 To use:
