@@ -27,14 +27,18 @@ User inputs:
 Installation: 
 -------------
 
-1. Set environment variables: 
+1. Edit setenv.sh to include the Fortran compiler and compiler options. 
+   The current compiler is gfortran v. 13.3.0. Make sure to use as a compiler
+   option -mcmodel=large for larger-scale chemical mechanisms. 
+
+2. Set environment variables: 
    
    *source setenv.sh*
    
 
    Here, you may set the Fortran compiler and the relevant compiler options (by default gfortran is used).  
 
-2. *make clean*, then *make rePlaChem* to create the *rePlaChem* executable under *./bin/*.  
+3. *make clean*, then *make rePlaChem* to create the *rePlaChem* executable under *./bin/*.  
 
 To use:
 -------
